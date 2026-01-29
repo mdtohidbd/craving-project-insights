@@ -1,10 +1,13 @@
 import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Check } from "lucide-react";
 import chefImage from "@/assets/chef.jpg";
 import menuShrimp from "@/assets/menu-shrimp.jpg";
+import CTASection from "@/components/about/CTASection";
+import CravingBanner from "@/components/about/CravingBanner";
 
 const stats = [
   { number: "500+", label: "Restaurants" },
@@ -131,14 +134,19 @@ const About = () => {
                 a feast. Also if anything isn't correct to us that you expected, talk to us,
                 we'll fix it.
               </p>
-              <button className="btn-orange">Get in Touch</button>
+              <Link to="/contact" className="btn-orange inline-block">
+                Get in Touch
+              </Link>
             </motion.div>
           </div>
         </div>
       </section>
 
+      {/* Craving Banner */}
+      <CravingBanner />
+
       {/* Why Choose Section with Accordion */}
-      <section className="py-20 bg-secondary">
+      <section className="py-20 bg-background">
         <div className="container mx-auto px-4">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <motion.div
@@ -157,8 +165,8 @@ const About = () => {
               
               <Accordion type="single" collapsible className="w-full">
                 {whyChoose.map((item, index) => (
-                  <AccordionItem key={index} value={`item-${index}`}>
-                    <AccordionTrigger className="text-primary font-semibold">
+                  <AccordionItem key={index} value={`item-${index}`} className="border-border">
+                    <AccordionTrigger className="text-primary font-semibold hover:text-accent">
                       {item.title}
                     </AccordionTrigger>
                     <AccordionContent className="text-muted-foreground">
@@ -175,7 +183,7 @@ const About = () => {
               viewport={{ once: true }}
               transition={{ duration: 0.6 }}
             >
-              <div className="rounded-[40%] overflow-hidden aspect-square max-w-md mx-auto">
+              <div className="rounded-[50%] overflow-hidden aspect-square max-w-md mx-auto">
                 <img
                   src={menuShrimp}
                   alt="Delicious shrimp"
@@ -188,7 +196,7 @@ const About = () => {
       </section>
 
       {/* Benefits Section */}
-      <section className="py-20 bg-background">
+      <section className="py-20 bg-secondary">
         <div className="container mx-auto px-4">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <motion.div
@@ -197,11 +205,11 @@ const About = () => {
               viewport={{ once: true }}
               transition={{ duration: 0.6 }}
             >
-              <div className="rounded-3xl overflow-hidden">
+              <div className="rounded-[50%] overflow-hidden aspect-square max-w-md mx-auto">
                 <img
                   src="https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=600"
                   alt="Tacos"
-                  className="w-full h-[400px] object-cover"
+                  className="w-full h-full object-cover"
                 />
               </div>
             </motion.div>
@@ -222,18 +230,28 @@ const About = () => {
               
               <ul className="space-y-4">
                 {benefits.map((benefit, index) => (
-                  <li key={index} className="flex items-center gap-3">
+                  <motion.li
+                    key={index}
+                    initial={{ opacity: 0, x: 20 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.4, delay: index * 0.1 }}
+                    className="flex items-center gap-3"
+                  >
                     <div className="w-6 h-6 bg-accent/20 rounded-full flex items-center justify-center flex-shrink-0">
                       <Check className="w-4 h-4 text-accent" />
                     </div>
                     <span className="text-foreground">{benefit}</span>
-                  </li>
+                  </motion.li>
                 ))}
               </ul>
             </motion.div>
           </div>
         </div>
       </section>
+
+      {/* CTA Section */}
+      <CTASection />
 
       <Footer />
     </div>
