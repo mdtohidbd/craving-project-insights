@@ -1,5 +1,6 @@
 import { useParams, Link } from "react-router-dom";
 import { motion } from "framer-motion";
+import { ArrowUpRight, ArrowLeft } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
@@ -10,71 +11,64 @@ const blogPosts = [
     excerpt: "Transform your meals with the magic of spices.",
     date: "Sep 15, 2024",
     image: "https://images.unsplash.com/photo-1596040033229-a9821ebd058d?w=1200",
-    content: `
-## Introduction:
+    content: `## Introduction
 
-Spices are the essence that transforms ordinary ingredients into flavorful masterpieces. They are the secret weapon in the culinary world, adding depth and character to every meal. Mastering the use of spices is not just about following recipes—it's about understanding their unique properties and how they interact with other flavors to create culinary magic.
+Spices are the essence that transforms ordinary ingredients into flavorful masterpieces. They are the secret weapon in the culinary world, adding depth and character to every meal. Mastering the use of spices is not just about following recipes—it's about understanding their unique properties.
 
-Think about it: the same base ingredients can taste completely different based on the spices you choose. A simple piece of chicken can become Indian curry, Mexican fajitas, or Mediterranean kebab—all depending on your spice selection.
+Think about it: the same base ingredients can taste completely different based on the spices you choose. A simple piece of chicken can become Indian curry, Mexican fajitas, or Mediterranean kebab.
 
-## Understanding Spices:
+## Understanding Spices
 
 Spices come from various parts of plants—roots, bark, seeds, and even leaves. Understanding their origins helps you appreciate their distinct flavors.
 
-- **Origins of Spices:** Spices can come from various regions around the globe, such as the Silk Road era, Gotta, Kerala, and more.
-- **Types of Spices:**
-  - **Warm Spices:** Cinnamon, cloves, nutmeg, and sweet aromatic depth
-  - **Pungent Spices:** Black pepper, mustard seeds, ginger, and wasabi add heat
-  - **Aromatic Spices:** Cardamom, fennel, cumin provide earthy to floral notes
-  - **Flavor Profiles:** Bay, oregano, thyme, basil and rosemary add depth
+- **Warm Spices:** Cinnamon, cloves, nutmeg — sweet aromatic depth
+- **Pungent Spices:** Black pepper, mustard seeds, ginger — fiery heat
+- **Aromatic Spices:** Cardamom, fennel, cumin — earthy to floral notes
+- **Herbal:** Bay, oregano, thyme, basil — Mediterranean depth
 
-## Mastering Spice Blends:
+## Mastering Spice Blends
 
-Spice blends are combinations of complementary spices that form the base of great dishes. Understanding popular blends helps you create more complex flavors.
+Spice blends are combinations of complementary spices that form the base of great dishes.
 
-- **Popular Spice Blends:**
-  - **Garam Masala (Indian):** A warm blend of cinnamon, cardamom, and cloves
-  - **Herbes de Provence (French):** A fragrant mix of thyme, rosemary, and lavender
-  - **Cajun Seasoning (Southern USA):** A bold, paprika-cayenne, garlic mix
-  - **Ras el Hanout (Moroccan):** A complex, sweeping spice of flavors
+- **Garam Masala:** A warm blend of cinnamon, cardamom, and cloves
+- **Herbes de Provence:** Thyme, rosemary, and lavender
+- **Cajun Seasoning:** Bold paprika-cayenne and garlic mix
+- **Ras el Hanout:** A complex Moroccan spice symphony
 
-## Tips for Cooking with Spices:
+## Tips for Cooking with Spices
 
-- **Toasting Spices:** Toast whole spices in a dry pan before grinding
-- **Blooming Spices:** Toast ground spices in oil to release their aromas
-- **Layering Flavors:** Add spices at different stages of cooking
-- **Balancing Heat:** Add cooling ingredients to balance spicy dishes
-- **Experimentation:** Don't be afraid to experiment—the best cooks are explorers
+- Toast whole spices in a dry pan before grinding
+- Bloom ground spices in oil to release aromas
+- Layer flavors by adding spices at different stages
+- Balance heat with cooling ingredients
+- Experiment fearlessly — the best cooks are explorers
 
-## Storing and Preserving Spices:
+## Storing Spices
 
-Proper storage extends the potency and freshness of your spices:
+- Store in airtight containers away from light
+- Keep cool — avoid storing near the stove
+- Label with purchase dates; rotate stock
+- Grind fresh when possible for maximum flavor
 
-- **Store in Airtight Containers:** Keep spices away from light and moisture
-- **Avoid Heat and Light:** Store spices in cool, dark spaces away from the stove
-- **Label and Rotate:** Label with purchase dates; use older spices first
-- **Refresh Fresh When Possible:** Crushing or grinding just before use ensures maximum flavor
+## Conclusion
 
-## Conclusion:
-
-Mastering spices opens up endless culinary possibilities. By experimenting with different spice blending flavors, you can transform simple ingredients into culinary delights. Happy cooking!
-    `,
+Mastering spices opens up endless possibilities. Experiment with different blends, trust your palate, and transform simple ingredients into culinary art.`,
   },
   {
     id: "2",
-    title: "Spice Up Your Life, A Guide to Different Spices",
+    title: "Spice Up Your Life",
     excerpt: "Elevate your dishes with the power of spices.",
     date: "Sep 16, 2024",
     image: "https://images.unsplash.com/photo-1532768641073-503a250f9754?w=1200",
-    content: "A comprehensive guide to spices from around the world...",
+    content: "A comprehensive guide to spices from around the world. Explore the rich history and vibrant flavors that have shaped cuisines across continents.",
   },
   {
     id: "3",
-    title: "Healthy Eating Made Easy, Tips for Busy People",
+    title: "Healthy Eating Made Easy",
     excerpt: "Discover simple tips for healthy eating.",
     date: "Sep 17, 2024",
     image: "https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=1200",
-    content: "Learn how to eat healthy even with a busy schedule...",
+    content: "Learn how to eat healthy even with a busy schedule. Meal prep strategies, quick recipes, and nutrition tips for the modern lifestyle.",
   },
 ];
 
@@ -84,12 +78,14 @@ const BlogDetail = () => {
 
   if (!post) {
     return (
-      <div className="min-h-screen">
+      <div className="min-h-screen flex flex-col items-center justify-center bg-primary relative overflow-hidden">
         <Navbar />
-        <div className="pt-32 pb-20 text-center">
-          <h1 className="text-4xl font-serif font-bold text-primary">Post Not Found</h1>
-          <Link to="/blog" className="btn-orange inline-block mt-8">
-            Back to Blog
+        <div className="pt-40 pb-20 text-center relative z-10">
+          <h1 className="text-8xl font-serif font-bold text-primary-foreground mb-8" style={{ letterSpacing: "-0.04em" }}>
+            Post Not Found
+          </h1>
+          <Link to="/blog" className="btn-gold inline-flex items-center gap-3">
+            <ArrowLeft className="w-5 h-5" /> Back to Blog
           </Link>
         </div>
         <Footer />
@@ -102,25 +98,31 @@ const BlogDetail = () => {
   return (
     <div className="min-h-screen">
       <Navbar />
-      
+
       {/* Hero Section */}
-      <section className="bg-primary pt-32 pb-20">
-        <div className="container mx-auto px-4 text-center">
+      <section className="bg-primary pt-40 pb-36 relative overflow-hidden">
+        <div className="absolute inset-0">
+          <div className="absolute bottom-[-20%] left-[-10%] w-[600px] h-[600px] rounded-full pointer-events-none" 
+               style={{ background: "radial-gradient(circle, hsl(43 60% 50% / 0.05), transparent 70%)" }} />
+        </div>
+        <div className="container mx-auto px-6 md:px-12 text-center relative z-10">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="mb-4"
+            className="mb-8"
           >
-            <span className="bg-accent text-accent-foreground text-sm font-medium px-4 py-1 rounded-full">
+            <span className="text-[11px] uppercase tracking-[0.2em] font-bold px-6 py-2.5 rounded-full"
+                  style={{ background: "hsl(43 74% 48%)", color: "hsl(195 30% 8%)" }}>
               {post.date}
             </span>
           </motion.div>
           <motion.h1
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-            className="text-4xl md:text-5xl font-serif font-bold text-primary-foreground mb-4"
+            transition={{ duration: 0.8 }}
+            className="text-6xl md:text-8xl lg:text-9xl font-serif font-bold text-primary-foreground leading-[0.9] mb-8 max-w-4xl mx-auto"
+            style={{ letterSpacing: "-0.04em" }}
           >
             {post.title}
           </motion.h1>
@@ -128,7 +130,7 @@ const BlogDetail = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
-            className="text-primary-foreground/70 max-w-2xl mx-auto"
+            className="text-primary-foreground/50 max-w-xl mx-auto text-[18px] leading-[1.8]"
           >
             {post.excerpt}
           </motion.p>
@@ -136,19 +138,20 @@ const BlogDetail = () => {
       </section>
 
       {/* Featured Image */}
-      <section className="py-12 bg-background">
-        <div className="container mx-auto px-4">
+      <section className="bg-background pt-16">
+        <div className="container mx-auto px-6 md:px-12">
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.6 }}
-            className="max-w-4xl mx-auto"
+            transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+            className="max-w-6xl mx-auto"
+            style={{ marginTop: "-120px", position: "relative", zIndex: 20 }}
           >
-            <div className="rounded-3xl overflow-hidden">
+            <div className="rounded-[3rem] overflow-hidden shadow-2xl">
               <img
                 src={post.image}
                 alt={post.title}
-                className="w-full h-[400px] md:h-[500px] object-cover"
+                className="w-full h-[500px] md:h-[650px] object-cover transition-transform duration-[2s] hover:scale-105"
               />
             </div>
           </motion.div>
@@ -156,57 +159,93 @@ const BlogDetail = () => {
       </section>
 
       {/* Content */}
-      <section className="py-12 bg-background">
-        <div className="container mx-auto px-4">
+      <section className="py-24 bg-background">
+        <div className="container mx-auto px-6 md:px-12">
           <motion.article
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="max-w-3xl mx-auto prose prose-lg prose-headings:font-serif prose-headings:text-primary prose-p:text-muted-foreground prose-li:text-muted-foreground prose-strong:text-foreground"
+            className="max-w-4xl mx-auto"
           >
-            <div className="whitespace-pre-line text-muted-foreground leading-relaxed">
-              {post.content}
+            <div className="prose prose-lg prose-headings:font-serif prose-headings:font-bold prose-headings:text-primary 
+                            prose-p:text-muted-foreground prose-p:leading-[1.8] prose-p:text-[17px] 
+                            prose-li:text-muted-foreground prose-strong:text-foreground 
+                            prose-h2:text-4xl prose-h2:mt-16 prose-h2:mb-8
+                            prose-ul:space-y-3 prose-li:text-[17px] prose-li:leading-[1.8]">
+              <div className="whitespace-pre-line">
+                {post.content}
+              </div>
             </div>
           </motion.article>
         </div>
       </section>
 
       {/* Related Posts */}
-      <section className="py-20 bg-secondary">
-        <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-serif font-bold text-primary text-center mb-12">
-            View More Blog
-          </h2>
-          <div className="grid md:grid-cols-3 gap-8">
+      <section className="section-divide relative" style={{ background: "hsl(38 15% 92% / 0.3)" }}>
+        <div className="absolute inset-0">
+          <div className="absolute top-[0%] left-[-10%] w-[600px] h-[600px] rounded-full pointer-events-none" 
+               style={{ background: "radial-gradient(circle, hsl(43 60% 50% / 0.04), transparent 70%)" }} />
+        </div>
+        <div className="container mx-auto px-6 md:px-12 relative z-10">
+          <div className="flex items-end justify-between mb-16">
+            <div>
+              <span className="text-[11px] uppercase tracking-[0.3em] font-medium mb-6 block"
+                    style={{ color: "hsl(43 74% 48% / 0.8)" }}>
+                ✦ Keep Reading
+              </span>
+              <h2 className="text-5xl md:text-6xl font-serif font-bold text-primary"
+                  style={{ letterSpacing: "-0.04em" }}>
+                More <span className="italic" style={{ color: "hsl(43 74% 48%)" }}>Stories</span>
+              </h2>
+            </div>
+            
+            <Link
+              to="/blog"
+              className="hidden md:inline-flex items-center gap-3 text-[12px] uppercase tracking-[0.2em] font-medium transition-colors duration-300 group"
+              style={{ color: "hsl(43 74% 48%)" }}
+            >
+              All Posts
+              <ArrowUpRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1 group-hover:-translate-y-1" />
+            </Link>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8 md:gap-10">
             {relatedPosts.map((relPost, index) => (
               <motion.article
                 key={relPost.id}
-                initial={{ opacity: 0, y: 30 }}
+                initial={{ opacity: 0, y: 40 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
+                transition={{ duration: 0.7, delay: index * 0.1 }}
                 className="group"
               >
-                <Link to={`/blog/${relPost.id}`}>
-                  <div className="relative overflow-hidden rounded-2xl mb-4">
-                    <img
-                      src={relPost.image}
-                      alt={relPost.title}
-                      className="w-full h-56 object-cover transition-transform duration-500 group-hover:scale-110"
-                    />
-                    <div className="absolute bottom-4 left-4">
-                      <span className="bg-card/90 backdrop-blur-sm text-card-foreground text-xs font-medium px-3 py-1 rounded-full">
-                        {relPost.date}
-                      </span>
+                <Link to={`/blog/${relPost.id}`} className="block h-full">
+                  <div className="menu-card h-full rounded-[2rem] overflow-hidden">
+                    <div className="relative overflow-hidden aspect-[4/3]">
+                      <img
+                        src={relPost.image}
+                        alt={relPost.title}
+                        className="w-full h-full object-cover transition-transform duration-[1.5s] group-hover:scale-105"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-primary/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                      
+                      <div className="absolute top-5 left-5">
+                        <span className="text-[10px] uppercase tracking-[0.2em] px-4 py-2 font-bold backdrop-blur-md rounded-full shadow-sm"
+                              style={{ background: "hsl(40 20% 96% / 0.9)", color: "hsl(195 30% 12%)" }}>
+                          {relPost.date}
+                        </span>
+                      </div>
+                    </div>
+                    
+                    <div className="p-8">
+                      <h3 className="text-2xl font-serif font-bold text-primary mb-3 transition-colors duration-300 group-hover:text-accent">
+                        {relPost.title}
+                      </h3>
+                      <p className="text-muted-foreground text-[15px] line-clamp-2 leading-[1.8] opacity-90 pr-4">
+                        {relPost.excerpt}
+                      </p>
                     </div>
                   </div>
-
-                  <h3 className="text-xl font-serif font-bold text-primary mb-2 group-hover:text-accent transition-colors">
-                    {relPost.title}
-                  </h3>
-                  <p className="text-muted-foreground text-sm line-clamp-2">
-                    {relPost.excerpt}
-                  </p>
                 </Link>
               </motion.article>
             ))}

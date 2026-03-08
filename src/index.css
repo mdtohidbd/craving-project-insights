@@ -1,67 +1,68 @@
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&family=Outfit:wght@300;400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Craving Restaurant Design System
-   Primary: Deep Forest Green #152620
-   Accent: Burnt Orange #E85D04
-   Typography: Playfair Display (headings), Inter (body)
-*/
+/* ──────────────────────────────────────────────
+   CRAVING — Design System
+   Tone: Luxury / Refined / Editorial
+   
+   HSB-driven palette:
+   Primary (dark):  H195 S30 B14  → deep forest-charcoal
+   Accent (gold):   H43  S74 B82  → warm champagne gold
+   Background:      H40  S15 B97  → cream with warmth
+   Card:            H40  S8  B99  → lifted cream
+   ────────────────────────────────────────────── */
 
 @layer base {
   :root {
-    /* Forest Green Theme */
-    --background: 0 0% 100%;
-    --foreground: 150 27% 11%;
+    --background: 40 18% 96%;
+    --foreground: 195 30% 12%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 150 27% 11%;
+    --card: 38 12% 97%;
+    --card-foreground: 195 30% 12%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 150 27% 11%;
+    --popover: 38 12% 97%;
+    --popover-foreground: 195 30% 12%;
 
-    /* Deep Forest Green */
-    --primary: 150 27% 11%;
-    --primary-foreground: 0 0% 100%;
+    --primary: 195 30% 14%;
+    --primary-foreground: 40 20% 96%;
 
-    /* Light cream/beige sections */
-    --secondary: 43 29% 94%;
-    --secondary-foreground: 150 27% 11%;
+    --secondary: 38 15% 92%;
+    --secondary-foreground: 195 30% 14%;
 
-    --muted: 43 29% 94%;
-    --muted-foreground: 150 15% 40%;
+    --muted: 38 12% 88%;
+    --muted-foreground: 195 12% 42%;
 
-    /* Burnt Orange Accent */
-    --accent: 24 95% 46%;
-    --accent-foreground: 0 0% 100%;
+    --accent: 43 74% 48%;
+    --accent-foreground: 195 30% 8%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 43 20% 88%;
-    --input: 43 20% 88%;
-    --ring: 24 95% 46%;
+    --border: 38 12% 88%;
+    --input: 38 12% 88%;
+    --ring: 43 74% 48%;
 
-    --radius: 0.5rem;
+    --radius: 1rem;
+  }
 
-    /* Custom Craving Colors */
-    --forest: 150 27% 11%;
-    --forest-light: 150 20% 18%;
-    --orange: 24 95% 46%;
-    --orange-hover: 24 95% 40%;
-    --cream: 43 29% 94%;
-    --cream-dark: 43 20% 88%;
-
-    --sidebar-background: 150 27% 11%;
-    --sidebar-foreground: 0 0% 100%;
-    --sidebar-primary: 24 95% 46%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 150 20% 18%;
-    --sidebar-accent-foreground: 0 0% 100%;
-    --sidebar-border: 150 20% 18%;
-    --sidebar-ring: 24 95% 46%;
+  .dark {
+    --background: 195 32% 7%;
+    --foreground: 40 20% 96%;
+    --card: 195 26% 11%;
+    --card-foreground: 40 20% 96%;
+    --primary: 40 20% 96%;
+    --primary-foreground: 195 32% 7%;
+    --secondary: 195 20% 14%;
+    --secondary-foreground: 40 20% 96%;
+    --muted: 195 18% 16%;
+    --muted-foreground: 195 8% 60%;
+    --accent: 43 74% 48%;
+    --accent-foreground: 195 32% 7%;
+    --border: 195 18% 18%;
+    --input: 195 18% 18%;
   }
 }
 
@@ -70,75 +71,136 @@
     @apply border-border;
   }
 
+  *::selection {
+    background: hsl(43 74% 48% / 0.25);
+    color: hsl(195 30% 8%);
+  }
+
   html {
     scroll-behavior: smooth;
   }
 
   body {
     @apply bg-background text-foreground font-sans antialiased;
+    /* Subtle noise grain - atmosphere without overpowering */
+    position: relative;
   }
 
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    pointer-events: none;
+    opacity: 0.025;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-size: 200px 200px;
+  }
+
+  /* Typography — SKILL.md: tighten large text -2% to -4% */
   h1, h2, h3, h4, h5, h6 {
     @apply font-serif;
+    letter-spacing: -0.025em;
+  }
+
+  h1 {
+    letter-spacing: -0.04em;
+  }
+
+  h2 {
+    letter-spacing: -0.035em;
   }
 }
 
 @layer components {
-  /* Glassmorphism effect for navbar */
-  .glass {
-    @apply backdrop-blur-md bg-forest/90;
+  /* ── Premium Buttons ── */
+  .btn-gold {
+    @apply px-10 py-4 rounded-full font-medium text-sm transition-all duration-500;
+    background: linear-gradient(135deg, hsl(43 74% 52%), hsl(38 80% 42%));
+    color: hsl(195 30% 8%);
+    box-shadow: 0 4px 20px hsl(43 74% 48% / 0.2);
   }
 
-  /* Oval image mask for hero */
-  .oval-mask {
-    clip-path: ellipse(50% 50% at 50% 50%);
+  .btn-gold:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 35px hsl(43 74% 48% / 0.35);
   }
 
-  .arch-mask {
-    border-radius: 50% 50% 0 0 / 30% 30% 0 0;
+  .btn-gold:active {
+    transform: translateY(0) scale(0.98);
   }
 
-  /* Orange button with hover effect */
-  .btn-orange {
-    @apply bg-accent text-accent-foreground px-8 py-3 rounded-full font-medium transition-all duration-300 hover:bg-orange-hover hover:shadow-lg hover:shadow-accent/30 hover:-translate-y-0.5;
+  .btn-outline-gold {
+    @apply border border-accent/40 text-accent px-10 py-4 rounded-full font-medium text-sm transition-all duration-500;
   }
 
-  .btn-outline-light {
-    @apply border-2 border-white/80 text-white px-8 py-3 rounded-full font-medium transition-all duration-300 hover:bg-white hover:text-forest;
+  .btn-outline-gold:hover {
+    @apply bg-accent border-accent;
+    color: hsl(195 30% 8%);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 35px hsl(43 74% 48% / 0.25);
   }
 
-  /* Menu card styling */
+  /* ── Section Spacing (8px grid, generous) ── */
+  .section-divide {
+    @apply py-28 md:py-36;
+  }
+
+  /* ── Card System ── */
+  /* 
+   * SKILL.md nested radius rule: 
+   * inner_radius = outer_radius - gap
+   * Card outer = 24px, padding = 24px → inner images = 0px (flush)
+   * Card outer = 24px, padding = 8px  → inner images = 16px
+   */
   .menu-card {
-    @apply bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1;
+    @apply relative overflow-hidden bg-card transition-all duration-700;
+    border-radius: 1.5rem;
+    box-shadow: 0 2px 12px hsl(195 30% 12% / 0.04);
   }
 
-  /* Section backgrounds */
-  .bg-forest {
-    @apply bg-primary;
+  .menu-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 20px 50px hsl(195 30% 12% / 0.1);
   }
 
-  .bg-cream {
-    @apply bg-secondary;
+  /* ── Glassmorphism ── */
+  .glass {
+    @apply backdrop-blur-xl border-b;
+    background: hsl(195 30% 14% / 0.85);
+    border-color: hsl(40 20% 96% / 0.06);
   }
 
-  /* Text colors */
-  .text-forest {
-    @apply text-primary;
+  .glass-card {
+    backdrop-filter: blur(20px);
+    background: hsl(40 20% 96% / 0.06);
+    border: 1px solid hsl(40 20% 96% / 0.08);
   }
 
-  .text-orange {
-    @apply text-accent;
-  }
-
-  /* Stats number styling */
-  .stat-number {
-    @apply text-4xl md:text-5xl font-serif font-bold text-accent;
-  }
-
-  /* Category tag */
+  /* ── Category Tags ── */
   .category-tag {
-    @apply text-xs font-medium px-3 py-1 rounded-full bg-accent/10 text-accent;
+    @apply text-[10px] uppercase tracking-[0.2em] font-bold px-4 py-1.5 rounded-full;
+    background: hsl(195 30% 14% / 0.9);
+    color: hsl(40 20% 96%);
   }
+
+  /* ── Gradient Overlays ── */
+  .gradient-overlay {
+    background: linear-gradient(to top, hsl(195 30% 8% / 0.85) 0%, transparent 60%);
+  }
+
+  /* ── Staggered Load Animation ── */
+  .stagger-load > * {
+    opacity: 0;
+    animation: fade-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  .stagger-load > *:nth-child(1) { animation-delay: 0.1s; }
+  .stagger-load > *:nth-child(2) { animation-delay: 0.2s; }
+  .stagger-load > *:nth-child(3) { animation-delay: 0.3s; }
+  .stagger-load > *:nth-child(4) { animation-delay: 0.4s; }
+  .stagger-load > *:nth-child(5) { animation-delay: 0.5s; }
+  .stagger-load > *:nth-child(6) { animation-delay: 0.6s; }
 }
 
 @layer utilities {

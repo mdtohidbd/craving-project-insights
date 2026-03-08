@@ -1,6 +1,6 @@
 import { useParams, Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ShoppingCart } from "lucide-react";
+import { ArrowLeft, ArrowUpRight } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
@@ -17,33 +17,33 @@ const allMenuItems = [
     title: "BBQ Grilled Ribs",
     price: "$18.99",
     image: heroFood,
-    category: "Non-Veg",
-    description: "To die-for meat recipe for ribs, our BBQ ribs! Ribs are glazed with a savory-sweet barbecue sauce that caramelizes beautifully on the grill.",
-    longDescription: `Indulge in our **Iced Mocha Latte**, a delicious blend of rich espresso, creamy chocolate syrup, and cold milk, topped with generous whipped cream. This irresistible beverage combines the bold flavor of coffee with the sweetness of chocolate for an invigorating treat.
+    category: "Grill",
+    description: "Ribs glazed with savory-sweet barbecue sauce, caramelized to perfection on the grill.",
+    longDescription: `Indulge in our signature BBQ Grilled Ribs — a masterpiece of smoky, sweet, and savory flavors. Each rack is slow-cooked to tenderness, then finished on the grill with our house-made barbecue glaze that caramelizes into a sticky, irresistible coating.
 
-With the bold flavors of espresso complemented by the smooth chocolate notes, the Iced Mocha Latte is more than just a drink—it's a perfect balance of taste and texture. All of your senses are alive with this beverage that's as tasty to drink as it is to look at.`,
-    overview: "Our Iced Mocha Latte contains the robust taste of espresso, the decadence of chocolate syrup, and the creaminess of cold milk.",
-    ingredients: ["Rich espresso", "Chocolate syrup", "Cold milk", "Whipped cream", "Chocolate drizzle"],
+The result is meat that falls off the bone, bursting with layers of deep, complex flavor. Paired with our seasonal sides, this dish is the crown jewel of our grill menu.`,
+    overview: "Slow-smoked pork ribs finished with house-made caramelized glaze.",
+    ingredients: ["Premium pork ribs", "House BBQ glaze", "Smoked paprika", "Brown sugar rub", "Apple cider reduction"],
   },
   {
     id: "2",
     title: "Classic Mojito",
     price: "$4.75",
     image: menuMojito,
-    category: "Drinks",
-    description: "This cocktail blends minty fresh mint and white rum with a refreshing drink.",
-    longDescription: "A classic Cuban cocktail that's perfect for any occasion.",
+    category: "Cocktail",
+    description: "Fresh mint and white rum blended into a refreshing cocktail.",
+    longDescription: "A classic Cuban cocktail that's perfect for any occasion. Our version uses hand-muddled mint and freshly squeezed limes.",
     overview: "Fresh mint, lime juice, white rum, sugar, and soda water.",
-    ingredients: ["Fresh mint leaves", "White rum", "Lime juice", "Sugar", "Soda water"],
+    ingredients: ["Fresh mint leaves", "White rum", "Lime juice", "Demerara sugar", "Sparkling water"],
   },
   {
     id: "3",
-    title: "Coconut Drinks Fizz",
+    title: "Coconut Fizz",
     price: "$4.25",
     image: menuCoconut,
-    category: "Drinks",
-    description: "A tropical delight combining sweet tropical vibes with creamy coconut.",
-    longDescription: "Escape to paradise with our refreshing coconut fizz.",
+    category: "Beverage",
+    description: "Sweet tropical vibes with creamy coconut and sparkling fizz.",
+    longDescription: "Escape to paradise with our refreshing coconut fizz — tropical, light, and impossibly refreshing.",
     overview: "Coconut cream, pineapple juice, and sparkling water.",
     ingredients: ["Coconut cream", "Pineapple juice", "Sparkling water", "Orange garnish"],
   },
@@ -52,9 +52,9 @@ With the bold flavors of espresso complemented by the smooth chocolate notes, th
     title: "Garlic Butter Shrimp",
     price: "$14.99",
     image: menuShrimp,
-    category: "Non-Veg",
+    category: "Seafood",
     description: "Succulent shrimp seared in savory garlic butter sauce.",
-    longDescription: "Our signature shrimp dish that's loved by everyone.",
+    longDescription: "Our signature shrimp dish — seared to golden perfection in garlic-infused butter.",
     overview: "Fresh shrimp seared to perfection in garlic butter.",
     ingredients: ["Fresh shrimp", "Garlic", "Butter", "Parsley", "Lemon"],
   },
@@ -63,22 +63,22 @@ With the bold flavors of espresso complemented by the smooth chocolate notes, th
     title: "Golden Bliss",
     price: "$10.00",
     image: menuDessert,
-    category: "Veg",
-    description: "A decadent golden creation with perfect balance of flavors.",
-    longDescription: "Our signature dessert that melts in your mouth.",
-    overview: "Caramel flan with gold leaf decoration.",
-    ingredients: ["Eggs", "Cream", "Caramel", "Vanilla", "Gold leaf"],
+    category: "Dessert",
+    description: "A decadent golden creation balancing flavors and textures.",
+    longDescription: "Our signature dessert — silky caramel flan adorned with edible gold leaf.",
+    overview: "Caramel flan with gold leaf decoration and vanilla bean.",
+    ingredients: ["Organic eggs", "Heavy cream", "Caramel", "Madagascar vanilla", "Gold leaf"],
   },
   {
     id: "6",
     title: "Iced Mocha Latte",
     price: "$5.00",
     image: menuLatte,
-    category: "Drinks",
-    description: "A delightful mix of rich espresso and chocolate.",
-    longDescription: "The perfect pick-me-up for any time of day.",
+    category: "Coffee",
+    description: "Rich espresso with chocolate syrup and cold milk.",
+    longDescription: "The perfect pick-me-up — bold espresso meets smooth chocolate, served over ice.",
     overview: "Rich espresso with chocolate and cold milk.",
-    ingredients: ["Espresso", "Chocolate syrup", "Cold milk", "Whipped cream"],
+    ingredients: ["Double espresso", "Dark chocolate syrup", "Cold milk", "Whipped cream"],
   },
 ];
 
@@ -88,12 +88,14 @@ const MenuDetail = () => {
 
   if (!item) {
     return (
-      <div className="min-h-screen">
+      <div className="min-h-screen flex flex-col items-center justify-center bg-primary relative overflow-hidden">
         <Navbar />
-        <div className="pt-32 pb-20 text-center">
-          <h1 className="text-4xl font-serif font-bold text-primary">Item Not Found</h1>
-          <Link to="/menu" className="btn-orange inline-block mt-8">
-            Back to Menu
+        <div className="pt-40 pb-20 text-center relative z-10">
+          <h1 className="text-8xl font-serif font-bold text-primary-foreground mb-8" style={{ letterSpacing: "-0.04em" }}>
+            Item Not Found
+          </h1>
+          <Link to="/menu" className="btn-gold inline-flex items-center gap-3">
+            <ArrowLeft className="w-5 h-5" /> Back to Menu
           </Link>
         </div>
         <Footer />
@@ -104,89 +106,119 @@ const MenuDetail = () => {
   const relatedItems = allMenuItems.filter((m) => m.id !== id).slice(0, 3);
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-background">
       <Navbar />
-      
+
       {/* Hero Section */}
-      <section className="bg-primary pt-32 pb-20">
-        <div className="container mx-auto px-4 text-center">
+      <section className="bg-primary pt-40 pb-36 relative overflow-hidden">
+        <div className="absolute inset-0">
+          <div className="absolute top-[0%] right-[-10%] w-[600px] h-[600px] rounded-full pointer-events-none" 
+               style={{ background: "radial-gradient(circle, hsl(43 60% 50% / 0.05), transparent 70%)" }} />
+        </div>
+        <div className="container mx-auto px-6 md:px-12 text-center relative z-10">
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="mb-8"
+          >
+            <span className="text-[11px] uppercase tracking-[0.2em] font-bold px-6 py-2.5 rounded-full"
+                  style={{ background: "hsl(43 74% 48%)", color: "hsl(195 30% 8%)" }}>
+              {item.category}
+            </span>
+          </motion.div>
           <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="text-5xl md:text-6xl font-serif font-bold text-primary-foreground mb-4"
+            transition={{ duration: 0.8 }}
+            className="text-6xl md:text-8xl lg:text-9xl font-serif font-bold text-primary-foreground leading-[0.9] mb-8"
+            style={{ letterSpacing: "-0.04em" }}
           >
             {item.title}
           </motion.h1>
           <motion.p
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-            className="text-primary-foreground/70 max-w-2xl mx-auto"
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="text-primary-foreground/50 max-w-xl mx-auto text-[18px] leading-[1.8]"
           >
             {item.description}
           </motion.p>
         </div>
       </section>
 
-      {/* Main Image */}
-      <section className="py-12 bg-background">
-        <div className="container mx-auto px-4">
+      {/* Main Content Area */}
+      <section className="-mt-16 pb-24 relative z-20">
+        <div className="container mx-auto px-6 md:px-12">
+          
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.6 }}
-            className="max-w-4xl mx-auto"
+            transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+            className="max-w-6xl mx-auto mb-20"
           >
-            <div className="rounded-3xl overflow-hidden">
+            <div className="relative overflow-hidden shadow-2xl" style={{ borderRadius: "3rem" }}>
               <img
                 src={item.image}
                 alt={item.title}
-                className="w-full h-[400px] md:h-[500px] object-cover"
+                className="w-full h-[500px] md:h-[650px] object-cover transition-transform duration-[2s] hover:scale-105"
               />
             </div>
           </motion.div>
-        </div>
-      </section>
 
-      {/* Content */}
-      <section className="py-12 bg-background">
-        <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
             >
-              <h2 className="text-3xl font-serif font-bold text-primary mb-4">
-                {item.title}:
-              </h2>
-              <p className="text-muted-foreground mb-8 leading-relaxed">
-                {item.longDescription}
-              </p>
+              <div className="grid md:grid-cols-12 gap-12 lg:gap-20">
+                <div className="md:col-span-8">
+                  <span className="text-[11px] uppercase tracking-[0.3em] font-medium mb-4 block"
+                        style={{ color: "hsl(43 74% 48% / 0.8)" }}>
+                    ✦ The Story
+                  </span>
+                  <h2 className="text-4xl md:text-5xl font-serif font-bold text-primary mb-8"
+                      style={{ letterSpacing: "-0.03em" }}>
+                    About This <span className="italic" style={{ color: "hsl(43 74% 48%)" }}>Dish</span>
+                  </h2>
+                  <div className="text-muted-foreground leading-[1.8] text-[17px] whitespace-pre-line mb-16">
+                    {item.longDescription}
+                  </div>
 
-              <h3 className="text-2xl font-serif font-bold text-primary mb-4">
-                {item.title} Overview:
-              </h3>
-              <p className="text-muted-foreground mb-8">
-                {item.overview}
-              </p>
+                  <h3 className="text-3xl font-serif font-bold text-primary mb-6">
+                    Overview
+                  </h3>
+                  <p className="text-muted-foreground leading-[1.8] text-[17px] mb-12">
+                    {item.overview}
+                  </p>
+                </div>
+                
+                <div className="md:col-span-4 self-start bg-card p-10 shadow-xl" style={{ borderRadius: "2rem", border: "1px solid hsl(38 12% 88%)" }}>
+                  <div className="flex items-center justify-between mb-8 pb-8 border-b border-border/50">
+                    <span className="text-[14px] uppercase tracking-[0.1em] font-medium text-muted-foreground">Price</span>
+                    <span className="text-4xl font-serif font-bold italic" style={{ color: "hsl(43 74% 48%)" }}>
+                      {item.price}
+                    </span>
+                  </div>
+                  
+                  <h3 className="text-[14px] uppercase tracking-[0.1em] font-bold text-primary mb-6">
+                    Key Ingredients
+                  </h3>
+                  <ul className="space-y-4 mb-10">
+                    {item.ingredients.map((ing, i) => (
+                      <li key={i} className="flex items-start gap-4">
+                        <div className="w-1.5 h-1.5 rounded-full mt-2" style={{ background: "hsl(43 74% 48%)" }} />
+                        <span className="text-muted-foreground text-[16px] leading-[1.5]">{ing}</span>
+                      </li>
+                    ))}
+                  </ul>
 
-              <h3 className="text-2xl font-serif font-bold text-primary mb-4">
-                Key Ingredients:
-              </h3>
-              <ul className="list-disc list-inside text-muted-foreground mb-8 space-y-2">
-                {item.ingredients.map((ing, i) => (
-                  <li key={i}>{ing}</li>
-                ))}
-              </ul>
-
-              <div className="flex items-center gap-4">
-                <span className="text-3xl font-bold text-accent">{item.price}</span>
-                <button className="btn-orange flex items-center gap-2">
-                  <ShoppingCart className="w-5 h-5" />
-                  Add to Cart
-                </button>
+                  <button className="btn-gold w-full inline-flex items-center justify-center gap-3 group px-8 py-5">
+                    Order Now
+                    <ArrowUpRight className="w-5 h-5 transition-transform duration-300 group-hover:translate-x-1 group-hover:-translate-y-1" />
+                  </button>
+                </div>
               </div>
             </motion.div>
           </div>
@@ -194,44 +226,65 @@ const MenuDetail = () => {
       </section>
 
       {/* Related Items */}
-      <section className="py-20 bg-secondary">
-        <div className="container mx-auto px-4">
-          <h2 className="text-3xl font-serif font-bold text-primary text-center mb-12">
-            Explore Our Menu
-          </h2>
-          <div className="grid md:grid-cols-3 gap-8">
+      <section className="section-divide relative" style={{ background: "hsl(38 15% 92% / 0.3)" }}>
+        <div className="container mx-auto px-6 md:px-12">
+          <div className="flex items-end justify-between mb-16">
+            <div>
+              <span className="text-[11px] uppercase tracking-[0.3em] font-medium mb-4 block"
+                    style={{ color: "hsl(43 74% 48% / 0.8)" }}>
+                ✦ Related
+              </span>
+              <h2 className="text-5xl md:text-6xl font-serif font-bold text-primary" style={{ letterSpacing: "-0.04em" }}>
+                More from our <span className="italic" style={{ color: "hsl(43 74% 48%)" }}>Menu</span>
+              </h2>
+            </div>
+            <Link
+              to="/menu"
+              className="hidden md:inline-flex items-center gap-3 text-[12px] uppercase tracking-[0.2em] font-medium transition-colors duration-300 group"
+              style={{ color: "hsl(43 74% 48%)" }}
+            >
+              Full Menu
+              <ArrowUpRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1 group-hover:-translate-y-1" />
+            </Link>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8 md:gap-10">
             {relatedItems.map((relItem, index) => (
               <motion.div
                 key={relItem.id}
-                initial={{ opacity: 0, y: 30 }}
+                initial={{ opacity: 0, y: 40 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                className="menu-card group"
+                transition={{ duration: 0.7, delay: index * 0.1 }}
+                className="group"
               >
-                <Link to={`/menu/${relItem.id}`}>
-                  <div className="relative overflow-hidden">
-                    <img
-                      src={relItem.image}
-                      alt={relItem.title}
-                      className="w-full h-56 object-cover transition-transform duration-500 group-hover:scale-110"
-                    />
-                    <div className="absolute top-4 left-4 flex items-center gap-2">
-                      <span className="text-accent font-bold text-lg">{relItem.price}</span>
-                      <span className="category-tag">{relItem.category}</span>
+                <Link to={`/menu/${relItem.id}`} className="block h-full">
+                  <div className="menu-card h-full">
+                    <div className="relative overflow-hidden aspect-[4/3]" style={{ borderRadius: "1.5rem" }}>
+                      <img
+                        src={relItem.image}
+                        alt={relItem.title}
+                        className="w-full h-full object-cover transition-transform duration-[1.5s] group-hover:scale-105"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-primary/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                      <div className="absolute top-5 left-5 z-10">
+                        <span className="category-tag shadow-sm backdrop-blur-md">
+                          {relItem.category}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="p-7">
+                      <div className="flex items-start justify-between gap-5">
+                        <h3 className="text-2xl font-serif font-bold text-card-foreground group-hover:text-accent transition-colors duration-300">
+                          {relItem.title}
+                        </h3>
+                        <span className="font-serif font-bold text-xl italic" style={{ color: "hsl(43 74% 48%)" }}>
+                          {relItem.price}
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </Link>
-                <div className="p-6">
-                  <Link to={`/menu/${relItem.id}`}>
-                    <h3 className="text-xl font-serif font-bold text-primary mb-2 hover:text-accent transition-colors">
-                      {relItem.title}
-                    </h3>
-                  </Link>
-                  <p className="text-muted-foreground text-sm mb-4 line-clamp-2">
-                    {relItem.description}
-                  </p>
-                </div>
               </motion.div>
             ))}
           </div>

@@ -1,63 +1,100 @@
 import { Link } from "react-router-dom";
-import { ChefHat, Facebook, Twitter, Instagram, Globe } from "lucide-react";
+import { motion } from "framer-motion";
+import { Flame, ArrowRight } from "lucide-react";
 
 const quickLinks = [
   { name: "Home", path: "/" },
   { name: "About", path: "/about" },
   { name: "Menu", path: "/menu" },
+  { name: "Blog", path: "/blog" },
   { name: "Contact", path: "/contact" },
 ];
 
 const Footer = () => {
   return (
-    <footer className="bg-primary text-white">
+    <footer className="relative overflow-hidden">
       {/* CTA Section */}
-      <div className="relative py-20 overflow-hidden">
-        <div 
-          className="absolute inset-0 bg-cover bg-center opacity-30"
+      <div className="relative py-32 overflow-hidden">
+        <div
+          className="absolute inset-0 bg-cover bg-center"
           style={{
-            backgroundImage: "url('https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=1920')",
+            backgroundImage:
+              "url('https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=1920')",
           }}
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-primary/80 to-primary" />
-        <div className="container mx-auto px-4 text-center relative z-10">
-          <h2 className="text-4xl md:text-5xl font-serif font-bold mb-4">
-            Hungry? Visit Now!
-          </h2>
-          <p className="text-white/70 max-w-xl mx-auto mb-8">
-            Whether you're craving a quick bite, a gourmet meal, or something in between.
-            Craving has you covered. From classic comfort food to exotic.
-          </p>
-          <Link to="/contact" className="btn-orange inline-block">
-            Get in Touch
-          </Link>
+        <div className="absolute inset-0 bg-gradient-to-b from-primary/95 via-primary/90 to-primary" />
+        
+        {/* Decorative Elements */}
+        <div className="absolute top-1/2 right-[-15%] w-[800px] h-[800px] rounded-full pointer-events-none"
+             style={{ background: "radial-gradient(circle, hsl(43 60% 50% / 0.05), transparent 70%)" }} />
+        
+        <div className="container mx-auto px-6 text-center relative z-10">
+          <motion.div
+            initial={{ opacity: 0, y: 40 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+          >
+            <span className="text-[11px] uppercase tracking-[0.3em] font-medium mb-8 block"
+                  style={{ color: "hsl(43 74% 48% / 0.8)" }}>
+              ✦ Don't Wait Any Longer
+            </span>
+            <h2 className="text-6xl md:text-8xl font-serif font-bold text-primary-foreground mb-8 leading-[0.9]"
+                style={{ letterSpacing: "-0.04em" }}>
+              Your Table
+              <br />
+              <span className="italic" style={{ color: "hsl(43 74% 48%)" }}>Awaits</span>
+            </h2>
+            <p className="max-w-xl mx-auto mb-12 text-[17px] leading-[1.8]"
+               style={{ color: "hsl(40 20% 96% / 0.6)" }}>
+              From classic comfort food to exotic international flavors — every dish
+              tells a story worth tasting. Let us serve you perfection.
+            </p>
+            <Link
+              to="/contact"
+              className="btn-gold inline-flex items-center gap-4 group px-12 py-5"
+            >
+              Reserve Your Experience
+              <ArrowRight className="w-5 h-5 transition-transform duration-500 group-hover:translate-x-1" />
+            </Link>
+          </motion.div>
         </div>
       </div>
 
-      {/* Footer Links */}
-      <div className="border-t border-white/10">
-        <div className="container mx-auto px-4 py-16">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
+      {/* Footer Content */}
+      <div className="bg-primary pt-24 pb-10">
+        <div className="container mx-auto px-6">
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-16 md:gap-24 mb-20 border-b pb-20"
+               style={{ borderColor: "hsl(40 20% 96% / 0.08)" }}>
             {/* Brand */}
-            <div>
-              <Link to="/" className="flex items-center gap-2 mb-4">
-                <ChefHat className="w-8 h-8 text-accent" />
-                <span className="text-2xl font-serif font-bold">Craving</span>
+            <div className="md:col-span-5 pr-4">
+              <Link to="/" className="flex items-center gap-3 mb-8 group">
+                <Flame className="w-8 h-8 transition-transform duration-500 group-hover:rotate-12"
+                       style={{ color: "hsl(43 74% 48%)" }} />
+                <span className="text-3xl font-serif font-bold text-primary-foreground tracking-tight">
+                  Craving
+                </span>
               </Link>
-              <p className="text-white/60 text-sm">
-                We're also active on social media! Follow us for engaging industry updates.
+              <p className="text-[15px] leading-[1.8] max-w-sm"
+                 style={{ color: "hsl(40 20% 96% / 0.5)" }}>
+                Experience the art of fine dining. Every dish crafted with passion,
+                every moment designed to be truly unforgettable.
               </p>
             </div>
 
-            {/* Quick Links */}
-            <div>
-              <h4 className="font-semibold mb-4">Quick Links</h4>
-              <ul className="space-y-3">
+            {/* Navigation */}
+            <div className="md:col-span-2">
+              <h4 className="text-[11px] uppercase tracking-[0.2em] font-bold mb-8"
+                  style={{ color: "hsl(43 74% 48% / 0.8)" }}>
+                Navigate
+              </h4>
+              <ul className="space-y-4">
                 {quickLinks.map((link) => (
                   <li key={link.path}>
                     <Link
                       to={link.path}
-                      className="text-white/60 text-sm hover:text-accent transition-colors"
+                      className="text-[14px] hover:text-white transition-colors duration-300"
+                      style={{ color: "hsl(40 20% 96% / 0.6)" }}
                     >
                       {link.name}
                     </Link>
@@ -67,51 +104,59 @@ const Footer = () => {
             </div>
 
             {/* Contact Info */}
-            <div>
-              <h4 className="font-semibold mb-4">Contact Info</h4>
-              <ul className="space-y-3 text-white/60 text-sm">
-                <li>2464 Royal Ln, Mesa, NJ</li>
+            <div className="md:col-span-2">
+              <h4 className="text-[11px] uppercase tracking-[0.2em] font-bold mb-8"
+                  style={{ color: "hsl(43 74% 48% / 0.8)" }}>
+                Find Us
+              </h4>
+              <ul className="space-y-4 text-[14px] leading-relaxed"
+                  style={{ color: "hsl(40 20% 96% / 0.6)" }}>
+                <li>2464 Royal Ln<br/>Mesa, New Jersey</li>
                 <li>(629) 555-0129</li>
-                <li>tanya.hill@example.com</li>
+                <li className="pt-2 hover:text-white transition-colors cursor-pointer">
+                  hello@craving.com
+                </li>
               </ul>
             </div>
 
-            {/* Newsletter */}
-            <div>
-              <h4 className="font-semibold mb-4">More</h4>
-              <div className="flex gap-2">
-                <input
-                  type="email"
-                  placeholder="Email"
-                  className="flex-1 px-4 py-2 rounded-lg bg-white/10 border border-white/20 text-white placeholder:text-white/40 text-sm focus:outline-none focus:border-accent"
-                />
-                <button className="btn-orange px-6 py-2 text-sm">
-                  Submit
-                </button>
-              </div>
+            {/* Hours */}
+            <div className="md:col-span-3">
+              <h4 className="text-[11px] uppercase tracking-[0.2em] font-bold mb-8"
+                  style={{ color: "hsl(43 74% 48% / 0.8)" }}>
+                Hours
+              </h4>
+              <ul className="space-y-6 text-[14px]">
+                <li>
+                  <span className="block mb-1 text-white">Monday — Friday</span>
+                  <span style={{ color: "hsl(40 20% 96% / 0.6)" }}>11:00 AM — 11:00 PM</span>
+                </li>
+                <li>
+                  <span className="block mb-1 text-white">Saturday — Sunday</span>
+                  <span style={{ color: "hsl(40 20% 96% / 0.6)" }}>10:00 AM — 12:00 AM</span>
+                </li>
+              </ul>
             </div>
           </div>
-        </div>
 
-        {/* Bottom Bar */}
-        <div className="border-t border-white/10">
-          <div className="container mx-auto px-4 py-6 flex flex-col md:flex-row items-center justify-between gap-4">
-            <p className="text-white/50 text-sm">
-              © Copyright 2024. All Rights Reserved by FramerWebPro
+          {/* Bottom Bar */}
+          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+            <p className="text-[13px] tracking-wide"
+               style={{ color: "hsl(40 20% 96% / 0.4)" }}>
+              © {new Date().getFullYear()} Craving. All Rights Reserved.
             </p>
-            <div className="flex items-center gap-4">
-              <a href="#" className="text-white/50 hover:text-accent transition-colors">
-                <Facebook className="w-5 h-5" />
-              </a>
-              <a href="#" className="text-white/50 hover:text-accent transition-colors">
-                <Twitter className="w-5 h-5" />
-              </a>
-              <a href="#" className="text-white/50 hover:text-accent transition-colors">
-                <Instagram className="w-5 h-5" />
-              </a>
-              <a href="#" className="text-white/50 hover:text-accent transition-colors">
-                <Globe className="w-5 h-5" />
-              </a>
+            <div className="flex items-center gap-8">
+              {["Instagram", "Twitter", "Facebook"].map((social) => (
+                <a
+                  key={social}
+                  href="#"
+                  className="text-[11px] uppercase tracking-[0.2em] transition-colors duration-300"
+                  style={{ color: "hsl(40 20% 96% / 0.4)" }}
+                  onMouseOver={(e) => e.currentTarget.style.color = "hsl(43 74% 48%)"}
+                  onMouseOut={(e) => e.currentTarget.style.color = "hsl(40 20% 96% / 0.4)"}
+                >
+                  {social}
+                </a>
+              ))}
             </div>
           </div>
         </div>
