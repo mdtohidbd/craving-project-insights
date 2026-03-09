@@ -1,10 +1,10 @@
-import React, { createContext, useContext, useState, ReactNode } from "react";
+import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { toast } from "sonner";
 
 export interface CartItem {
   id: number;
   title: string;
-  price: number; 
+  price: number;
   priceStr: string;
   image: string;
   quantity: number;
@@ -23,13 +23,31 @@ interface CartContextType {
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export const CartProvider = ({ children }: { children: ReactNode }) => {
-  const [cart, setCart] = useState<CartItem[]>([]);
+  const [cart, setCart] = useState<CartItem[]>(() => {
+    if (typeof window !== "undefined") {
+      const savedCart = localStorage.getItem("cart");
+      if (savedCart) {
+        try {
+          return JSON.parse(savedCart);
+        } catch (e) {
+          console.error("Failed to parse cart from local storage", e);
+        }
+      }
+    }
+    return [];
+  });
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("cart", JSON.stringify(cart));
+    }
+  }, [cart]);
 
   const addToCart = (item: Omit<CartItem, "quantity"> & { quantity?: number }) => {
     setCart((prev) => {
       const existing = prev.find((i) => i.id === item.id);
       const qtyToAdd = item.quantity || 1;
-      
+
       if (existing) {
         toast.success(qtyToAdd > 1 ? `Added ${qtyToAdd} ${item.title} to cart` : `Increased ${item.title} quantity in cart`);
         return prev.map((i) =>

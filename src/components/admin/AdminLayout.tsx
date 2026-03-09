@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
     LayoutDashboard, Package, MessageSquare,
-    Settings, Bell, Menu, ArrowUpRight
+    Settings, Bell, Menu, ArrowUpRight, Tag, List, ShoppingCart, Users
 } from "lucide-react";
 
 interface AdminLayoutProps {
@@ -16,6 +16,10 @@ const AdminLayout = ({ children, title }: AdminLayoutProps) => {
 
     const navItems = [
         { label: "Dashboard", path: "/admin", icon: <LayoutDashboard className="w-5 h-5" /> },
+        { label: "Orders", path: "/admin/orders", icon: <ShoppingCart className="w-5 h-5" /> },
+        { label: "Customers", path: "/admin/customers", icon: <Users className="w-5 h-5" /> },
+        { label: "Menu Items", path: "/admin/menu", icon: <List className="w-5 h-5" /> },
+        { label: "Categories", path: "/admin/categories", icon: <Tag className="w-5 h-5" /> },
         { label: "Inventory", path: "/admin/inventory", icon: <Package className="w-5 h-5" /> },
         { label: "Messages", path: "/admin/messages", icon: <MessageSquare className="w-5 h-5" /> },
         { label: "Settings", path: "/admin/settings", icon: <Settings className="w-5 h-5" /> },
@@ -49,8 +53,8 @@ const AdminLayout = ({ children, title }: AdminLayoutProps) => {
                                 key={item.path}
                                 to={item.path}
                                 className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${isActive
-                                        ? 'bg-primary/10 text-primary font-medium'
-                                        : 'text-neutral-400 hover:text-neutral-50 hover:bg-neutral-800/50 font-medium'
+                                    ? 'bg-primary/10 text-primary font-medium'
+                                    : 'text-neutral-400 hover:text-neutral-50 hover:bg-neutral-800/50 font-medium'
                                     }`}
                             >
                                 {item.icon}
@@ -93,7 +97,7 @@ const AdminLayout = ({ children, title }: AdminLayoutProps) => {
                 </header>
 
                 {/* Dashboard/Page Content */}
-                <div className="flex-1 overflow-auto p-4 lg:p-8 custom-scrollbar">
+                <div className="flex-1 overflow-y-auto overflow-x-hidden p-4 lg:p-8 custom-scrollbar relative z-0">
                     <div className="max-w-7xl mx-auto">
                         {children}
                     </div>

@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import AdminLayout from "../../components/admin/AdminLayout";
-import { Lock, Smartphone, Save, ShieldCheck, AlertCircle, Phone } from "lucide-react";
+import { Lock, Smartphone, Save, ShieldCheck, AlertCircle, Phone, Truck } from "lucide-react";
+import { toast } from "sonner";
 
 const AdminSettings = () => {
     // Password state
@@ -8,9 +9,79 @@ const AdminSettings = () => {
     const [newPassword, setNewPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
 
-    // SMS state
     const [smsNumber, setSmsNumber] = useState("+1 (555) 0123");
     const [newSmsNumber, setNewSmsNumber] = useState("");
+
+    // Delivery Fee state
+    const [deliveryFee, setDeliveryFee] = useState<number>(50);
+    const [newDeliveryFee, setNewDeliveryFee] = useState<string>("50");
+
+    useEffect(() => {
+        const fetchSettings = async () => {
+            try {
+                const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+                const res = await fetch(`${apiUrl}/settings`);
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data) {
+                        if (data.deliveryFee !== undefined) {
+                            setDeliveryFee(data.deliveryFee);
+                            setNewDeliveryFee(data.deliveryFee.toString());
+                        }
+                        if (data.smsNumber) {
+                            setSmsNumber(data.smsNumber);
+                            setNewSmsNumber(data.smsNumber);
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error("Failed to fetch settings:", error);
+            }
+        };
+        fetchSettings();
+    }, []);
+
+    const handleSaveDeliveryFee = async () => {
+        try {
+            const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+            const res = await fetch(`${apiUrl}/settings`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ deliveryFee: Number(newDeliveryFee) })
+            });
+
+            if (res.ok) {
+                setDeliveryFee(Number(newDeliveryFee));
+                toast.success("Delivery fee updated successfully!");
+            } else {
+                throw new Error("Update failed");
+            }
+        } catch (error) {
+            console.error("Failed to update delivery fee:", error);
+            toast.error("Failed to update delivery fee.");
+        }
+    };
+
+    const handleSaveSmsNumber = async () => {
+        try {
+            const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+            const res = await fetch(`${apiUrl}/settings`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ smsNumber: newSmsNumber })
+            });
+
+            if (res.ok) {
+                setSmsNumber(newSmsNumber);
+                toast.success("SMS number updated successfully!");
+            } else {
+                throw new Error("Update failed");
+            }
+        } catch (error) {
+            console.error("Failed to update SMS number:", error);
+            toast.error("Failed to update SMS number.");
+        }
+    };
 
     return (
         <AdminLayout title="Settings">
@@ -121,9 +192,56 @@ const AdminSettings = () => {
                         </div>
 
                         <div className="flex items-center justify-end py-4 mt-6 border-t border-neutral-800">
-                            <button className="flex items-center justify-center gap-2 px-5 py-2.5 bg-emerald-500 text-emerald-950 text-sm font-medium rounded-lg hover:bg-emerald-400 transition-colors shadow-sm shadow-emerald-500/20">
+                            <button onClick={handleSaveSmsNumber} className="flex items-center justify-center gap-2 px-5 py-2.5 bg-emerald-500 text-emerald-950 text-sm font-medium rounded-lg hover:bg-emerald-400 transition-colors shadow-sm shadow-emerald-500/20">
                                 <Save className="w-4 h-4" />
                                 Save Number
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Delivery Settings */}
+                <div className="bg-neutral-900 border border-neutral-800 rounded-xl overflow-hidden shadow-sm">
+                    <div className="p-6 border-b border-neutral-800 bg-neutral-900/50">
+                        <div className="flex items-center gap-3">
+                            <div className="p-2 bg-amber-500/10 rounded-lg">
+                                <Truck className="w-5 h-5 text-amber-400" />
+                            </div>
+                            <div>
+                                <h2 className="text-lg font-semibold text-neutral-100">Delivery Configuration</h2>
+                                <p className="text-sm text-neutral-400">Configure delivery charges across the site</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="p-6 space-y-6">
+
+                        <div className="flex items-start gap-4 p-4 bg-neutral-950 border border-neutral-800 rounded-lg max-w-md">
+                            <div className="mt-0.5"><Truck className="w-5 h-5 text-neutral-500" /></div>
+                            <div>
+                                <p className="text-sm text-neutral-400 mb-1">Current Delivery Fee</p>
+                                <p className="text-lg font-medium text-neutral-100">৳{deliveryFee}</p>
+                            </div>
+                        </div>
+
+                        <div className="max-w-md">
+                            <label className="block text-sm font-medium text-neutral-300 mb-1">Update Delivery Fee (৳)</label>
+                            <div className="flex gap-3">
+                                <input
+                                    type="number"
+                                    value={newDeliveryFee}
+                                    onChange={(e) => setNewDeliveryFee(e.target.value)}
+                                    className="flex-1 bg-neutral-950 border border-neutral-800 text-neutral-100 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-all placeholder:text-neutral-600"
+                                    placeholder="e.g. 50"
+                                    min="0"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="flex items-center justify-end py-4 mt-6 border-t border-neutral-800">
+                            <button onClick={handleSaveDeliveryFee} className="flex items-center justify-center gap-2 px-5 py-2.5 bg-amber-500 text-amber-950 text-sm font-medium rounded-lg hover:bg-amber-400 transition-colors shadow-sm shadow-amber-500/20">
+                                <Save className="w-4 h-4" />
+                                Save Fee
                             </button>
                         </div>
                     </div>

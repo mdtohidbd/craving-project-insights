@@ -1,74 +1,34 @@
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowUpRight, ShoppingCart } from "lucide-react";
 import { useCart } from "@/context/CartContext";
-
-import menuMojito from "@/assets/menu-mojito.jpg";
-import menuCoconut from "@/assets/menu-coconut.jpg";
-import menuShrimp from "@/assets/menu-shrimp.jpg";
-import menuDessert from "@/assets/menu-dessert.jpg";
-import menuLatte from "@/assets/menu-latte.jpg";
-import heroFood from "@/assets/hero-food.jpg";
-
-const menuItems = [
-  {
-    id: 2,
-    title: "Guacamole",
-    price: "$10.00",
-    image: menuDessert,
-    category: "Starter",
-    description: "Classic, creamy guacamole made daily with ripe Hass avocados, fresh lime juice, cilantro, and red onions.",
-  },
-  {
-    id: 15,
-    title: "Original Falafel Wrap",
-    price: "$13",
-    image: menuMojito,
-    category: "Main",
-    description: "Hummus, cucumber, pickles, tomatoes, red onions, mint, parsley, tahini.",
-  },
-  {
-    id: 17,
-    title: "Desi Falafel Plate",
-    price: "$16",
-    image: menuShrimp,
-    category: "Main",
-    description: "Falafel, hummus, cucumber, chopped tomatoes, and a grilled green chili.",
-  },
-  {
-    id: 9,
-    title: "Golden Bliss Vegan Cake",
-    price: "$10.00",
-    image: menuDessert,
-    category: "Dessert",
-    description: "A decadent golden creation balancing perfect flavors and textures.",
-  },
-  {
-    id: 10,
-    title: "Iced Mocha Latte",
-    price: "$5.00",
-    image: menuLatte,
-    category: "Coffee",
-    description: "Rich espresso, chocolate syrup, and cold oat milk.",
-  },
-  {
-    id: 11,
-    title: "Classic Mojito Mocktail",
-    price: "$4.75",
-    image: menuMojito,
-    category: "Mocktail",
-    description: "Fresh mint and lime blended into a refreshing mocktail.",
-  },
-];
+import { resolveImage } from "@/pages/Menu";
 
 const MenuSection = () => {
   const { addToCart } = useCart();
+  const [menuItems, setMenuItems] = useState<any[]>([]);
+
+  useEffect(() => {
+    const fetchMenu = async () => {
+      try {
+        const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+        const res = await fetch(`${apiUrl}/menu`);
+        const data = await res.json();
+        // Limit to 6 items for the home page section
+        setMenuItems(data.slice(0, 6));
+      } catch (err) {
+        console.error("Failed to load menu data", err);
+      }
+    };
+    fetchMenu();
+  }, []);
 
   return (
     <section className="section-divide bg-background relative overflow-hidden">
-      <div className="absolute top-[-10%] right-[-10%] w-[600px] h-[600px] rounded-full pointer-events-none" 
-           style={{ background: "radial-gradient(circle, hsl(43 60% 50% / 0.03), transparent 70%)" }} />
-           
+      <div className="absolute top-[-10%] right-[-10%] w-[600px] h-[600px] rounded-full pointer-events-none"
+        style={{ background: "radial-gradient(circle, hsl(43 60% 50% / 0.03), transparent 70%)" }} />
+
       <div className="container mx-auto px-6 md:px-12 relative z-10">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
@@ -78,11 +38,11 @@ const MenuSection = () => {
           className="text-center mb-20"
         >
           <span className="text-[11px] uppercase tracking-[0.3em] font-medium mb-6 block"
-                style={{ color: "hsl(43 74% 48% / 0.8)" }}>
+            style={{ color: "hsl(43 74% 48% / 0.8)" }}>
             ✦ Our Signature Collection
           </span>
           <h2 className="text-6xl md:text-7xl lg:text-8xl font-serif font-bold text-primary mb-8 leading-[0.9]"
-              style={{ letterSpacing: "-0.04em" }}>
+            style={{ letterSpacing: "-0.04em" }}>
             Curated
             <br />
             <span className="italic" style={{ color: "hsl(43 74% 48%)" }}>Flavors</span>
@@ -111,7 +71,7 @@ const MenuSection = () => {
                 <div className="menu-card h-full flex flex-col">
                   <div className="relative overflow-hidden aspect-[4/3]" style={{ borderRadius: "1.5rem" }}>
                     <img
-                      src={item.image}
+                      src={resolveImage(item.image)}
                       alt={item.title}
                       className="w-full h-full object-cover transition-transform [transition-duration:1.5s] group-hover:scale-105"
                     />
@@ -125,7 +85,7 @@ const MenuSection = () => {
 
                     <div className="absolute bottom-5 right-5 opacity-0 group-hover:opacity-100 transition-all duration-500 transform translate-y-2 group-hover:translate-y-0 z-10 pointer-events-none">
                       <div className="w-11 h-11 rounded-full flex items-center justify-center shadow-lg"
-                           style={{ background: "hsl(43 74% 48%)", color: "hsl(195 30% 8%)" }}>
+                        style={{ background: "hsl(43 74% 48%)", color: "hsl(195 30% 8%)" }}>
                         <ArrowUpRight className="w-5 h-5" />
                       </div>
                     </div>
@@ -153,7 +113,7 @@ const MenuSection = () => {
                             title: item.title,
                             price: isNaN(numericPrice) ? 0 : numericPrice,
                             priceStr: item.price,
-                            image: item.image,
+                            image: resolveImage(item.image),
                           });
                         }}
                         className="flex items-center justify-center gap-2 bg-[hsl(43_74%_48%)] text-[hsl(195_30%_8%)] w-full py-2.5 rounded-full text-[12px] uppercase tracking-[0.1em] font-bold shadow-[0_4px_14px_rgba(228,168,32,0.3)] hover:scale-105 hover:bg-[hsl(43_74%_48%)]/90 transition-all z-20"

@@ -15,6 +15,10 @@ import BlogDetail from "./pages/BlogDetail";
 import Contact from "./pages/Contact";
 import Checkout from "./pages/Checkout";
 import AdminDashboard from "./pages/admin/AdminDashboard";
+import AdminOrders from "./pages/admin/AdminOrders";
+import AdminCustomers from "./pages/admin/AdminCustomers";
+import AdminMenu from "./pages/admin/AdminMenu";
+import AdminCategories from "./pages/admin/AdminCategories";
 import AdminInventory from "./pages/admin/AdminInventory";
 import AdminMessages from "./pages/admin/AdminMessages";
 import AdminSettings from "./pages/admin/AdminSettings";
@@ -42,6 +46,10 @@ const App = () => (
             <Route path="/checkout" element={<Checkout />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="/admin" element={<AdminDashboard />} />
+            <Route path="/admin/orders" element={<AdminOrders />} />
+            <Route path="/admin/customers" element={<AdminCustomers />} />
+            <Route path="/admin/menu" element={<AdminMenu />} />
+            <Route path="/admin/categories" element={<AdminCategories />} />
             <Route path="/admin/inventory" element={<AdminInventory />} />
             <Route path="/admin/messages" element={<AdminMessages />} />
             <Route path="/admin/settings" element={<AdminSettings />} />
