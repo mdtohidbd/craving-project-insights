@@ -337,25 +337,34 @@ const MenuDetail = () => {
                       </div>
                     </div>
 
-                    {/* Add to Cart Button */}
-                    <button
-                      onClick={() => {
-                        const numericPrice = parseFloat(item.price.replace(/[^0-9.]/g, ''));
-                        addToCart({
-                          id: Number(item.id),
-                          title: item.title,
-                          price: isNaN(numericPrice) ? 0 : numericPrice,
-                          priceStr: item.price,
-                          image: item.image,
-                          quantity: quantity
-                        });
-                        setQuantity(1); // Reset quantity after adding
-                      }}
-                      className="w-full bg-[hsl(43_74%_48%)] text-[hsl(195_30%_8%)] font-bold py-4 rounded-xl shadow-[0_8px_20px_rgba(228,168,32,0.3)] hover:shadow-[0_8px_25px_rgba(228,168,32,0.4)] hover:-translate-y-1 transition-all text-[12px] uppercase tracking-wider flex items-center justify-center gap-2"
-                    >
-                      <ShoppingCart className="w-4 h-4" />
-                      Add to Cart
-                    </button>
+                    {/* Buttons */}
+                    <div className="flex flex-col gap-3">
+                      <button
+                        onClick={() => {
+                          const numericPrice = parseFloat(item.price.replace(/[^0-9.]/g, ''));
+                          addToCart({
+                            id: Number(item.id),
+                            title: item.title,
+                            price: isNaN(numericPrice) ? 0 : numericPrice,
+                            priceStr: item.price,
+                            image: item.image,
+                            quantity: quantity
+                          });
+                          setQuantity(1); // Reset quantity after adding
+                        }}
+                        className="w-full bg-[hsl(43_74%_48%)] text-[hsl(195_30%_8%)] font-bold py-4 rounded-xl shadow-[0_8px_20px_rgba(228,168,32,0.3)] hover:shadow-[0_8px_25px_rgba(228,168,32,0.4)] hover:-translate-y-1 transition-all text-[12px] uppercase tracking-wider flex items-center justify-center gap-2"
+                      >
+                        <ShoppingCart className="w-4 h-4" />
+                        Add to Cart
+                      </button>
+
+                      <Link
+                        to="/checkout"
+                        className="w-full bg-[#1b2534] text-white font-bold py-4 rounded-xl shadow-sm hover:shadow-md hover:-translate-y-1 transition-all text-[12px] uppercase tracking-wider flex items-center justify-center gap-2 border border-white/5"
+                      >
+                        View Cart
+                      </Link>
+                    </div>
                   </div>
                 </div>
               </div>

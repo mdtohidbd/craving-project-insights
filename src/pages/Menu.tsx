@@ -4,7 +4,6 @@ import { Link } from "react-router-dom";
 import { ArrowUpRight, FileText, ShoppingCart } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import ThreeBackground from "@/components/ThreeBackground";
 import gsap from "gsap";
 import ScrollTrigger from "gsap/ScrollTrigger";
 import { useCart } from "@/context/CartContext";
@@ -162,7 +161,6 @@ const Menu = () => {
 
       {/* Hero Section */}
       <section className="bg-primary pt-40 pb-20 relative overflow-hidden">
-        <ThreeBackground />
         <div className="container mx-auto px-6 md:px-12 text-center relative z-10 hoverable">
           <motion.h1
             initial={{ opacity: 0, y: 30 }}

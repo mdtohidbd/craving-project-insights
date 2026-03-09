@@ -10,19 +10,20 @@ import {
 } from "@/components/ui/sheet";
 import { toast } from "sonner";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 export const Cart = () => {
   const { cart, removeFromCart, updateQuantity, clearCart, totalItems, totalAmount } = useCart();
   const [isOpen, setIsOpen] = useState(false);
+  const navigate = useNavigate();
 
   const handleCheckout = () => {
     if (cart.length === 0) {
       toast.error("Your cart is empty!");
       return;
     }
-    toast.success("Order placed successfully! We will contact you soon.");
-    clearCart();
     setIsOpen(false);
+    navigate("/checkout");
   };
 
   return (
