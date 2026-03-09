@@ -116,7 +116,7 @@ const Blog = () => {
                     <img
                       src={post.image}
                       alt={post.title}
-                      className="w-full h-[320px] object-cover transition-transform duration-[1.5s] group-hover:scale-105"
+                      className="w-full h-[320px] object-cover transition-transform [transition-duration:1.5s] group-hover:scale-105"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-primary/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                     
@@ -167,7 +167,7 @@ const Blog = () => {
                 <img
                   src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=600"
                   alt="Delicious food"
-                  className="w-full h-[550px] object-cover transition-transform duration-[2s] hover:scale-105"
+                  className="w-full h-[550px] object-cover transition-transform [transition-duration:2s] hover:scale-105"
                 />
               </div>
             </motion.div>

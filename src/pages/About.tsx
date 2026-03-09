@@ -87,7 +87,7 @@ const About = () => {
               <img
                 src={chefImage}
                 alt="Chef preparing food"
-                className="w-full h-[450px] md:h-[600px] object-cover transition-transform duration-[2s] hover:scale-105"
+                className="w-full h-[450px] md:h-[600px] object-cover transition-transform [transition-duration:2s] hover:scale-105"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-primary/50 via-transparent to-transparent" />
             </div>
@@ -131,7 +131,7 @@ const About = () => {
                 <img
                   src="https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=600"
                   alt="Restaurant ambiance"
-                  className="w-full h-full object-cover transition-transform duration-[2s] hover:scale-105"
+                  className="w-full h-full object-cover transition-transform [transition-duration:2s] hover:scale-105"
                 />
               </div>
             </motion.div>
@@ -258,7 +258,7 @@ const About = () => {
                 <img
                   src={menuShrimp}
                   alt="Delicious shrimp"
-                  className="w-full h-full object-cover transition-transform duration-[2s] hover:scale-105"
+                  className="w-full h-full object-cover transition-transform [transition-duration:2s] hover:scale-105"
                   style={{ minHeight: "800px" }}
                 />
               </div>

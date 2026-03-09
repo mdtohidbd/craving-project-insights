@@ -76,7 +76,7 @@ const GallerySection = () => {
               <img
                 src={image.url}
                 alt={image.alt}
-                className="w-full h-full object-cover transition-transform duration-[2s] group-hover:scale-105"
+                className="w-full h-full object-cover transition-transform [transition-duration:2s] group-hover:scale-105"
               />
               {/* Hover overlay with text */}
               <div className="absolute inset-0 bg-gradient-to-t from-primary/90 via-primary/20 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-700 flex items-end p-8">

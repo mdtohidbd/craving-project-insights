@@ -2,13 +2,14 @@ import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X, Flame } from "lucide-react";
+import { Cart } from "./Cart";
 
 const navLinks = [
   { name: "Home", path: "/" },
-  { name: "About", path: "/about" },
   { name: "Menu", path: "/menu" },
-  { name: "Blog", path: "/blog" },
+  { name: "About", path: "/about" },
   { name: "Contact", path: "/contact" },
+  { name: "Gift Card", path: "/gift-card" },
 ];
 
 const Navbar = () => {
@@ -78,24 +79,35 @@ const Navbar = () => {
               ))}
             </div>
 
-            {/* CTA Button */}
-            <div className="hidden md:block">
+            {/* CTA Button and Cart */}
+            <div className="hidden md:flex items-center gap-6">
+              <Cart />
               <Link
-                to="/contact"
-                className="btn-outline-gold inline-flex items-center px-8 py-3 text-[12px] uppercase tracking-[0.2em] transition-all duration-500"
+                to="/menu"
+                className="btn-outline-gold inline-flex items-center px-8 py-3 text-[12px] uppercase tracking-[0.2em] transition-all duration-500 hover:bg-gold hover:text-black"
+                style={{
+                  background: "hsl(43 74% 48%)",
+                  color: "hsl(195 30% 8%)",
+                  fontWeight: "bold",
+                  border: "none",
+                  boxShadow: "0 4px 14px 0 rgba(228, 168, 32, 0.39)"
+                }}
               >
-                Reserve
+                Order Now
               </Link>
             </div>
 
             {/* Mobile Menu Button */}
-            <button
-              onClick={() => setIsOpen(!isOpen)}
-              className="md:hidden text-primary-foreground p-2 transition-colors duration-300 hover:opacity-80 appearance-none"
-              aria-label="Toggle menu"
-            >
-              {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-            </button>
+            <div className="md:hidden flex items-center gap-4">
+              <Cart />
+              <button
+                onClick={() => setIsOpen(!isOpen)}
+                className="text-primary-foreground p-2 transition-colors duration-300 hover:opacity-80 appearance-none"
+                aria-label="Toggle menu"
+              >
+                {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              </button>
+            </div>
           </div>
         </div>
       </motion.nav>
@@ -139,11 +151,18 @@ const Navbar = () => {
                 className="mt-8"
               >
                 <Link
-                  to="/contact"
+                  to="/menu"
                   onClick={() => setIsOpen(false)}
-                  className="btn-gold block shadow-xl"
+                  className="btn-gold block shadow-xl transition-all duration-300 transform hover:scale-105 px-12"
+                  style={{
+                    background: "hsl(43 74% 48%)",
+                    color: "hsl(195 30% 8%)",
+                    fontWeight: "bold",
+                    textAlign: "center",
+                    padding: "12px 0"
+                  }}
                 >
-                  Reserve a Table
+                  Order Now
                 </Link>
               </motion.div>
             </div>

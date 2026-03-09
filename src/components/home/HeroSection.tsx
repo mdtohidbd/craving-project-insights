@@ -118,7 +118,7 @@ const HeroSection = () => {
                 <img
                   src={heroFood}
                   alt="Signature BBQ dish"
-                  className="w-full h-full object-cover transition-transform duration-[2s] hover:scale-105"
+                  className="w-full h-full object-cover transition-transform [transition-duration:2s] hover:scale-105"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-primary/50 via-transparent to-transparent" style={{ borderRadius: "2.5rem" }} />
               </div>

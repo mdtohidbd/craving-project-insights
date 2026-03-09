@@ -273,7 +273,7 @@ const Contact = () => {
                 <img
                   src="https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=600"
                   alt="Restaurant interior"
-                  className="w-full h-full object-cover transition-transform duration-[2s] hover:scale-105"
+                  className="w-full h-full object-cover transition-transform [transition-duration:2s] hover:scale-105"
                   style={{ minHeight: "750px" }}
                 />
               </div>

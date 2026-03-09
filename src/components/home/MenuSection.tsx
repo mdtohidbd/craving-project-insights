@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowUpRight } from "lucide-react";
+import { ArrowUpRight, ShoppingCart } from "lucide-react";
+import { useCart } from "@/context/CartContext";
 
 import menuMojito from "@/assets/menu-mojito.jpg";
 import menuCoconut from "@/assets/menu-coconut.jpg";
@@ -61,6 +62,8 @@ const menuItems = [
 ];
 
 const MenuSection = () => {
+  const { addToCart } = useCart();
+
   return (
     <section className="section-divide bg-background relative overflow-hidden">
       <div className="absolute top-[-10%] right-[-10%] w-[600px] h-[600px] rounded-full pointer-events-none" 
@@ -104,13 +107,13 @@ const MenuSection = () => {
               }}
               className="group"
             >
-              <Link to={`/menu/${item.id}`} className="block">
-                <div className="menu-card h-full">
+              <Link to={`/menu/${item.id}`} className="block h-full">
+                <div className="menu-card h-full flex flex-col">
                   <div className="relative overflow-hidden aspect-[4/3]" style={{ borderRadius: "1.5rem" }}>
                     <img
                       src={item.image}
                       alt={item.title}
-                      className="w-full h-full object-cover transition-transform duration-[1.5s] group-hover:scale-105"
+                      className="w-full h-full object-cover transition-transform [transition-duration:1.5s] group-hover:scale-105"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-primary/60 via-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
@@ -120,7 +123,7 @@ const MenuSection = () => {
                       </span>
                     </div>
 
-                    <div className="absolute bottom-5 right-5 opacity-0 group-hover:opacity-100 transition-all duration-500 transform translate-y-2 group-hover:translate-y-0 z-10">
+                    <div className="absolute bottom-5 right-5 opacity-0 group-hover:opacity-100 transition-all duration-500 transform translate-y-2 group-hover:translate-y-0 z-10 pointer-events-none">
                       <div className="w-11 h-11 rounded-full flex items-center justify-center shadow-lg"
                            style={{ background: "hsl(43 74% 48%)", color: "hsl(195 30% 8%)" }}>
                         <ArrowUpRight className="w-5 h-5" />
@@ -128,7 +131,7 @@ const MenuSection = () => {
                     </div>
                   </div>
 
-                  <div className="p-7">
+                  <div className="p-7 flex flex-col flex-1">
                     <div className="flex items-start justify-between gap-5 mb-3">
                       <h3 className="text-2xl font-serif font-bold text-card-foreground transition-colors duration-300 group-hover:text-accent group-hover:opacity-90">
                         {item.title}
@@ -137,9 +140,28 @@ const MenuSection = () => {
                         {item.price}
                       </span>
                     </div>
-                    <p className="text-muted-foreground text-[15px] leading-[1.7] opacity-90 line-clamp-2 pr-4">
+                    <p className="text-muted-foreground text-[15px] leading-[1.7] opacity-90 mb-6">
                       {item.description}
                     </p>
+                    <div className="mt-auto">
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          const numericPrice = parseFloat(item.price.replace(/[^0-9.]/g, ''));
+                          addToCart({
+                            id: item.id,
+                            title: item.title,
+                            price: isNaN(numericPrice) ? 0 : numericPrice,
+                            priceStr: item.price,
+                            image: item.image,
+                          });
+                        }}
+                        className="flex items-center justify-center gap-2 bg-[hsl(43_74%_48%)] text-[hsl(195_30%_8%)] w-full py-2.5 rounded-full text-[12px] uppercase tracking-[0.1em] font-bold shadow-[0_4px_14px_rgba(228,168,32,0.3)] hover:scale-105 hover:bg-[hsl(43_74%_48%)]/90 transition-all z-20"
+                      >
+                        <ShoppingCart size={15} />
+                        Add to Cart
+                      </button>
+                    </div>
                   </div>
                 </div>
               </Link>
