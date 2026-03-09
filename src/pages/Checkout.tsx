@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowLeft, CheckCircle2, ShieldCheck, CreditCard, Banknote } from "lucide-react";
@@ -14,25 +14,76 @@ const Checkout = () => {
   const [isSuccess, setIsSuccess] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<"bkash" | "nagad" | "cod">("cod");
 
-  const deliveryFee = 50;
+  const [deliveryFee, setDeliveryFee] = useState(50);
+
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+        const res = await fetch(`${apiUrl}/settings`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data && typeof data.deliveryFee === 'number') {
+            setDeliveryFee(data.deliveryFee);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to fetch settings:", err);
+      }
+    };
+    fetchSettings();
+  }, []);
+
   const finalTotal = totalAmount + (cart.length > 0 ? deliveryFee : 0);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (cart.length === 0) {
       toast.error("Your cart is empty");
       return;
     }
-    
+
     setIsSubmitting(true);
-    
-    // Simulate order processing API
-    setTimeout(() => {
+
+    const formData = new FormData(e.currentTarget);
+    const orderData = {
+      customerInfo: {
+        name: formData.get("name"),
+        phone: formData.get("phone"),
+        address: formData.get("address"),
+        notes: formData.get("notes") || "",
+      },
+      items: cart.map(item => ({
+        menuItemId: item.id.toString(),
+        title: item.title,
+        quantity: item.quantity,
+        price: item.price
+      })),
+      subtotal: totalAmount,
+      tax: 0,
+      total: finalTotal,
+      status: "pending"
+    };
+
+    try {
+      const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+      const res = await fetch(`${apiUrl}/orders`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(orderData)
+      });
+
+      if (!res.ok) throw new Error("Order failed");
+
       setIsSubmitting(false);
       setIsSuccess(true);
       clearCart();
       window.scrollTo({ top: 0, behavior: "smooth" });
-    }, 1500);
+    } catch (err) {
+      console.error(err);
+      setIsSubmitting(false);
+      toast.error("Failed to place order. Please try again.");
+    }
   };
 
   if (isSuccess) {
@@ -40,7 +91,7 @@ const Checkout = () => {
       <div className="min-h-screen bg-[hsl(40_18%_96%)] flex flex-col">
         <Navbar />
         <div className="flex-1 flex items-center justify-center pt-32 pb-20">
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             className="bg-white p-12 md:p-16 rounded-[3rem] shadow-[0_20px_40px_rgba(0,0,0,0.06)] border border-black/5 text-center max-w-2xl mx-4"
@@ -70,15 +121,15 @@ const Checkout = () => {
   return (
     <div className="min-h-screen bg-[hsl(40_18%_96%)] flex flex-col">
       <Navbar />
-      
+
       {/* Header */}
       <section className="bg-primary pt-40 pb-20 relative overflow-hidden">
         <div className="absolute inset-0">
-          <div className="absolute top-[0%] right-[-10%] w-[600px] h-[600px] rounded-full pointer-events-none" 
-               style={{ background: "radial-gradient(circle, hsl(43 60% 50% / 0.05), transparent 70%)" }} />
+          <div className="absolute top-[0%] right-[-10%] w-[600px] h-[600px] rounded-full pointer-events-none"
+            style={{ background: "radial-gradient(circle, hsl(43 60% 50% / 0.05), transparent 70%)" }} />
         </div>
         <div className="container mx-auto px-6 md:px-12 relative z-10 text-center">
-          <motion.h1 
+          <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="text-5xl md:text-7xl font-serif font-bold text-primary-foreground mb-6"
@@ -91,7 +142,7 @@ const Checkout = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
           >
-            <button 
+            <button
               onClick={() => navigate(-1)}
               className="inline-flex items-center gap-2 text-primary-foreground/70 hover:text-primary-foreground transition-colors font-medium"
             >
@@ -117,15 +168,15 @@ const Checkout = () => {
             </div>
           ) : (
             <div className="grid lg:grid-cols-12 gap-12 items-start">
-              
+
               {/* Form Section */}
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 className="lg:col-span-7 bg-white p-8 md:p-12 rounded-[2.5rem] shadow-[0_20px_40px_rgba(0,0,0,0.06)] border border-black/5"
               >
                 <form id="checkout-form" onSubmit={handleSubmit} className="space-y-10">
-                  
+
                   {/* Shipping Details */}
                   <div>
                     <h2 className="text-2xl font-serif font-bold text-primary mb-6 flex items-center gap-3">
@@ -135,19 +186,19 @@ const Checkout = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                       <div className="space-y-2">
                         <label className="text-xs uppercase tracking-widest font-bold text-muted-foreground ml-2">Full Name</label>
-                        <input required type="text" className="w-full bg-[hsl(40_18%_96%)] border-none rounded-2xl px-5 py-4 text-primary font-medium focus:ring-2 focus:ring-[hsl(43_74%_48%)] transition-all" placeholder="John Doe" />
+                        <input name="name" required type="text" className="w-full bg-[hsl(40_18%_96%)] border-none rounded-2xl px-5 py-4 text-primary font-medium focus:ring-2 focus:ring-[hsl(43_74%_48%)] transition-all" placeholder="John Doe" />
                       </div>
                       <div className="space-y-2">
                         <label className="text-xs uppercase tracking-widest font-bold text-muted-foreground ml-2">Phone Number</label>
-                        <input required type="tel" className="w-full bg-[hsl(40_18%_96%)] border-none rounded-2xl px-5 py-4 text-primary font-medium focus:ring-2 focus:ring-[hsl(43_74%_48%)] transition-all" placeholder="017XXXXXXXX" />
+                        <input name="phone" required type="tel" className="w-full bg-[hsl(40_18%_96%)] border-none rounded-2xl px-5 py-4 text-primary font-medium focus:ring-2 focus:ring-[hsl(43_74%_48%)] transition-all" placeholder="017XXXXXXXX" />
                       </div>
                       <div className="md:col-span-2 space-y-2">
                         <label className="text-xs uppercase tracking-widest font-bold text-muted-foreground ml-2">Full Address</label>
-                        <textarea required rows={3} className="w-full bg-[hsl(40_18%_96%)] border-none rounded-2xl px-5 py-4 text-primary font-medium focus:ring-2 focus:ring-[hsl(43_74%_48%)] transition-all resize-none" placeholder="House/Flat No, Road No, Area"></textarea>
+                        <textarea name="address" required rows={3} className="w-full bg-[hsl(40_18%_96%)] border-none rounded-2xl px-5 py-4 text-primary font-medium focus:ring-2 focus:ring-[hsl(43_74%_48%)] transition-all resize-none" placeholder="House/Flat No, Road No, Area"></textarea>
                       </div>
                       <div className="md:col-span-2 space-y-2">
                         <label className="text-xs uppercase tracking-widest font-bold text-muted-foreground ml-2">Order Notes (Optional)</label>
-                        <textarea rows={2} className="w-full bg-[hsl(40_18%_96%)] border-none rounded-2xl px-5 py-4 text-primary font-medium focus:ring-2 focus:ring-[hsl(43_74%_48%)] transition-all resize-none" placeholder="Any special instructions for the chef?"></textarea>
+                        <textarea name="notes" rows={2} className="w-full bg-[hsl(40_18%_96%)] border-none rounded-2xl px-5 py-4 text-primary font-medium focus:ring-2 focus:ring-[hsl(43_74%_48%)] transition-all resize-none" placeholder="Any special instructions for the chef?"></textarea>
                       </div>
                     </div>
                   </div>
@@ -172,7 +223,7 @@ const Checkout = () => {
                           </div>
                         </div>
                       </label>
-                      
+
                       <label className={`block relative p-5 rounded-2xl border-2 cursor-pointer transition-all ${paymentMethod === "nagad" ? "border-[hsl(43_74%_48%)] bg-[hsl(43_74%_48%)]/5" : "border-black/5 hover:border-black/10"}`}>
                         <input type="radio" name="payment" className="hidden" checked={paymentMethod === "nagad"} onChange={() => setPaymentMethod("nagad")} />
                         <div className="flex items-center gap-4">
@@ -207,7 +258,7 @@ const Checkout = () => {
               </motion.div>
 
               {/* Order Summary Sidebar */}
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 }}
@@ -217,7 +268,7 @@ const Checkout = () => {
                   <h3 className="text-xl font-serif font-bold text-primary mb-6 pb-4 border-b border-black/5">
                     Order Summary
                   </h3>
-                  
+
                   {/* Items list */}
                   <div className="max-h-[300px] overflow-y-auto custom-scrollbar pr-2 mb-6 space-y-4">
                     {cart.map((item) => (
@@ -249,7 +300,7 @@ const Checkout = () => {
                       <span>Delivery Fee</span>
                       <span className="font-semibold text-primary text-base">৳{deliveryFee.toFixed(2)}</span>
                     </div>
-                    
+
                     <div className="flex justify-between items-end pt-4 mb-10">
                       <span className="text-[14px] font-bold text-primary uppercase tracking-widest pb-1">Total</span>
                       <div className="flex items-start">

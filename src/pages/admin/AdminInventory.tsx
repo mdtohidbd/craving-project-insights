@@ -1,23 +1,97 @@
-import React, { useState } from "react";
-import AdminLayout from "../../components/admin/AdminLayout";
-import { Search, Plus, Filter, MoreHorizontal, Edit, Trash2, Package } from "lucide-react";
+interface InventoryItem {
+    id: string;
+    name: string;
+    category: string;
+    stock: number;
+    unit: string;
+    price: string;
+    status: string;
+}
 
-// Expanded Dummy Data
-const inventoryData = [
-    { id: 1, name: "Premium Coffee Beans", category: "Beverages", stock: 120, unit: "kg", price: "$24.00", status: "In Stock" },
-    { id: 2, name: "Vanilla Syrup", category: "Add-ons", stock: 15, unit: "bottles", price: "$12.50", status: "Low Stock" },
-    { id: 3, name: "Croissants", category: "Food", stock: 45, unit: "pcs", price: "$3.50", status: "In Stock" },
-    { id: 4, name: "Almond Milk", category: "Dairy Alt", stock: 8, unit: "cartons", price: "$4.00", status: "Low Stock" },
-    { id: 5, name: "Espresso Cups", category: "Supplies", stock: 200, unit: "pcs", price: "$1.20", status: "In Stock" },
-    { id: 6, name: "Oat Milk", category: "Dairy Alt", stock: 24, unit: "cartons", price: "$4.50", status: "In Stock" },
-    { id: 7, name: "Matcha Powder", category: "Beverages", stock: 5, unit: "kg", price: "$45.00", status: "Low Stock" },
-    { id: 8, name: "Caramel Syrup", category: "Add-ons", stock: 30, unit: "bottles", price: "$12.50", status: "In Stock" },
-];
+import React, { useState, useEffect } from "react";
+import AdminLayout from "../../components/admin/AdminLayout";
+import { Search, Plus, Filter, Edit, Trash2, Package, X } from "lucide-react";
 
 const AdminInventory = () => {
     const [searchTerm, setSearchTerm] = useState("");
+    const [inventoryItems, setInventoryItems] = useState<InventoryItem[]>([]);
+    const [loading, setLoading] = useState(true);
 
-    const filteredData = inventoryData.filter(item =>
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [editingItem, setEditingItem] = useState<InventoryItem | null>(null);
+    const [formData, setFormData] = useState({
+        name: "", category: "", stock: 0, unit: "", price: "", status: "In Stock"
+    });
+
+    const fetchItems = async () => {
+        try {
+            setLoading(true);
+            const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+
+            const req = await fetch(`${apiUrl}/inventory`);
+            const invData = await req.json();
+
+            setInventoryItems(invData);
+        } catch (err) {
+            console.error("Failed to fetch inventory:", err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchItems();
+    }, []);
+
+    const handleDelete = async (id: string) => {
+        if (!confirm("Are you sure you want to delete this item?")) return;
+        try {
+            const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+            await fetch(`${apiUrl}/inventory/${id}`, { method: "DELETE" });
+            fetchItems();
+        } catch (err) {
+            console.error("Failed to delete item:", err);
+        }
+    };
+
+    const handleOpenModal = (item?: InventoryItem) => {
+        if (item) {
+            setEditingItem(item);
+            setFormData({
+                name: item.name, category: item.category, stock: item.stock,
+                unit: item.unit, price: item.price, status: item.status
+            });
+        } else {
+            setEditingItem(null);
+            setFormData({
+                name: "", category: "", stock: 0, unit: "", price: "", status: "In Stock"
+            });
+        }
+        setIsModalOpen(true);
+    };
+
+    const handleSave = async (e: React.FormEvent) => {
+        e.preventDefault();
+        try {
+            const method = editingItem ? "PUT" : "POST";
+            const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+            const url = editingItem
+                ? `${apiUrl}/inventory/${editingItem.id}`
+                : `${apiUrl}/inventory`;
+
+            await fetch(url, {
+                method,
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(formData)
+            });
+            setIsModalOpen(false);
+            fetchItems();
+        } catch (err) {
+            console.error("Failed to save item:", err);
+        }
+    };
+
+    const filteredData = inventoryItems.filter(item =>
         item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         item.category.toLowerCase().includes(searchTerm.toLowerCase())
     );
@@ -44,7 +118,10 @@ const AdminInventory = () => {
                             <Filter className="w-4 h-4" />
                             Filter
                         </button>
-                        <button className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-primary text-primary-foreground text-sm font-medium rounded-lg hover:bg-primary/90 transition-colors">
+                        <button
+                            onClick={() => handleOpenModal()}
+                            className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-primary text-primary-foreground text-sm font-medium rounded-lg hover:bg-primary/90 transition-colors"
+                        >
                             <Plus className="w-4 h-4" />
                             Add Item
                         </button>
@@ -84,10 +161,10 @@ const AdminInventory = () => {
                                         </td>
                                         <td className="px-6 py-4 text-right">
                                             <div className="flex items-center justify-end gap-2">
-                                                <button className="p-1.5 text-neutral-400 hover:text-primary transition-colors hover:bg-primary/10 rounded-md">
+                                                <button onClick={() => handleOpenModal(item)} className="p-1.5 text-neutral-400 hover:text-primary transition-colors hover:bg-primary/10 rounded-md">
                                                     <Edit className="w-4 h-4" />
                                                 </button>
-                                                <button className="p-1.5 text-neutral-400 hover:text-rose-400 transition-colors hover:bg-rose-400/10 rounded-md">
+                                                <button onClick={() => handleDelete(item.id)} className="p-1.5 text-neutral-400 hover:text-rose-400 transition-colors hover:bg-rose-400/10 rounded-md">
                                                     <Trash2 className="w-4 h-4" />
                                                 </button>
                                             </div>
@@ -97,17 +174,22 @@ const AdminInventory = () => {
                             </tbody>
                         </table>
 
-                        {filteredData.length === 0 && (
+                        {!loading && filteredData.length === 0 && (
                             <div className="p-8 text-center text-neutral-500">
                                 <Package className="w-8 h-8 mx-auto mb-3 opacity-50" />
                                 <p>No inventory items found.</p>
+                            </div>
+                        )}
+                        {loading && (
+                            <div className="p-8 text-center text-neutral-500">
+                                <p>Loading inventory...</p>
                             </div>
                         )}
                     </div>
 
                     {/* Pagination (Visual Only) */}
                     <div className="p-4 border-t border-neutral-800 flex items-center justify-between text-sm text-neutral-400">
-                        <span>Showing 1 to {filteredData.length} of {inventoryData.length} entries</span>
+                        <span>Showing {filteredData.length} entries</span>
                         <div className="flex gap-1">
                             <button className="px-3 py-1 bg-neutral-800 rounded-md hover:text-neutral-50 transition-colors">Prev</button>
                             <button className="px-3 py-1 bg-primary/20 text-primary border border-primary/30 rounded-md">1</button>
@@ -116,7 +198,67 @@ const AdminInventory = () => {
                     </div>
                 </div>
             </div>
-        </AdminLayout>
+
+            {/* Modal */}
+            {
+                isModalOpen && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+                        <div className="bg-neutral-900 border border-neutral-800 rounded-xl shadow-xl w-full max-w-md overflow-hidden">
+                            <div className="flex items-center justify-between p-4 border-b border-neutral-800">
+                                <h3 className="text-lg font-medium text-white">
+                                    {editingItem ? "Edit Item" : "Add Item"}
+                                </h3>
+                                <button onClick={() => setIsModalOpen(false)} className="text-neutral-400 hover:text-white transition-colors">
+                                    <X className="w-5 h-5" />
+                                </button>
+                            </div>
+                            <form onSubmit={handleSave} className="p-4 space-y-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-neutral-400 mb-1">Item Name</label>
+                                    <input required type="text" value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-primary" />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-neutral-400 mb-1">Category</label>
+                                    <input required type="text" value={formData.category} onChange={e => setFormData({ ...formData, category: e.target.value })} className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-primary" />
+                                </div>
+                                <div className="flex gap-4">
+                                    <div className="flex-1">
+                                        <label className="block text-sm font-medium text-neutral-400 mb-1">Stock</label>
+                                        <input required type="number" value={formData.stock} onChange={e => setFormData({ ...formData, stock: parseInt(e.target.value) || 0 })} className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-primary" />
+                                    </div>
+                                    <div className="flex-1">
+                                        <label className="block text-sm font-medium text-neutral-400 mb-1">Unit</label>
+                                        <input required type="text" placeholder="e.g. kg, pcs" value={formData.unit} onChange={e => setFormData({ ...formData, unit: e.target.value })} className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-primary" />
+                                    </div>
+                                </div>
+                                <div className="flex gap-4">
+                                    <div className="flex-1">
+                                        <label className="block text-sm font-medium text-neutral-400 mb-1">Price</label>
+                                        <input required type="text" placeholder="e.g. $10.00" value={formData.price} onChange={e => setFormData({ ...formData, price: e.target.value })} className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-primary" />
+                                    </div>
+                                    <div className="flex-1">
+                                        <label className="block text-sm font-medium text-neutral-400 mb-1">Status</label>
+                                        <select value={formData.status} onChange={e => setFormData({ ...formData, status: e.target.value })} className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-primary appearance-none">
+                                            <option value="In Stock">In Stock</option>
+                                            <option value="Low Stock">Low Stock</option>
+                                            <option value="Out of Stock">Out of Stock</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div className="pt-4 flex justify-end gap-3 border-t border-neutral-800">
+                                    <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 text-sm font-medium text-neutral-400 hover:text-white transition-colors">
+                                        Cancel
+                                    </button>
+                                    <button type="submit" className="px-4 py-2 bg-primary text-primary-foreground text-sm font-medium rounded-lg hover:bg-primary/90 transition-colors">
+                                        {editingItem ? "Save Changes" : "Add Item"}
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                )
+            }
+        </AdminLayout >
     );
 };
 
