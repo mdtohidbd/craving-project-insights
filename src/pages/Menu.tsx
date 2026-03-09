@@ -27,6 +27,11 @@ import desiFalafelPlate from "@/assets/desi_falafel_plate.png";
 import beyondBurger from "@/assets/beyond_burger.png";
 import justEggScramble from "@/assets/just_egg_scramble.png";
 import gyroCarnitasTacos from "@/assets/gyro_carnitas_tacos.png";
+import dessertsCollection from "@/assets/desserts_collection.png";
+import mocktailsCollection from "@/assets/mocktails_collection.png";
+import coffeTeaCollection from "@/assets/coffee_tea_collection.png";
+import friesCollection from "@/assets/fries_collection.png";
+import soupsCollection from "@/assets/soups_collection.png";
 
 const DiamondStar = ({ className }: { className?: string }) => (
   <svg viewBox="0 0 24 24" className={className} fill="currentColor">
@@ -80,13 +85,28 @@ const allMenuItems = [
   { id: 28, title: "Mediterranean Harvest Pasta", price: "$17", image: "https://images.unsplash.com/photo-1621996346565-e3dbc646d9a9?w=600", category: "Main", description: "Pasta cooked with mediterranean veggies, olives, and olive oil.", tags: ["V"], allergens: "Contains wheat." },
   { id: 29, title: "Crispy Baked Mac 'N Cheese", price: "$16", image: "https://images.unsplash.com/photo-1543339494-b4cd4f7ba686?w=600", category: "Main", description: "Classic macaroni baked in creamy vegan cheese sauce.", tags: ["V"], allergens: "Contains wheat, cashew." },
   { id: 5, title: "Lentil Soup", price: "$6.99", image: menuShrimp, category: "Soups", description: "Hearty and warming spiced lentil soup.", tags: ["V", "GF"] },
+  { id: 39, title: "Roasted Tomato Bisque", price: "$7.50", image: soupsCollection, category: "Soups", description: "Velvety roasted tomato soup with a cream swirl and fresh basil.", tags: ["V", "GF"] },
+  { id: 40, title: "Mushroom Cream Soup", price: "$8.00", image: soupsCollection, category: "Soups", description: "Rich, creamy mushroom soup with a drizzle of truffle oil.", tags: ["V", "GF"] },
+  { id: 41, title: "Mediterranean Minestrone", price: "$7.00", image: soupsCollection, category: "Soups", description: "Hearty minestrone loaded with seasonal vegetables and herbs.", tags: ["V", "GF"] },
   { id: 6, title: "Roasted Veggies", price: "$5.50", image: "https://images.unsplash.com/photo-1545247181-516773cae754?w=600", category: "Sides", description: "Seasonal vegetables roasted with herbs.", tags: ["V", "GF"] },
   { id: 7, title: "Classic Fries", price: "$4.99", image: menuDessert, category: "Friendz Fries", description: "Crispy shoestring fries tossed in sea salt.", tags: ["V", "GF"] },
   { id: 8, title: "Loaded Vegan Fries", price: "$8.50", image: menuDessert, category: "Friendz Fries", description: "Fries topped with vegan cheese sauce, jalapeños, and facon bits.", tags: ["V"], allergens: "Contains cashew (cheese sauce), soy." },
+  { id: 42, title: "Truffle Parmesan Fries", price: "$9.50", image: friesCollection, category: "Friendz Fries", description: "Crispy fries drizzled with truffle oil and shaved vegan parmesan.", tags: ["V"] },
+  { id: 43, title: "Sweet Potato Fries", price: "$7.00", image: friesCollection, category: "Friendz Fries", description: "Golden sweet potato fries served with a smoky chipotle dipping sauce.", tags: ["V", "GF"] },
+  { id: 44, title: "Peri-Peri Fries", price: "$7.50", image: friesCollection, category: "Friendz Fries", description: "Crispy fries tossed in bold peri-peri spice blend with a cooling mint dip.", tags: ["V", "GF"] },
   { id: 9, title: "Golden Bliss Vegan Cake", price: "$10.00", image: menuDessert, category: "Desserts", description: "A decadent golden creation balancing perfect flavors and textures.", tags: ["V", "GF"], allergens: "Contains almond." },
+  { id: 36, title: "Chocolate Lava Cake", price: "$11.00", image: dessertsCollection, category: "Desserts", description: "Rich chocolate hazelnut cake with a warm molten center.", tags: ["V"], allergens: "Contains almond." },
+  { id: 37, title: "Mango Sorbet", price: "$7.00", image: dessertsCollection, category: "Desserts", description: "Refreshing tropical mango sorbet served in a coconut shell.", tags: ["V", "GF"] },
+  { id: 38, title: "Berry Cheesecake", price: "$9.00", image: dessertsCollection, category: "Desserts", description: "Creamy vegan cheesecake topped with fresh mixed berries and coulis.", tags: ["V"], allergens: "Contains cashew." },
   { id: 10, title: "Iced Mocha Latte", price: "$5.00", image: menuLatte, category: "Coffee & Tea", description: "Rich espresso, chocolate syrup, and cold oat milk.", tags: ["V", "GF"] },
+  { id: 33, title: "Hot Matcha Latte", price: "$5.50", image: coffeTeaCollection, category: "Coffee & Tea", description: "Vibrant ceremonial matcha whisked with warm oat milk and a hint of vanilla.", tags: ["V", "GF"] },
+  { id: 34, title: "Caramel Macchiato", price: "$5.75", image: coffeTeaCollection, category: "Coffee & Tea", description: "Espresso with velvety oat foam and a generous caramel drizzle.", tags: ["V", "GF"] },
+  { id: 35, title: "Cold Brew Float", price: "$6.50", image: coffeTeaCollection, category: "Coffee & Tea", description: "Smooth cold brew coffee topped with a scoop of vanilla oat ice cream.", tags: ["V", "GF"] },
   { id: 11, title: "Classic Mojito Mocktail", price: "$4.75", image: menuMojito, category: "Mocktails", description: "Fresh mint and lime blended into a refreshing mocktail.", tags: ["V", "GF"] },
   { id: 12, title: "Sour Flowers", price: "$6.25", image: menuCoconut, category: "Mocktails", description: "A tart and floral refreshing mocktail.", tags: ["V", "GF"] },
+  { id: 30, title: "Berry Blast Mocktail", price: "$5.50", image: mocktailsCollection, category: "Mocktails", description: "A vibrant blend of fresh mixed berries, mint, and sparkling soda.", tags: ["V", "GF"] },
+  { id: 31, title: "Tropical Sunrise", price: "$5.75", image: mocktailsCollection, category: "Mocktails", description: "Layered tropical drink with mango, passion fruit, and orange juice.", tags: ["V", "GF"] },
+  { id: 32, title: "Cucumber Mint Cooler", price: "$5.25", image: mocktailsCollection, category: "Mocktails", description: "Refreshing cucumber slices muddled with mint, lime, and sparkling water.", tags: ["V", "GF"] },
 ];
 
 const toId = (str: string) => str.toLowerCase().replace(/[^a-z0-9]+/g, "-");
