@@ -240,20 +240,26 @@ const Checkout = () => {
                   </div>
 
                   {/* Pricing Breakdown */}
-                  <div className="space-y-4 pt-6 border-t border-black/5 mb-8">
+                  <div className="space-y-4 pt-6 mt-4">
                     <div className="flex justify-between items-center text-muted-foreground">
                       <span>Subtotal</span>
-                      <span className="font-medium text-primary">৳{totalAmount.toFixed(2)}</span>
+                      <span className="font-semibold text-primary text-base">৳{totalAmount.toFixed(2)}</span>
                     </div>
-                    <div className="flex justify-between items-center text-muted-foreground">
+                    <div className="flex justify-between items-center text-muted-foreground pb-6 border-b border-black/5">
                       <span>Delivery Fee</span>
-                      <span className="font-medium text-primary">৳{deliveryFee.toFixed(2)}</span>
+                      <span className="font-semibold text-primary text-base">৳{deliveryFee.toFixed(2)}</span>
                     </div>
-                    <div className="flex justify-between items-center pt-4 border-t border-black/5 mt-4">
-                      <span className="text-lg font-bold text-primary uppercase tracking-widest">Total</span>
-                      <span className="text-3xl font-serif font-bold" style={{ color: "hsl(43 74% 48%)" }}>
-                        ৳{finalTotal.toFixed(2)}
-                      </span>
+                    
+                    <div className="flex justify-between items-end pt-4 mb-10">
+                      <span className="text-[14px] font-bold text-primary uppercase tracking-widest pb-1">Total</span>
+                      <div className="flex items-start">
+                        <span className="text-4xl font-serif font-bold leading-none" style={{ color: "hsl(43 74% 48%)" }}>
+                          ৳
+                        </span>
+                        <span className="text-3xl font-serif font-bold leading-none align-bottom text-primary ml-1" style={{ color: "hsl(43 74% 48%)" }}>
+                          {finalTotal.toFixed(2)}
+                        </span>
+                      </div>
                     </div>
                   </div>
 
@@ -261,18 +267,18 @@ const Checkout = () => {
                     type="submit"
                     form="checkout-form"
                     disabled={isSubmitting}
-                    className="w-full bg-[hsl(43_74%_48%)] text-[hsl(195_30%_8%)] font-bold py-5 rounded-2xl shadow-[0_8px_20px_rgba(228,168,32,0.3)] hover:shadow-[0_8px_25px_rgba(228,168,32,0.4)] hover:-translate-y-1 transition-all disabled:opacity-70 disabled:hover:translate-y-0 text-[14px] uppercase tracking-widest flex items-center justify-center gap-3"
+                    className="w-full bg-[hsl(43_74%_48%)] text-[hsl(195_30%_8%)] font-bold py-5 rounded-xl shadow-[0_8px_20px_rgba(228,168,32,0.3)] hover:shadow-[0_8px_25px_rgba(228,168,32,0.4)] hover:-translate-y-1 transition-all disabled:opacity-70 disabled:hover:translate-y-0 text-[14px] uppercase tracking-widest flex items-center justify-center gap-3"
                   >
                     {isSubmitting ? (
                       <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" />
                     ) : (
                       <ShieldCheck className="w-5 h-5" />
                     )}
-                    {isSubmitting ? "Processing..." : `Pay ৳${finalTotal.toFixed(2)}`}
+                    {isSubmitting ? "Processing..." : `PAY ৳${finalTotal.toFixed(2)}`}
                   </button>
 
-                  <p className="text-center text-xs text-muted-foreground mt-6 flex items-center justify-center gap-1.5">
-                    <ShieldCheck className="w-3.5 h-3.5" />
+                  <p className="text-center text-sm text-muted-foreground mt-8 flex items-center justify-center gap-2">
+                    <ShieldCheck className="w-4 h-4" />
                     Secure encrypted checkout
                   </p>
                 </div>

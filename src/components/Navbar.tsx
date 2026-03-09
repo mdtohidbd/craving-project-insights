@@ -9,7 +9,7 @@ const navLinks = [
   { name: "Menu", path: "/menu" },
   { name: "About", path: "/about" },
   { name: "Contact", path: "/contact" },
-  { name: "Gift Card", path: "/gift-card" },
+
 ];
 
 const Navbar = () => {
@@ -84,13 +84,11 @@ const Navbar = () => {
               <Cart />
               <Link
                 to="/menu"
-                className="btn-outline-gold inline-flex items-center px-8 py-3 text-[12px] uppercase tracking-[0.2em] transition-all duration-500 hover:bg-gold hover:text-black"
+                className="inline-flex items-center px-7 py-3 text-[11px] uppercase tracking-[0.15em] font-bold rounded-full transition-all duration-500 hover:-translate-y-0.5"
                 style={{
                   background: "hsl(43 74% 48%)",
                   color: "hsl(195 30% 8%)",
-                  fontWeight: "bold",
-                  border: "none",
-                  boxShadow: "0 4px 14px 0 rgba(228, 168, 32, 0.39)"
+                  boxShadow: "0 8px 18px rgba(228, 168, 32, 0.25)"
                 }}
               >
                 Order Now

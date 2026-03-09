@@ -12,45 +12,44 @@ const stats = [
 
 const HeroSection = () => {
   return (
-    <section className="relative min-h-screen bg-primary overflow-hidden flex items-center">
+    <section className="relative min-h-[75vh] md:min-h-[85vh] bg-primary overflow-hidden flex items-center pt-24 pb-12">
       {/* Atmospheric warm glows — no cold blues per SKILL.md HSB rule */}
       <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-[-15%] right-[-5%] w-[600px] h-[600px] rounded-full" 
+        <div className="absolute top-[-15%] right-[-5%] w-[500px] h-[500px] rounded-full" 
           style={{ background: "radial-gradient(circle, hsl(43 60% 50% / 0.04), transparent 70%)" }} 
         />
-        <div className="absolute bottom-[-20%] left-[-10%] w-[700px] h-[700px] rounded-full" 
+        <div className="absolute bottom-[-20%] left-[-10%] w-[600px] h-[600px] rounded-full" 
           style={{ background: "radial-gradient(circle, hsl(38 50% 40% / 0.03), transparent 70%)" }} 
         />
         {/* Subtle grid — geometric pattern for depth per SKILL.md */}
         <div
-          className="absolute inset-0 opacity-[0.03]"
+          className="absolute inset-0 opacity-[0.02]"
           style={{
             backgroundImage:
               "linear-gradient(hsl(40 20% 96% / 0.08) 1px, transparent 1px), linear-gradient(90deg, hsl(40 20% 96% / 0.08) 1px, transparent 1px)",
-            backgroundSize: "80px 80px",
+            backgroundSize: "60px 60px",
           }}
         />
       </div>
 
-      <div className="container mx-auto px-6 md:px-12 pt-32 pb-20 relative z-10">
-        <div className="grid lg:grid-cols-2 gap-16 items-center">
+      <div className="container mx-auto px-6 md:px-12 relative z-10">
+        <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
           {/* Left Content */}
           <motion.div
-            initial={{ opacity: 0, y: 60 }}
+            initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1.1, ease: [0.16, 1, 0.3, 1] }}
+            transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
           >
             <motion.span
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4, duration: 0.6 }}
-              className="inline-block text-[11px] uppercase tracking-[0.3em] text-primary-foreground/40 font-medium mb-8"
+              transition={{ delay: 0.3, duration: 0.5 }}
+              className="inline-block text-[9px] uppercase tracking-[0.25em] text-primary-foreground/40 font-medium mb-5"
             >
               ✦ Fine Dining Experience
             </motion.span>
 
-            {/* SKILL.md: 70px+ needs -2% to -4% tracking */}
-            <h1 className="text-[clamp(3.5rem,8vw,7rem)] font-serif font-bold text-primary-foreground leading-[0.88] mb-10"
+            <h1 className="text-[clamp(2.5rem,6vw,5.5rem)] font-serif font-bold text-primary-foreground leading-[0.92] mb-6"
                 style={{ letterSpacing: "-0.04em" }}>
               Savor
               <br />
@@ -59,97 +58,94 @@ const HeroSection = () => {
               <span className="italic" style={{ color: "hsl(43 74% 58%)" }}>Moment</span>
             </h1>
 
-            <p className="text-primary-foreground/35 text-lg max-w-md mb-12 leading-[1.7]">
+            <p className="text-primary-foreground/35 text-sm md:text-base max-w-sm mb-8 leading-[1.6]">
               Unlock an explosion of flavors in every bite. Our handpicked
-              selections of bold and delicious food will leave you craving more.
+              selections of bold and delicious food.
             </p>
 
-            <div className="flex items-center gap-8">
-              <Link to="/contact" className="btn-gold inline-flex items-center gap-3 group">
-                Book a Table
-                <ArrowRight className="w-4 h-4 transition-transform duration-500 group-hover:translate-x-1.5" />
+            <div className="flex items-center gap-6">
+              <Link to="/menu" className="bg-[hsl(43_74%_48%)] text-[hsl(195_30%_8%)] font-bold px-7 py-3 rounded-full text-[11px] uppercase tracking-wider shadow-[0_8px_20px_rgba(228,168,32,0.2)] hover:-translate-y-1 transition-all inline-flex items-center gap-2 group">
+                Order Now
+                <ArrowRight className="w-3.5 h-3.5 transition-transform duration-500 group-hover:translate-x-1.5" />
               </Link>
               <Link
                 to="/menu"
-                className="text-primary-foreground/40 text-[13px] font-medium hover:text-primary-foreground/70 transition-colors duration-500 flex items-center gap-2.5 group"
+                className="text-primary-foreground/40 text-[11px] font-bold uppercase tracking-widest hover:text-primary-foreground/70 transition-colors duration-500 flex items-center gap-2 group underline underline-offset-8 decoration-white/10 hover:decoration-white/30"
               >
                 View Menu
-                <ArrowRight className="w-3.5 h-3.5 opacity-50 group-hover:opacity-100 transition-all duration-500 group-hover:translate-x-1" />
               </Link>
             </div>
           </motion.div>
 
           {/* Right Content - Hero Image */}
           <motion.div
-            initial={{ opacity: 0, y: 40, rotate: -1 }}
-            animate={{ opacity: 1, y: 0, rotate: 0 }}
-            transition={{ duration: 1.3, ease: [0.16, 1, 0.3, 1], delay: 0.15 }}
-            className="relative"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
+            className="relative hidden lg:block"
           >
-            {/* Floating Review Card — glass-card per SKILL.md depth layers */}
+            {/* Floating Review Card */}
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 1.1, duration: 0.6 }}
-              className="absolute top-6 right-2 md:-right-2 z-20 rounded-2xl p-5 max-w-[200px]"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.8, duration: 0.6 }}
+              className="absolute -top-4 -right-4 z-20 rounded-2xl p-4 max-w-[160px]"
               style={{
                 background: "hsl(195 30% 14% / 0.6)",
                 backdropFilter: "blur(20px)",
                 border: "1px solid hsl(40 20% 96% / 0.08)",
               }}
             >
-              <div className="flex gap-0.5 mb-2">
+              <div className="flex gap-0.5 mb-1.5">
                 {[...Array(5)].map((_, i) => (
-                  <span key={i} style={{ color: "hsl(43 74% 58%)" }} className="text-sm">★</span>
+                  <span key={i} style={{ color: "hsl(43 74% 58%)" }} className="text-[10px]">★</span>
                 ))}
               </div>
-              <p className="text-primary-foreground/50 text-[12px] leading-relaxed mb-3">
+              <p className="text-primary-foreground/50 text-[10px] leading-relaxed mb-2">
                 "An extraordinary culinary journey. Each dish is a masterpiece."
               </p>
-              <div className="text-[9px] uppercase tracking-[0.2em] font-bold" style={{ color: "hsl(43 74% 58% / 0.7)" }}>
+              <div className="text-[7px] uppercase tracking-[0.2em] font-bold" style={{ color: "hsl(43 74% 58% / 0.7)" }}>
                 — Food Critic
               </div>
             </motion.div>
 
-            {/* Main Image — SKILL.md: rounded corners with inner_radius rule */}
-            <div className="relative w-full max-w-lg mx-auto">
-              {/* outer_radius: 2.5rem, no padding, so image is flush = same radius */}
-              <div className="aspect-[4/5] overflow-hidden" style={{ borderRadius: "2.5rem" }}>
+            {/* Main Image Container */}
+            <div className="relative w-full max-w-[400px] ml-auto">
+              <div className="aspect-[4/4.5] overflow-hidden shadow-2xl" style={{ borderRadius: "1.5rem" }}>
                 <img
                   src={heroFood}
                   alt="Signature BBQ dish"
                   className="w-full h-full object-cover transition-transform [transition-duration:2s] hover:scale-105"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-primary/50 via-transparent to-transparent" style={{ borderRadius: "2.5rem" }} />
+                <div className="absolute inset-0 bg-gradient-to-t from-primary/40 via-transparent to-transparent" />
               </div>
-              {/* Warm glow beneath image */}
-              <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 w-2/3 h-12 rounded-full"
-                   style={{ background: "hsl(43 60% 50% / 0.12)", filter: "blur(30px)" }} />
+              <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 w-2/3 h-10 rounded-full"
+                   style={{ background: "hsl(43 60% 50% / 0.1)", filter: "blur(30px)" }} />
             </div>
           </motion.div>
         </div>
 
-        {/* Stats Row */}
+        {/* Stats Row - Compact version */}
         <motion.div
-          initial={{ opacity: 0, y: 40 }}
+          initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.7 }}
-          className="grid grid-cols-2 md:grid-cols-4 gap-10 mt-28 pt-16 border-t"
-          style={{ borderColor: "hsl(40 20% 96% / 0.06)" }}
+          transition={{ duration: 0.8, delay: 0.6 }}
+          className="flex flex-wrap justify-between gap-6 mt-12 pt-8 border-t"
+          style={{ borderColor: "hsl(40 20% 96% / 0.04)" }}
         >
           {stats.map((stat, index) => (
             <motion.div
               key={index}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.8 + index * 0.12 }}
-              className="text-center"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.7 + index * 0.1 }}
+              className="flex flex-col items-center md:items-start"
             >
-              <div className="text-4xl md:text-5xl font-serif font-bold italic"
-                   style={{ color: "hsl(43 74% 58%)", letterSpacing: "-0.04em" }}>
+              <div className="text-2xl md:text-3xl font-serif font-bold italic"
+                   style={{ color: "hsl(43 74% 58%)", letterSpacing: "-0.03em" }}>
                 {stat.number}
               </div>
-              <div className="text-primary-foreground/25 text-[10px] uppercase tracking-[0.25em] mt-2.5 font-medium">
+              <div className="text-primary-foreground/20 text-[8px] uppercase tracking-[0.2em] mt-1 font-medium">
                 {stat.label}
               </div>
             </motion.div>
