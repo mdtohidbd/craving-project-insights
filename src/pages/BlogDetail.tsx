@@ -100,7 +100,7 @@ const BlogDetail = () => {
       <Navbar />
 
       {/* Hero Section */}
-      <section className="bg-primary pt-40 pb-36 relative overflow-hidden">
+      <section className="bg-primary pt-24 pb-16 relative overflow-hidden">
         <div className="absolute inset-0">
           <div className="absolute bottom-[-20%] left-[-10%] w-[600px] h-[600px] rounded-full pointer-events-none" 
                style={{ background: "radial-gradient(circle, hsl(43 60% 50% / 0.05), transparent 70%)" }} />
@@ -110,7 +110,7 @@ const BlogDetail = () => {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="mb-8"
+            className="mb-4"
           >
             <span className="text-[11px] uppercase tracking-[0.2em] font-bold px-6 py-2.5 rounded-full"
                   style={{ background: "hsl(43 74% 48%)", color: "hsl(195 30% 8%)" }}>
@@ -121,7 +121,7 @@ const BlogDetail = () => {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
-            className="text-6xl md:text-8xl lg:text-9xl font-serif font-bold text-primary-foreground leading-[0.9] mb-8 max-w-4xl mx-auto"
+            className="text-6xl md:text-8xl lg:text-9xl font-serif font-bold text-primary-foreground leading-[0.9] mb-4 max-w-4xl mx-auto"
             style={{ letterSpacing: "-0.04em" }}
           >
             {post.title}
@@ -138,7 +138,7 @@ const BlogDetail = () => {
       </section>
 
       {/* Featured Image */}
-      <section className="bg-background pt-16">
+      <section className="bg-background pt-8">
         <div className="container mx-auto px-6 md:px-12">
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
@@ -159,7 +159,7 @@ const BlogDetail = () => {
       </section>
 
       {/* Content */}
-      <section className="py-24 bg-background">
+      <section className="py-12 bg-background">
         <div className="container mx-auto px-6 md:px-12">
           <motion.article
             initial={{ opacity: 0, y: 20 }}
@@ -187,9 +187,9 @@ const BlogDetail = () => {
                style={{ background: "radial-gradient(circle, hsl(43 60% 50% / 0.04), transparent 70%)" }} />
         </div>
         <div className="container mx-auto px-6 md:px-12 relative z-10">
-          <div className="flex items-end justify-between mb-16">
+          <div className="flex items-end justify-between mb-8">
             <div>
-              <span className="text-[11px] uppercase tracking-[0.3em] font-medium mb-6 block"
+              <span className="text-[11px] uppercase tracking-[0.3em] font-medium mb-3 block"
                     style={{ color: "hsl(43 74% 48% / 0.8)" }}>
                 ✦ Keep Reading
               </span>

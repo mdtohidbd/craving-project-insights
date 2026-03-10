@@ -9,13 +9,24 @@ import {
   SheetFooter,
 } from "@/components/ui/sheet";
 import { toast } from "sonner";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
 
 export const Cart = () => {
   const { cart, removeFromCart, updateQuantity, clearCart, totalItems, totalAmount } = useCart();
   const [isOpen, setIsOpen] = useState(false);
+  const [bouncing, setBouncing] = useState(false);
   const navigate = useNavigate();
+
+  // Bounce the cart icon whenever items are added
+  useEffect(() => {
+    if (totalItems > 0) {
+      setBouncing(true);
+      const t = setTimeout(() => setBouncing(false), 600);
+      return () => clearTimeout(t);
+    }
+  }, [totalItems]);
 
   const handleCheckout = () => {
     if (cart.length === 0) {
@@ -29,24 +40,35 @@ export const Cart = () => {
   return (
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
       <SheetTrigger asChild>
-        <button className="relative p-2 flex items-center justify-center transition-transform hover:scale-105" aria-label="Cart">
-          <ShoppingCart className="w-6 h-6 text-primary-foreground" style={{ color: "hsl(40 20% 96%)" }} />
+        <button className="relative p-2 flex items-center justify-center" aria-label="Cart">
+          <motion.div
+            animate={bouncing ? { scale: [1, 1.4, 0.85, 1.15, 1], rotate: [0, -12, 12, -6, 0] } : {}}
+            transition={{ duration: 0.5, ease: "easeOut" }}
+          >
+            <ShoppingCart className="w-6 h-6" style={{ color: "hsl(40 20% 96%)" }} />
+          </motion.div>
           {totalItems > 0 && (
-            <span className="absolute -top-0 -right-0 flex h-5 w-5 items-center justify-center rounded-full bg-[hsl(43_74%_48%)] text-[10px] font-bold text-[hsl(195_30%_8%)] shadow-md">
+            <motion.span
+              key={totalItems}
+              initial={{ scale: 0.4, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ type: "spring", stiffness: 400, damping: 12 }}
+              className="absolute -top-0 -right-0 flex h-5 w-5 items-center justify-center rounded-full bg-[hsl(43_74%_48%)] text-[10px] font-bold text-[hsl(195_30%_8%)] shadow-md"
+            >
               {totalItems}
-            </span>
+            </motion.span>
           )}
         </button>
       </SheetTrigger>
-      <SheetContent className="w-full sm:max-w-md bg-[hsl(40_18%_96%)] flex flex-col h-full border-l-[hsl(43_74%_48%)]/20 shadow-2xl p-6">
-        <SheetHeader className="pb-6 border-b border-black/10">
-          <SheetTitle className="text-3xl font-serif font-bold text-primary flex items-center gap-3">
-            <ShoppingCart className="w-8 h-8 text-[hsl(43_74%_48%)]" />
+      <SheetContent className="w-[100%] sm:max-w-md bg-[hsl(40_18%_96%)] flex flex-col h-[100dvh] border-l-[hsl(43_74%_48%)]/20 shadow-2xl p-4 md:p-6 overflow-hidden">
+        <SheetHeader className="pb-4 border-b border-black/10 shrink-0">
+          <SheetTitle className="text-2xl md:text-3xl font-serif font-bold text-primary flex items-center gap-3">
+            <ShoppingCart className="w-7 h-7 md:w-8 md:h-8 text-[hsl(43_74%_48%)]" />
             Your Cart
           </SheetTitle>
         </SheetHeader>
 
-        <div className="flex-1 overflow-y-auto py-6 flex flex-col gap-4 pr-2 custom-scrollbar">
+        <div className="flex-1 overflow-y-auto py-4 flex flex-col gap-4 pr-2 custom-scrollbar touch-pan-y" style={{ WebkitOverflowScrolling: 'touch' }}>
           {cart.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-center space-y-4 opacity-50">
               <ShoppingCart className="w-16 h-16 text-primary mb-2 opacity-20" />
@@ -59,7 +81,7 @@ export const Cart = () => {
                 <img src={item.image} alt={item.title} className="w-20 h-20 object-cover rounded-xl shadow-sm" />
                 <div className="flex-1 min-w-0">
                   <h4 className="font-bold text-primary truncate text-lg">{item.title}</h4>
-                  <p className="text-[hsl(43_74%_48%)] font-bold text-md mt-1">{item.priceStr}</p>
+                  <p className="text-xl font-bold mt-1 text-accent">{item.priceStr?.replace('$', '৳')}</p>
                 </div>
                 <div className="flex flex-col items-end gap-3 shrink-0">
                   <button 
@@ -92,12 +114,12 @@ export const Cart = () => {
         <SheetFooter className="mt-auto border-t border-black/10 pt-6 flex-col">
           <div className="flex justify-between items-center w-full mb-6">
             <span className="text-lg font-medium text-primary/80">Total</span>
-            <span className="font-bold text-3xl text-primary font-serif">৳{totalAmount.toFixed(2)}</span>
+            <span className="font-bold text-3xl text-primary font-serif">৳{Math.round(totalAmount)}</span>
           </div>
           <button
             onClick={handleCheckout}
             disabled={cart.length === 0}
-            className="w-full bg-[hsl(43_74%_48%)] text-[hsl(195_30%_8%)] font-bold py-4 rounded-xl shadow-[0_8px_20px_rgba(228,168,32,0.3)] hover:shadow-[0_8px_25px_rgba(228,168,32,0.4)] hover:-translate-y-1 transition-all disabled:opacity-50 disabled:hover:translate-y-0 disabled:hover:shadow-none text-lg uppercase tracking-wider"
+            className="w-full bg-gradient-to-br from-[hsl(43_74%_52%)] to-[hsl(38_80%_42%)] text-[hsl(195_30%_8%)] font-bold py-4 rounded-xl shadow-[0_8px_25px_hsl(43_74%_48%/0.3)] hover:shadow-[0_12px_35px_hsl(43_74%_48%/0.4)] hover:-translate-y-1 active:scale-[0.98] transition-all disabled:opacity-50 disabled:hover:translate-y-0 disabled:hover:shadow-none text-lg uppercase tracking-widest"
           >
             Checkout Securely
           </button>

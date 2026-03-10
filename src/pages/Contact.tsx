@@ -40,7 +40,7 @@ const Contact = () => {
       <Navbar />
 
       {/* Hero Section */}
-      <section className="bg-primary pt-40 pb-36 relative overflow-hidden">
+      <section className="bg-primary pt-20 pb-12 relative overflow-hidden">
         <div className="absolute inset-0">
           <div className="absolute top-[0%] left-[-10%] w-[600px] h-[600px] rounded-full pointer-events-none" 
                style={{ background: "radial-gradient(circle, hsl(43 60% 50% / 0.05), transparent 70%)" }} />
@@ -52,7 +52,7 @@ const Contact = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.1 }}
-            className="text-[11px] uppercase tracking-[0.3em] font-medium mb-6 block"
+            className="text-[11px] uppercase tracking-[0.3em] font-medium mb-3 block"
             style={{ color: "hsl(43 74% 48% / 0.8)" }}
           >
             ✦ Get in Touch
@@ -61,7 +61,7 @@ const Contact = () => {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
-            className="text-7xl md:text-8xl lg:text-9xl font-serif font-bold leading-[0.9] mb-8"
+            className="text-7xl md:text-8xl lg:text-9xl font-serif font-bold leading-[0.9] mb-3"
             style={{ color: "hsl(40 20% 96%)", letterSpacing: "-0.04em" }}
           >
             Let's <span className="italic" style={{ color: "hsl(43 74% 48%)" }}>Connect</span>
@@ -71,7 +71,7 @@ const Contact = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
             className="max-w-xl mx-auto text-[18px] leading-[1.8]"
-            style={{ color: "hsl(40 20% 96% / 0.5)" }}
+            style={{ color: "hsl(40 20% 96% / 0.85)" }}
           >
             We'd love to hear from you — whether it's a reservation for tonight, important feedback,
             or just to say hello to our incredible staff.
@@ -208,18 +208,18 @@ const Contact = () => {
               viewport={{ once: true }}
               transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
             >
-              <span className="text-[11px] uppercase tracking-[0.3em] font-medium mb-6 block"
+              <span className="text-[11px] uppercase tracking-[0.3em] font-medium mb-3 block"
                     style={{ color: "hsl(43 74% 48% / 0.8)" }}>
                 ✦ Contact Information
               </span>
-              <h2 className="text-6xl md:text-7xl lg:text-8xl font-serif font-bold text-primary mb-12 leading-[0.9]"
+              <h2 className="text-6xl md:text-7xl lg:text-8xl font-serif font-bold text-primary mb-6 leading-[0.9]"
                   style={{ letterSpacing: "-0.04em" }}>
                 Visit Us
                 <br />
                 <span className="italic" style={{ color: "hsl(43 74% 48%)" }}>Today</span>
               </h2>
 
-              <div className="space-y-10">
+              <div className="space-y-6">
                 {[
                   {
                     icon: MapPin,

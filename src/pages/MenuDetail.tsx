@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
-import { motion } from "framer-motion";
-import { ArrowLeft, ArrowUpRight, ShoppingCart, Minus, Plus } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { ArrowLeft, ArrowUpRight, ShoppingCart, Minus, Plus, Check } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { useCart } from "@/context/CartContext";
@@ -50,11 +50,14 @@ const getShapeClass = (index: number) => {
 
 const MenuDetail = () => {
   const { id } = useParams();
-  const { addToCart } = useCart();
+  const { addToCart, cart, updateQuantity } = useCart();
   const [quantity, setQuantity] = useState(1);
   const [item, setItem] = useState<any>(null);
   const [relatedItems, setRelatedItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [addedRelated, setAddedRelated] = useState<Record<string, boolean>>({});
+
+  const getCartItem = (itemId: string) => cart.find(c => String(c.id) === String(itemId));
 
   useEffect(() => {
     const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
@@ -104,7 +107,7 @@ const MenuDetail = () => {
       <Navbar />
 
       {/* Hero Section */}
-      <section className="bg-primary pt-40 pb-36 relative overflow-hidden">
+      <section className="bg-primary pt-20 pb-12 relative overflow-hidden">
         <div className="absolute inset-0">
           <div className="absolute top-[0%] right-[-10%] w-[600px] h-[600px] rounded-full pointer-events-none"
             style={{ background: "radial-gradient(circle, hsl(43 60% 50% / 0.05), transparent 70%)" }} />
@@ -114,7 +117,7 @@ const MenuDetail = () => {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="mb-8"
+            className="mb-3"
           >
             <span className="text-[11px] uppercase tracking-[0.2em] font-bold px-6 py-2.5 rounded-full"
               style={{ background: "hsl(43 74% 48%)", color: "hsl(195 30% 8%)" }}>
@@ -125,19 +128,11 @@ const MenuDetail = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
-            className="text-6xl md:text-8xl lg:text-9xl font-serif font-bold text-primary-foreground leading-[0.9] mb-8"
+            className="text-6xl md:text-8xl lg:text-9xl font-serif font-bold text-primary-foreground leading-[0.9] mb-3"
             style={{ letterSpacing: "-0.04em" }}
           >
             {item.title}
           </motion.h1>
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-            className="text-primary-foreground/50 max-w-xl mx-auto text-[18px] leading-[1.8]"
-          >
-            {item.description}
-          </motion.p>
         </div>
       </section>
 
@@ -149,7 +144,7 @@ const MenuDetail = () => {
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
-            className="max-w-6xl mx-auto mb-20"
+            className="max-w-6xl mx-auto mb-12"
           >
             <div className="relative overflow-hidden shadow-2xl" style={{ borderRadius: "3rem" }}>
               <img
@@ -168,7 +163,7 @@ const MenuDetail = () => {
             >
               <div className="grid md:grid-cols-12 gap-12 lg:gap-20">
                 <div className="md:col-span-8 h-fit bg-white p-8 md:p-12 shadow-[0_20px_40px_rgba(0,0,0,0.06)] rounded-[2.5rem] border border-black/5">
-                  <h2 className="text-4xl md:text-5xl font-serif font-bold text-primary mb-8"
+                  <h2 className="text-4xl md:text-5xl font-serif font-bold text-primary mb-4"
                     style={{ letterSpacing: "-0.02em" }}>
                     About This <span className="italic font-medium" style={{ color: "hsl(43 74% 48%)" }}>Dish</span>
                   </h2>
@@ -184,8 +179,8 @@ const MenuDetail = () => {
                     {/* Price Section */}
                     <div className="flex items-center justify-between mb-4 pb-4 border-b border-black/5">
                       <span className="text-[10px] uppercase tracking-[0.15em] font-bold text-muted-foreground">Price</span>
-                      <span className="text-2xl font-serif font-bold" style={{ color: "hsl(43 74% 48%)" }}>
-                        {item.price}
+                      <span className="text-3xl font-serif font-bold text-accent">
+                        {item.price?.replace('$', '৳').replace('.00', '')}
                       </span>
                     </div>
 
@@ -218,7 +213,7 @@ const MenuDetail = () => {
                             id: Number(item.id),
                             title: item.title,
                             price: isNaN(numericPrice) ? 0 : numericPrice,
-                            priceStr: item.price,
+                            priceStr: item.price?.replace('$', '৳').replace('.00', ''),
                             image: resolveImage(item.image),
                             quantity: quantity
                           });
@@ -248,7 +243,7 @@ const MenuDetail = () => {
       {/* Related Items */}
       <section className="section-divide relative" style={{ background: "hsl(38 15% 92% / 0.3)" }}>
         <div className="container mx-auto px-6 md:px-12">
-          <div className="flex items-end justify-between mb-16">
+          <div className="flex items-end justify-between mb-8">
             <div>
               <span className="text-[11px] uppercase tracking-[0.3em] font-medium mb-4 block"
                 style={{ color: "hsl(43 74% 48% / 0.8)" }}>
@@ -306,30 +301,77 @@ const MenuDetail = () => {
                       </div>
 
                       <h3 className="text-xl md:text-2xl font-serif font-bold text-primary mb-3 text-center transition-colors group-hover:text-[hsl(43_74%_48%)] px-2">
-                        {item.title} <span className="font-serif font-bold tracking-tight text-xl ml-1">{item.price}</span>
+                        {item.title} <span className="font-serif font-bold tracking-tight text-xl md:text-2xl ml-1 text-accent">{item.price?.replace('$', '৳').replace('.00', '')}</span>
                       </h3>
                       <p className="text-[13px] md:text-[14px] text-center text-primary/80 leading-relaxed px-4 md:px-8 mb-4 font-medium line-clamp-2">
                         {item.description}
                       </p>
 
                       <div className="mt-auto px-4 md:px-8 w-full flex flex-col gap-3 pb-2 z-10">
-                        <button
-                          onClick={(e) => {
-                            e.preventDefault();
-                            const numericPrice = parseFloat(item.price.replace(/[^0-9.]/g, ''));
-                            addToCart({
-                              id: Number(item.id),
-                              title: item.title,
-                              price: isNaN(numericPrice) ? 0 : numericPrice,
-                              priceStr: item.price,
-                              image: resolveImage(item.image),
-                            });
-                          }}
-                          className="flex items-center justify-center gap-2 bg-[hsl(43_74%_48%)] text-[hsl(195_30%_8%)] w-full py-2.5 rounded-full text-[11px] uppercase tracking-[0.1em] font-bold shadow-[0_4px_14px_rgba(228,168,32,0.3)] hover:scale-105 hover:bg-[hsl(43_74%_48%)]/90 transition-all z-20"
-                        >
-                          <ShoppingCart size={15} />
-                          Add to Cart
-                        </button>
+                        {(() => {
+                          const cartItem = getCartItem(item.id);
+                          if (cartItem) {
+                            return (
+                              <motion.div
+                                initial={{ opacity: 0, scale: 0.8 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                className="flex items-center justify-between w-full bg-emerald-500 rounded-full overflow-hidden shadow-[0_4px_14px_rgba(16,185,129,0.35)]"
+                                onClick={(e) => e.preventDefault()}
+                              >
+                                <button
+                                  onClick={(e) => { e.preventDefault(); updateQuantity(cartItem.id, cartItem.quantity - 1); }}
+                                  className="w-10 h-10 flex items-center justify-center text-white font-bold text-xl hover:bg-white/20 transition-colors rounded-full"
+                                >
+                                  −
+                                </button>
+                                <span className="text-white font-bold text-sm flex items-center gap-1.5">
+                                  <Check size={13} strokeWidth={3} />
+                                  {cartItem.quantity} in cart
+                                </span>
+                                <button
+                                  onClick={(e) => { e.preventDefault(); updateQuantity(cartItem.id, cartItem.quantity + 1); }}
+                                  className="w-10 h-10 flex items-center justify-center text-white font-bold text-xl hover:bg-white/20 transition-colors rounded-full"
+                                >
+                                  +
+                                </button>
+                              </motion.div>
+                            );
+                          }
+                          return (
+                            <button
+                              onClick={(e) => {
+                                e.preventDefault();
+                                const numericPrice = parseFloat(item.price.replace(/[^0-9.]/g, ''));
+                                addToCart({
+                                  id: Number(item.id),
+                                  title: item.title,
+                                  price: isNaN(numericPrice) ? 0 : numericPrice,
+                                  priceStr: item.price?.replace('$', '৳').replace('.00', ''),
+                                  image: resolveImage(item.image),
+                                });
+                                setAddedRelated(prev => ({ ...prev, [item.id]: true }));
+                                setTimeout(() => { setAddedRelated(prev => ({ ...prev, [item.id]: false })); }, 1500);
+                              }}
+                              className={`flex items-center justify-center gap-2 w-full py-2.5 rounded-full text-[11px] uppercase tracking-[0.1em] font-bold transition-all duration-300 z-20 ${
+                                addedRelated[item.id]
+                                  ? 'bg-emerald-500 text-white shadow-[0_4px_14px_rgba(16,185,129,0.4)] scale-95'
+                                  : 'bg-[hsl(43_74%_48%)] text-[hsl(195_30%_8%)] shadow-[0_4px_14px_rgba(228,168,32,0.3)] hover:scale-105 hover:bg-[hsl(43_74%_48%)]/90'
+                              }`}
+                            >
+                              <AnimatePresence mode="wait">
+                                {addedRelated[item.id] ? (
+                                  <motion.span key="added" initial={{ opacity: 0, scale: 0.7 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.7 }} className="flex items-center gap-1.5">
+                                    <Check size={15} strokeWidth={3} /> Added!
+                                  </motion.span>
+                                ) : (
+                                  <motion.span key="add" initial={{ opacity: 0, scale: 0.7 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.7 }} className="flex items-center gap-1.5">
+                                    <ShoppingCart size={15} /> Add to Cart
+                                  </motion.span>
+                                )}
+                              </AnimatePresence>
+                            </button>
+                          );
+                        })()}
 
                         <div className="flex items-center justify-center gap-2 text-[10px] uppercase tracking-[0.2em] font-bold text-[hsl(43_74%_48%)] group-hover:text-primary transition-colors duration-300">
                           View Details
