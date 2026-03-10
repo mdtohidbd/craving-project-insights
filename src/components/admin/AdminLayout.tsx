@@ -36,7 +36,7 @@ const AdminLayout = ({ children, title }: AdminLayoutProps) => {
             )}
 
             {/* Sidebar */}
-            <aside className={`fixed lg:static inset-y-0 left-0 z-50 w-64 bg-neutral-900 border-r border-neutral-800 transition-transform duration-300 ease-in-out ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'} flex flex-col`}>
+            <aside className={`fixed lg:static inset-y-0 left-0 z-50 w-64 bg-neutral-900 border-r border-neutral-800 transition-transform duration-300 ease-in-out ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'} flex flex-col print:hidden`}>
                 <div className="p-6 flex items-center gap-3">
                     <div className="w-8 h-8 rounded bg-primary flex items-center justify-center text-primary-foreground font-bold">
                         S
@@ -44,7 +44,7 @@ const AdminLayout = ({ children, title }: AdminLayoutProps) => {
                     <span className="text-lg font-semibold tracking-tight">Skybridge Admin</span>
                 </div>
 
-                <nav className="flex-1 px-4 space-y-2 mt-4">
+                <nav className="flex-1 px-4 space-y-2 mt-4 overflow-y-auto custom-scrollbar" data-lenis-prevent="true">
                     {navItems.map((item) => {
                         const isActive = location.pathname === item.path || (item.path !== '/admin' && location.pathname.startsWith(item.path));
 
@@ -53,7 +53,7 @@ const AdminLayout = ({ children, title }: AdminLayoutProps) => {
                                 key={item.path}
                                 to={item.path}
                                 className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${isActive
-                                    ? 'bg-primary/10 text-primary font-medium'
+                                    ? 'bg-neutral-800 text-neutral-50 font-medium'
                                     : 'text-neutral-400 hover:text-neutral-50 hover:bg-neutral-800/50 font-medium'
                                     }`}
                             >
@@ -73,9 +73,9 @@ const AdminLayout = ({ children, title }: AdminLayoutProps) => {
             </aside>
 
             {/* Main Content */}
-            <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
+            <main className="flex-1 flex flex-col min-w-0 overflow-hidden print:overflow-visible">
                 {/* Header */}
-                <header className="h-16 border-b border-neutral-800 bg-neutral-900/50 flex items-center justify-between px-4 lg:px-8 shrink-0">
+                <header className="h-16 border-b border-neutral-800 bg-neutral-900/50 flex items-center justify-between px-4 lg:px-8 shrink-0 print:hidden">
                     <div className="flex items-center gap-4">
                         <button
                             className="lg:hidden p-2 text-neutral-400 hover:text-neutral-50 transition-colors rounded-md hover:bg-neutral-800"
@@ -97,8 +97,8 @@ const AdminLayout = ({ children, title }: AdminLayoutProps) => {
                 </header>
 
                 {/* Dashboard/Page Content */}
-                <div className="flex-1 overflow-y-auto overflow-x-hidden p-4 lg:p-8 custom-scrollbar relative z-0">
-                    <div className="max-w-7xl mx-auto">
+                <div className="flex-1 overflow-y-auto overflow-x-hidden p-4 lg:p-8 custom-scrollbar relative z-0 print:overflow-visible print:p-0 print:block" data-lenis-prevent="true">
+                    <div className="max-w-7xl mx-auto print:max-w-none print:m-0">
                         {children}
                     </div>
                 </div>

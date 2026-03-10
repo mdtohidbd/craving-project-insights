@@ -57,7 +57,7 @@ const AdminDashboard = () => {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <MetricCard
                         title="Total Sales"
-                        value={`৳${data.metrics.totalSales.toFixed(2)}`}
+                        value={`৳${Math.round(data.metrics.totalSales)}`}
                         trend=""
                         isPositive={true}
                         icon={<TrendingUp className="w-4 h-4 text-emerald-400" />}

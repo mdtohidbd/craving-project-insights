@@ -57,17 +57,17 @@ const AboutSection = () => {
             viewport={{ once: true }}
             transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
           >
-            <span className="text-[11px] uppercase tracking-[0.3em] font-medium mb-6 block"
+            <span className="text-[11px] uppercase tracking-[0.3em] font-medium mb-3 block"
                   style={{ color: "hsl(43 74% 48% / 0.8)" }}>
               ✦ Our Philosophy
             </span>
-            <h2 className="text-5xl lg:text-6xl font-serif font-bold text-primary mb-8 leading-[0.95]"
+            <h2 className="text-5xl lg:text-6xl font-serif font-bold text-primary mb-5 leading-[0.95]"
                 style={{ letterSpacing: "-0.035em" }}>
               Where Passion
               <br />
               Meets <span className="italic" style={{ color: "hsl(43 74% 48%)" }}>Flavor</span>
             </h2>
-            <p className="text-muted-foreground text-lg leading-[1.8] mb-12 max-w-md">
+            <p className="text-muted-foreground text-lg leading-[1.6] mb-8 max-w-md">
               At Craving, we celebrate the art of cooking. Our chefs turn
               every meal into an unforgettable experience — from gourmet
               dishes to street food favorites, carefully crafted to delight your senses.
