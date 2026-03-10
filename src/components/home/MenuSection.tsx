@@ -1,13 +1,16 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
-import { ArrowUpRight, ShoppingCart } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { ArrowUpRight, ShoppingCart, Check } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { resolveImage } from "@/pages/Menu";
 
 const MenuSection = () => {
-  const { addToCart } = useCart();
+  const { addToCart, cart, updateQuantity } = useCart();
   const [menuItems, setMenuItems] = useState<any[]>([]);
+  const [addedItems, setAddedItems] = useState<Record<string, boolean>>({});
+
+  const getCartItem = (itemId: string) => cart.find(c => String(c.id) === String(itemId));
 
   useEffect(() => {
     const fetchMenu = async () => {
@@ -24,6 +27,22 @@ const MenuSection = () => {
     fetchMenu();
   }, []);
 
+  const handleAddToCart = (e: React.MouseEvent, item: any) => {
+    e.preventDefault();
+    const numericPrice = parseFloat(item.price.replace(/[^0-9.]/g, ''));
+    addToCart({
+      id: item.id,
+      title: item.title,
+      price: isNaN(numericPrice) ? 0 : numericPrice,
+      priceStr: item.price?.replace('$', '৳').replace('.00', ''),
+      image: resolveImage(item.image),
+    });
+    setAddedItems(prev => ({ ...prev, [item.id]: true }));
+    setTimeout(() => {
+      setAddedItems(prev => ({ ...prev, [item.id]: false }));
+    }, 2000);
+  };
+
   return (
     <section className="section-divide bg-background relative overflow-hidden">
       <div className="absolute top-[-10%] right-[-10%] w-[600px] h-[600px] rounded-full pointer-events-none"
@@ -35,19 +54,17 @@ const MenuSection = () => {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.8 }}
-          className="text-center mb-20"
+          className="text-center mb-4"
         >
-          <span className="text-[11px] uppercase tracking-[0.3em] font-medium mb-6 block"
+          <span className="text-[11px] uppercase tracking-[0.3em] font-medium mb-3 block"
             style={{ color: "hsl(43 74% 48% / 0.8)" }}>
             ✦ Our Signature Collection
           </span>
-          <h2 className="text-6xl md:text-7xl lg:text-8xl font-serif font-bold text-primary mb-8 leading-[0.9]"
+          <h2 className="text-6xl md:text-7xl lg:text-8xl font-serif font-bold text-primary mb-3 leading-[1.1]"
             style={{ letterSpacing: "-0.04em" }}>
-            Curated
-            <br />
-            <span className="italic" style={{ color: "hsl(43 74% 48%)" }}>Flavors</span>
+            Curated <span className="italic" style={{ color: "hsl(43 74% 48%)" }}>Flavors</span>
           </h2>
-          <p className="text-muted-foreground text-lg max-w-lg mx-auto leading-[1.8]">
+          <p className="text-muted-foreground text-lg max-w-lg mx-auto leading-[1.6]">
             Every dish is a journey — handcrafted with the finest ingredients
             and presented as edible art.
           </p>
@@ -96,31 +113,66 @@ const MenuSection = () => {
                       <h3 className="text-2xl font-serif font-bold text-card-foreground transition-colors duration-300 group-hover:text-accent group-hover:opacity-90">
                         {item.title}
                       </h3>
-                      <span className="font-serif font-bold text-xl italic" style={{ color: "hsl(43 74% 48%)" }}>
-                        {item.price}
+                      <span className="font-serif font-bold text-2xl md:text-3xl italic text-accent">
+                        {item.price?.replace('$', '৳').replace('.00', '')}
                       </span>
                     </div>
                     <p className="text-muted-foreground text-[15px] leading-[1.7] opacity-90 mb-6">
                       {item.description}
                     </p>
                     <div className="mt-auto">
-                      <button
-                        onClick={(e) => {
-                          e.preventDefault();
-                          const numericPrice = parseFloat(item.price.replace(/[^0-9.]/g, ''));
-                          addToCart({
-                            id: item.id,
-                            title: item.title,
-                            price: isNaN(numericPrice) ? 0 : numericPrice,
-                            priceStr: item.price,
-                            image: resolveImage(item.image),
-                          });
-                        }}
-                        className="flex items-center justify-center gap-2 bg-[hsl(43_74%_48%)] text-[hsl(195_30%_8%)] w-full py-2.5 rounded-full text-[12px] uppercase tracking-[0.1em] font-bold shadow-[0_4px_14px_rgba(228,168,32,0.3)] hover:scale-105 hover:bg-[hsl(43_74%_48%)]/90 transition-all z-20"
-                      >
-                        <ShoppingCart size={15} />
-                        Add to Cart
-                      </button>
+                      {(() => {
+                        const cartItem = getCartItem(item.id);
+                        if (cartItem) {
+                          return (
+                            <motion.div
+                              initial={{ opacity: 0, scale: 0.8 }}
+                              animate={{ opacity: 1, scale: 1 }}
+                              className="flex items-center justify-between w-full bg-emerald-500 rounded-full overflow-hidden shadow-[0_4px_14px_rgba(16,185,129,0.35)]"
+                              onClick={(e) => e.preventDefault()}
+                            >
+                              <button
+                                onClick={(e) => { e.preventDefault(); updateQuantity(cartItem.id, cartItem.quantity - 1); }}
+                                className="w-10 h-10 flex items-center justify-center text-white font-bold text-xl hover:bg-white/20 transition-colors rounded-full"
+                              >
+                                −
+                              </button>
+                              <span className="text-white font-bold text-sm flex items-center gap-1.5">
+                                <Check size={13} strokeWidth={3} />
+                                {cartItem.quantity} in cart
+                              </span>
+                              <button
+                                onClick={(e) => { e.preventDefault(); updateQuantity(cartItem.id, cartItem.quantity + 1); }}
+                                className="w-10 h-10 flex items-center justify-center text-white font-bold text-xl hover:bg-white/20 transition-colors rounded-full"
+                              >
+                                +
+                              </button>
+                            </motion.div>
+                          );
+                        }
+                        return (
+                          <button
+                            onClick={(e) => handleAddToCart(e, item)}
+                            className={`flex items-center justify-center gap-2 w-full py-2.5 rounded-full text-[12px] uppercase tracking-[0.1em] font-bold transition-all duration-300 z-20 ${
+                              addedItems[item.id]
+                                ? 'bg-emerald-500 text-white shadow-[0_4px_14px_rgba(16,185,129,0.4)] scale-95'
+                                : 'bg-[hsl(43_74%_48%)] text-[hsl(195_30%_8%)] shadow-[0_4px_14px_rgba(228,168,32,0.3)] hover:scale-105 hover:bg-[hsl(43_74%_48%)]/90'
+                            }`}
+                          >
+                            <AnimatePresence mode="wait">
+                              {addedItems[item.id] ? (
+                                <motion.span key="added" initial={{ opacity: 0, scale: 0.7 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.7 }} className="flex items-center gap-1.5">
+                                  <Check size={15} strokeWidth={3} /> Added!
+                                </motion.span>
+                              ) : (
+                                <motion.span key="add" initial={{ opacity: 0, scale: 0.7 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.7 }} className="flex items-center gap-1.5">
+                                  <ShoppingCart size={15} /> Add to Cart
+                                </motion.span>
+                              )}
+                            </AnimatePresence>
+                          </button>
+                        );
+                      })()}
                     </div>
                   </div>
                 </div>
@@ -134,7 +186,7 @@ const MenuSection = () => {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ delay: 0.3 }}
-          className="text-center mt-20"
+          className="text-center mt-8"
         >
           <Link to="/menu" className="btn-outline-gold inline-flex items-center gap-3 group">
             Explore Full Menu

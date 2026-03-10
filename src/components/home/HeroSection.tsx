@@ -12,7 +12,7 @@ const stats = [
 
 const HeroSection = () => {
   return (
-    <section className="relative min-h-[75vh] md:min-h-[85vh] bg-primary overflow-hidden flex items-center pt-24 pb-12">
+    <section className="relative min-h-[60vh] md:min-h-[70vh] bg-primary overflow-hidden flex items-center pt-20 pb-10">
       {/* Atmospheric warm glows — no cold blues per SKILL.md HSB rule */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute top-[-15%] right-[-5%] w-[500px] h-[500px] rounded-full" 
@@ -44,12 +44,12 @@ const HeroSection = () => {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3, duration: 0.5 }}
-              className="inline-block text-[9px] uppercase tracking-[0.25em] text-primary-foreground/40 font-medium mb-5"
+              className="inline-block text-[9px] uppercase tracking-[0.25em] text-primary-foreground/40 font-medium mb-3"
             >
               ✦ Fine Dining Experience
             </motion.span>
 
-            <h1 className="text-[clamp(2.5rem,6vw,5.5rem)] font-serif font-bold text-primary-foreground leading-[0.92] mb-6"
+            <h1 className="text-[clamp(2.5rem,6vw,5.5rem)] font-serif font-bold text-primary-foreground leading-[0.92] mb-3"
                 style={{ letterSpacing: "-0.04em" }}>
               Savor
               <br />
@@ -58,7 +58,7 @@ const HeroSection = () => {
               <span className="italic" style={{ color: "hsl(43 74% 58%)" }}>Moment</span>
             </h1>
 
-            <p className="text-primary-foreground/35 text-sm md:text-base max-w-sm mb-8 leading-[1.6]">
+            <p className="text-primary-foreground/75 text-sm md:text-base max-w-sm mb-5 leading-[1.6]">
               Unlock an explosion of flavors in every bite. Our handpicked
               selections of bold and delicious food.
             </p>
@@ -110,7 +110,7 @@ const HeroSection = () => {
             </motion.div>
 
             {/* Main Image Container */}
-            <div className="relative w-full max-w-[400px] ml-auto">
+            <div className="relative w-full max-w-[420px] ml-auto">
               <div className="aspect-[4/4.5] overflow-hidden shadow-2xl" style={{ borderRadius: "1.5rem" }}>
                 <img
                   src={heroFood}
@@ -130,7 +130,7 @@ const HeroSection = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.6 }}
-          className="flex flex-wrap justify-between gap-6 mt-12 pt-8 border-t"
+          className="flex flex-wrap justify-between gap-6 mt-6 pt-4 border-t"
           style={{ borderColor: "hsl(40 20% 96% / 0.04)" }}
         >
           {stats.map((stat, index) => (

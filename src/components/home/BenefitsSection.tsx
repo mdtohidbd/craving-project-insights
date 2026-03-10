@@ -81,18 +81,16 @@ const BenefitsSection = () => {
             transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
             className="order-1 lg:order-2"
           >
-            <span className="text-[11px] uppercase tracking-[0.3em] font-medium mb-6 block"
+            <span className="text-[11px] uppercase tracking-[0.3em] font-medium mb-3 block"
                   style={{ color: "hsl(43 74% 48% / 0.8)" }}>
               ✦ Why Choose Us
             </span>
-            <h2 className="text-6xl md:text-7xl lg:text-8xl font-serif font-bold text-primary mb-16 leading-[0.9]"
+            <h2 className="text-6xl md:text-7xl lg:text-8xl font-serif font-bold text-primary mb-4 md:mb-6 leading-[1.1]"
                 style={{ letterSpacing: "-0.04em" }}>
-              The Craving
-              <br />
-              <span className="italic" style={{ color: "hsl(43 74% 48%)" }}>Difference</span>
+              The Craving <span className="italic" style={{ color: "hsl(43 74% 48%)" }}>Difference</span>
             </h2>
 
-            <div className="space-y-10">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4 md:gap-6 lg:space-y-4">
               {benefits.map((benefit, index) => (
                 <motion.div
                   key={index}
@@ -106,11 +104,7 @@ const BenefitsSection = () => {
                   }}
                   className="flex items-start gap-6 group"
                 >
-                  <div className="w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0 transition-transform duration-500 group-hover:scale-105 shadow-md"
-                       style={{ background: "hsl(40 18% 96%)", border: "1px solid hsl(38 12% 88%)" }}>
-                    <benefit.icon className="w-6 h-6" style={{ color: "hsl(43 74% 48%)" }} />
-                  </div>
-                  <div className="pt-1.5">
+                  <div className="pt-1.5 flex-1">
                     <h4 className="font-serif font-bold text-2xl text-primary mb-2">
                       {benefit.title}
                     </h4>

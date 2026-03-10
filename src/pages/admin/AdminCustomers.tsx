@@ -206,14 +206,14 @@ const AdminCustomers = () => {
                                                         <span className={`text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 rounded-full ${order.status === 'completed' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-neutral-800 text-neutral-400'}`}>
                                                             {order.status}
                                                         </span>
-                                                        <p className="font-bold text-neutral-100 mt-1">৳{order.total.toFixed(2)}</p>
+                                                        <p className="font-bold text-neutral-100 mt-1">৳{Math.round(order.total)}</p>
                                                     </div>
                                                 </div>
                                                 <div className="pt-3 border-t border-neutral-800/50 space-y-1">
                                                     {order.items.map((item, i) => (
                                                         <div key={i} className="flex justify-between text-xs text-neutral-400">
                                                             <span>{item.quantity}x {item.title}</span>
-                                                            <span>৳{(item.price * item.quantity).toFixed(2)}</span>
+                                                            <span>৳{Math.round(item.price * item.quantity)}</span>
                                                         </div>
                                                     ))}
                                                 </div>
