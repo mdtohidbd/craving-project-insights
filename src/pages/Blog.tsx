@@ -55,7 +55,7 @@ const Blog = () => {
       <Navbar />
 
       {/* Hero Section */}
-      <section className="bg-primary pt-40 pb-36 relative overflow-hidden">
+      <section className="bg-primary pt-20 pb-12 relative overflow-hidden">
         <div className="absolute inset-0">
           <div className="absolute top-[-10%] left-[-10%] w-[600px] h-[600px] rounded-full pointer-events-none" 
                style={{ background: "radial-gradient(circle, hsl(43 60% 50% / 0.05), transparent 70%)" }} />
@@ -65,7 +65,7 @@ const Blog = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.1 }}
-            className="text-[11px] uppercase tracking-[0.3em] font-medium mb-6 block"
+            className="text-[11px] uppercase tracking-[0.3em] font-medium mb-3 block"
             style={{ color: "hsl(43 74% 48% / 0.8)" }}
           >
             ✦ Journal & Insights
@@ -74,7 +74,7 @@ const Blog = () => {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
-            className="text-7xl md:text-8xl lg:text-9xl font-serif font-bold text-primary-foreground leading-[0.9] mb-8"
+            className="text-7xl md:text-8xl lg:text-9xl font-serif font-bold text-primary-foreground leading-[0.9] mb-3"
             style={{ letterSpacing: "-0.04em", color: "hsl(40 20% 96%)" }}
           >
             Foodie
@@ -86,7 +86,7 @@ const Blog = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
             className="max-w-xl mx-auto text-[18px] leading-[1.8]"
-            style={{ color: "hsl(40 20% 96% / 0.5)" }}
+            style={{ color: "hsl(40 20% 96% / 0.85)" }}
           >
             From behind-the-scenes stories to expert cooking techniques,
             these stories are crafted to inspire your culinary journey.
@@ -112,7 +112,7 @@ const Blog = () => {
                 className="group"
               >
                 <Link to={`/blog/${post.id}`} className="block">
-                  <div className="relative overflow-hidden mb-8 shadow-sm" style={{ borderRadius: "2rem" }}>
+                  <div className="relative overflow-hidden mb-5 shadow-sm" style={{ borderRadius: "2rem" }}>
                     <img
                       src={post.image}
                       alt={post.title}
@@ -138,7 +138,7 @@ const Blog = () => {
                   <h3 className="text-2xl font-serif font-bold text-primary mb-3 transition-colors duration-300 group-hover:opacity-80">
                     {post.title}
                   </h3>
-                  <p className="text-muted-foreground text-[16px] leading-[1.7] opacity-90 pr-4">
+                  <p className="text-muted-foreground text-[16px] leading-[1.7] opacity-90 pr-4 mb-2">
                     {post.excerpt}
                   </p>
                 </Link>
@@ -178,18 +178,18 @@ const Blog = () => {
               viewport={{ once: true }}
               transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
             >
-              <span className="text-[11px] uppercase tracking-[0.3em] font-medium mb-6 block"
+              <span className="text-[11px] uppercase tracking-[0.3em] font-medium mb-3 block"
                     style={{ color: "hsl(43 74% 48% / 0.8)" }}>
                 ✦ Stay Connected
               </span>
-              <h2 className="text-6xl md:text-7xl lg:text-8xl font-serif font-bold text-primary mb-12 leading-[0.9]"
+              <h2 className="text-6xl md:text-7xl lg:text-8xl font-serif font-bold text-primary mb-6 leading-[0.9]"
                   style={{ letterSpacing: "-0.04em" }}>
                 Read Our
                 <br />
                 <span className="italic" style={{ color: "hsl(43 74% 48%)" }}>Blog</span>
               </h2>
 
-              <div className="space-y-10">
+              <div className="space-y-6">
                 <div className="flex items-start gap-6 group">
                   <div className="w-14 h-14 flex items-center justify-center flex-shrink-0 transition-transform duration-500 group-hover:scale-105 shadow-sm"
                        style={{ background: "hsl(40 18% 96%)", borderRadius: "1.5rem", border: "1px solid hsl(38 12% 88%)" }}>

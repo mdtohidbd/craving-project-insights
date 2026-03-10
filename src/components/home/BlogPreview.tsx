@@ -40,10 +40,10 @@ const BlogPreview = () => {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.8 }}
-          className="flex flex-col md:flex-row md:items-end justify-between gap-10 mb-20 md:mb-24"
+          className="flex flex-col md:flex-row md:items-end justify-between gap-10 mb-8 md:mb-10"
         >
           <div>
-            <span className="text-[11px] uppercase tracking-[0.3em] font-medium mb-6 block"
+            <span className="text-[11px] uppercase tracking-[0.3em] font-medium mb-3 block"
                   style={{ color: "hsl(43 74% 48% / 0.8)" }}>
               ✦ From the Kitchen
             </span>
@@ -81,7 +81,7 @@ const BlogPreview = () => {
             >
               <Link to={`/blog/${post.id}`} className="block">
                 {/* Image */}
-                <div className="relative overflow-hidden mb-8 shadow-sm" style={{ borderRadius: "2rem" }}>
+                <div className="relative overflow-hidden mb-3 shadow-sm" style={{ borderRadius: "2rem" }}>
                   <img
                     src={post.image}
                     alt={post.title}

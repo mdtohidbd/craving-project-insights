@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
-import { ArrowUpRight, FileText, ShoppingCart } from "lucide-react";
+import { ArrowUpRight, FileText, ShoppingCart, Check } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import gsap from "gsap";
@@ -77,11 +77,14 @@ export const resolveImage = (img: string) => imageMap[img] || img;
 const toId = (str: string) => str.toLowerCase().replace(/[^a-z0-9]+/g, "-");
 
 const Menu = () => {
-  const { addToCart } = useCart();
+  const { addToCart, cart, updateQuantity } = useCart();
   const [categories, setCategories] = useState<string[]>([]);
   const [activeCategory, setActiveCategory] = useState("");
   const [allMenuItems, setAllMenuItems] = useState<any[]>([]);
+  const [addedItems, setAddedItems] = useState<Record<string, boolean>>({});
   const containerRef = useRef<HTMLDivElement>(null);
+
+  const getCartItem = (itemId: string) => cart.find(c => String(c.id) === String(itemId));
 
   useEffect(() => {
     const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
@@ -160,6 +163,26 @@ const Menu = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, [categories]);
 
+  // Auto-scroll the category bar to keep the active item visible
+  useEffect(() => {
+    if (activeCategory) {
+      const activeBtn = document.getElementById(`cat-btn-${toId(activeCategory)}`);
+      const navContainer = document.getElementById('category-nav');
+      
+      if (activeBtn && navContainer) {
+        const containerWidth = navContainer.offsetWidth;
+        const btnLeft = activeBtn.offsetLeft;
+        const btnWidth = activeBtn.offsetWidth;
+        
+        // Center the active button in the scrollable container
+        navContainer.scrollTo({
+          left: btnLeft - (containerWidth / 2) + (btnWidth / 2),
+          behavior: 'smooth'
+        });
+      }
+    }
+  }, [activeCategory]);
+
   const scrollToCategory = (category: string) => {
     const element = document.getElementById(toId(category));
     if (element) {
@@ -174,18 +197,16 @@ const Menu = () => {
       <Navbar />
 
       {/* Hero Section */}
-      <section className="bg-primary pt-40 pb-20 relative overflow-hidden">
+      <section className="bg-primary pt-24 pb-12 relative overflow-hidden">
         <div className="container mx-auto px-6 md:px-12 text-center relative z-10 hoverable">
           <motion.h1
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
-            className="text-6xl md:text-7xl lg:text-8xl font-serif font-bold leading-[0.9] mb-6"
-            style={{ color: "hsl(40 20% 96%)", letterSpacing: "-0.04em" }}
+            className="text-5xl md:text-7xl lg:text-9xl font-serif font-bold leading-tight mb-3"
+            style={{ color: "hsl(40 20% 96%)", letterSpacing: "-0.02em" }}
           >
-            Our
-            <br />
-            <span className="italic" style={{ color: "hsl(43 74% 48%)" }}>Menu</span>
+            Our <span className="italic" style={{ color: "hsl(43 74% 48%)" }}>Menu</span>
           </motion.h1>
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -202,16 +223,20 @@ const Menu = () => {
       </section>
 
       {/* Sticky Category Nav */}
-      <div className="sticky top-24 z-40 bg-[hsl(40_18%_96%)]/95 backdrop-blur-xl border-b border-primary/10 shadow-sm py-4">
-        <div className="container mx-auto px-6 md:px-12">
-          <div className="flex overflow-x-auto gap-3 md:gap-6 hide-scrollbar justify-start md:justify-center items-center">
+      <div className="sticky top-20 z-40 bg-[hsl(40_18%_96%)]/95 backdrop-blur-xl border-b border-primary/10 shadow-sm py-3 transition-all duration-300">
+        <div className="container mx-auto px-4 md:px-12">
+          <div 
+            id="category-nav"
+            className="flex overflow-x-auto gap-2 md:gap-4 hide-scrollbar justify-start md:justify-center items-center py-1"
+          >
             {categories.map((category) => (
               <button
                 key={category}
+                id={`cat-btn-${toId(category)}`}
                 onClick={() => scrollToCategory(category)}
-                className={`flex-shrink-0 px-6 py-2.5 rounded-full text-[12px] uppercase tracking-[0.2em] font-medium transition-all duration-300 hoverable ${activeCategory === category
-                  ? "shadow-md transform scale-105"
-                  : "hover:bg-primary/5 hover:transform hover:scale-105"
+                className={`flex-shrink-0 px-5 py-2 rounded-full text-[11px] md:text-[12px] uppercase tracking-[0.15em] font-bold transition-all duration-500 whitespace-nowrap hoverable ${activeCategory === category
+                  ? "shadow-[0_4px_12px_rgba(228,168,32,0.25)] scale-105"
+                  : "hover:bg-primary/5 hover:scale-105"
                   }`}
                 style={
                   activeCategory === category
@@ -219,12 +244,11 @@ const Menu = () => {
                       background: "hsl(43 74% 48%)",
                       color: "hsl(195 30% 8%)",
                       border: "1px solid hsl(43 74% 48%)",
-                      fontWeight: "bold"
                     }
                     : {
                       background: "transparent",
-                      color: "hsl(195 30% 12% / 0.7)",
-                      border: "1px solid hsl(38 12% 88%)",
+                      color: "hsl(195 30% 12% / 0.6)",
+                      border: "1px solid hsl(38 12% 88% / 0.5)",
                     }
                 }
               >
@@ -236,19 +260,19 @@ const Menu = () => {
       </div>
 
       {/* Menu Categories Array */}
-      <div className="container mx-auto px-6 md:px-12 pb-32">
+      <div className="container mx-auto px-6 md:px-12 pb-20">
         {categories.map((category) => {
           const categoryItems = allMenuItems.filter((item) => item.category === category);
 
           if (categoryItems.length === 0) return null;
 
           return (
-            <div key={category} id={toId(category)} className="pt-24 pb-12 border-b border-primary/10 last:border-0 scroll-mt-32">
+            <div key={category} id={toId(category)} className="pt-10 pb-6 border-b border-primary/10 last:border-0 scroll-mt-32">
               <motion.h2
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-100px" }}
-                className="text-4xl md:text-5xl font-serif font-bold text-primary mb-12 text-center"
+                className="text-4xl md:text-5xl font-serif font-bold text-primary mb-4 text-center"
               >
                 {category}
               </motion.h2>
@@ -263,8 +287,8 @@ const Menu = () => {
                       to={`/menu/${item.id}`}
                       className="group gsap-menu-card opacity-0 block h-full"
                     >
-                      <div className="flex flex-col items-center bg-transparent group mb-12 cursor-pointer h-full hoverable">
-                        <div className={`relative overflow-hidden aspect-square w-full max-w-[260px] mx-auto mb-6 transition-transform duration-500 group-hover:scale-105 shadow-[0_10px_30px_rgba(0,0,0,0.08)] bg-white border border-black/5 ${shapeClass}`}>
+                      <div className="flex flex-col items-center bg-transparent group mb-6 cursor-pointer h-full hoverable">
+                        <div className={`relative overflow-hidden aspect-square w-full max-w-[260px] mx-auto mb-4 transition-transform duration-500 group-hover:scale-105 shadow-[0_10px_30px_rgba(0,0,0,0.08)] bg-white border border-black/5 ${shapeClass}`}>
                           <img
                             src={resolveImage(item.image)}
                             alt={item.title}
@@ -285,30 +309,77 @@ const Menu = () => {
                         </div>
 
                         <h3 className="text-xl md:text-2xl font-serif font-bold text-primary mb-3 text-center transition-colors group-hover:text-[hsl(43_74%_48%)] px-2">
-                          {item.title} <span className="font-serif font-bold tracking-tight text-xl ml-1">{item.price}</span>
+                          {item.title} <span className="font-serif font-bold tracking-tight text-xl md:text-2xl ml-1 text-accent">{item.price?.replace('$', '৳').replace('.00', '')}</span>
                         </h3>
-                        <p className="text-[13px] md:text-[14px] text-center text-primary/80 leading-relaxed px-4 md:px-8 mb-4 font-medium line-clamp-2">
+                        <p className="text-[13px] md:text-[14px] text-center text-primary/80 leading-relaxed px-4 md:px-8 mb-3 font-medium line-clamp-2">
                           {item.description}
                         </p>
 
                         <div className="mt-auto px-4 md:px-8 w-full flex flex-col gap-3 pb-2 z-10">
-                          <button
-                            onClick={(e) => {
-                              e.preventDefault();
-                              const numericPrice = parseFloat(item.price.replace(/[^0-9.]/g, ''));
-                              addToCart({
-                                id: item.id,
-                                title: item.title,
-                                price: isNaN(numericPrice) ? 0 : numericPrice,
-                                priceStr: item.price,
-                                image: resolveImage(item.image),
-                              });
-                            }}
-                            className="flex items-center justify-center gap-2 bg-[hsl(43_74%_48%)] text-[hsl(195_30%_8%)] w-full py-2.5 rounded-full text-[11px] uppercase tracking-[0.1em] font-bold shadow-[0_4px_14px_rgba(228,168,32,0.3)] hover:scale-105 hover:bg-[hsl(43_74%_48%)]/90 transition-all z-20"
-                          >
-                            <ShoppingCart size={15} />
-                            Add to Cart
-                          </button>
+                          {(() => {
+                            const cartItem = getCartItem(item.id);
+                            if (cartItem) {
+                              return (
+                                <motion.div
+                                  initial={{ opacity: 0, scale: 0.8 }}
+                                  animate={{ opacity: 1, scale: 1 }}
+                                  className="flex items-center justify-between w-full bg-emerald-500 rounded-full overflow-hidden shadow-[0_4px_14px_rgba(16,185,129,0.35)]"
+                                  onClick={(e) => e.preventDefault()}
+                                >
+                                  <button
+                                    onClick={(e) => { e.preventDefault(); updateQuantity(cartItem.id, cartItem.quantity - 1); }}
+                                    className="w-10 h-10 flex items-center justify-center text-white font-bold text-xl hover:bg-white/20 transition-colors rounded-full"
+                                  >
+                                    −
+                                  </button>
+                                  <span className="text-white font-bold text-sm flex items-center gap-1.5">
+                                    <Check size={13} strokeWidth={3} />
+                                    {cartItem.quantity} in cart
+                                  </span>
+                                  <button
+                                    onClick={(e) => { e.preventDefault(); updateQuantity(cartItem.id, cartItem.quantity + 1); }}
+                                    className="w-10 h-10 flex items-center justify-center text-white font-bold text-xl hover:bg-white/20 transition-colors rounded-full"
+                                  >
+                                    +
+                                  </button>
+                                </motion.div>
+                              );
+                            }
+                            return (
+                              <button
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  const numericPrice = parseFloat(item.price.replace(/[^0-9.]/g, ''));
+                                  addToCart({
+                                    id: item.id,
+                                    title: item.title,
+                                    price: isNaN(numericPrice) ? 0 : numericPrice,
+                                    priceStr: item.price?.replace('$', '৳').replace('.00', ''),
+                                    image: resolveImage(item.image),
+                                  });
+                                  setAddedItems(prev => ({ ...prev, [item.id]: true }));
+                                  setTimeout(() => { setAddedItems(prev => ({ ...prev, [item.id]: false })); }, 1500);
+                                }}
+                                className={`flex items-center justify-center gap-2 w-full py-2.5 rounded-full text-[11px] uppercase tracking-[0.1em] font-bold transition-all duration-300 z-20 ${
+                                  addedItems[item.id]
+                                    ? 'bg-emerald-500 text-white shadow-[0_4px_14px_rgba(16,185,129,0.4)] scale-95'
+                                    : 'bg-[hsl(43_74%_48%)] text-[hsl(195_30%_8%)] shadow-[0_4px_14px_rgba(228,168,32,0.3)] hover:scale-105'
+                                }`}
+                              >
+                                <AnimatePresence mode="wait">
+                                  {addedItems[item.id] ? (
+                                    <motion.span key="added" initial={{ opacity: 0, scale: 0.7 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.7 }} className="flex items-center gap-1.5">
+                                      <Check size={15} strokeWidth={3} /> Added!
+                                    </motion.span>
+                                  ) : (
+                                    <motion.span key="add" initial={{ opacity: 0, scale: 0.7 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.7 }} className="flex items-center gap-1.5">
+                                      <ShoppingCart size={15} /> Add to Cart
+                                    </motion.span>
+                                  )}
+                                </AnimatePresence>
+                              </button>
+                            );
+                          })()}
 
                           <div className="flex items-center justify-center gap-2 text-[10px] uppercase tracking-[0.2em] font-bold text-[hsl(43_74%_48%)] group-hover:text-primary transition-colors duration-300">
                             View Details

@@ -14,7 +14,7 @@ const Footer = () => {
   return (
     <footer className="relative overflow-hidden">
       {/* CTA Section */}
-      <div className="relative py-14 overflow-hidden">
+      <div className="relative py-10 md:py-12 overflow-hidden">
         <div
           className="absolute inset-0 bg-cover bg-center"
           style={{
@@ -39,13 +39,13 @@ const Footer = () => {
                   style={{ color: "hsl(43 74% 48% / 0.8)" }}>
               ✦ Don't Wait Any Longer
             </span>
-            <h2 className="text-4xl md:text-6xl font-serif font-bold text-primary-foreground mb-4 leading-[0.9]"
+            <h2 className="text-4xl md:text-6xl font-serif font-bold text-primary-foreground mb-3 leading-[0.9]"
                 style={{ letterSpacing: "-0.04em" }}>
               Your Table
               <br />
               <span className="italic" style={{ color: "hsl(43 74% 48%)" }}>Awaits</span>
             </h2>
-            <p className="max-w-lg mx-auto mb-7 text-[15px] leading-[1.7]"
+            <p className="max-w-lg mx-auto mb-5 text-[15px] leading-[1.7]"
                style={{ color: "hsl(40 20% 96% / 0.6)" }}>
               From classic comfort food to exotic international flavors — every dish
               tells a story worth tasting. Let us serve you perfection.
@@ -62,7 +62,7 @@ const Footer = () => {
       </div>
 
       {/* Footer Content */}
-      <div className="bg-primary pt-10 pb-6">
+      <div className="bg-primary pt-8 pb-5">
         <div className="container mx-auto px-6">
           <div className="grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-12 mb-8 border-b pb-8"
                style={{ borderColor: "hsl(40 20% 96% / 0.08)" }}>

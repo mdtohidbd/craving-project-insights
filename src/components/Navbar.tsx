@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, Flame } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { Cart } from "./Cart";
 
 const navLinks = [
@@ -36,14 +36,9 @@ const Navbar = () => {
         }`}
       >
         <div className="container mx-auto px-6 md:px-12">
-          <div className="flex items-center justify-between h-24">
+          <div className="flex items-center justify-between h-20">
             {/* Logo */}
             <Link to="/" className="flex items-center gap-3 group">
-              <div className="relative">
-                <Flame className="w-8 h-8 transition-transform duration-500 group-hover:scale-110" style={{ color: "hsl(43 74% 48%)" }} />
-                <div className="absolute inset-0 blur-xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500"
-                     style={{ background: "hsl(43 74% 48% / 0.4)" }} />
-              </div>
               <span className="text-3xl font-serif font-bold text-primary-foreground" style={{ letterSpacing: "-0.01em" }}>
                 Craving
               </span>
@@ -118,7 +113,7 @@ const Navbar = () => {
             animate={{ opacity: 1, height: "100vh" }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-            className="md:hidden fixed top-24 left-0 right-0 bg-primary/98 backdrop-blur-xl border-t border-white/5"
+            className="md:hidden fixed top-20 left-0 right-0 bg-primary/98 backdrop-blur-xl border-t border-white/5"
           >
             <div className="container mx-auto px-6 py-12 flex flex-col items-center gap-6">
               {navLinks.map((link, i) => (

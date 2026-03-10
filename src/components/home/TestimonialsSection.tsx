@@ -40,17 +40,15 @@ const TestimonialsSection = () => {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.8 }}
-          className="text-center mb-24"
+          className="text-center mb-8 md:mb-10"
         >
-          <span className="text-[11px] uppercase tracking-[0.3em] font-medium mb-6 block"
+          <span className="text-[11px] uppercase tracking-[0.3em] font-medium mb-3 block"
                 style={{ color: "hsl(43 74% 48% / 0.8)" }}>
             ✦ Guest Voices
           </span>
-          <h2 className="text-6xl md:text-7xl lg:text-8xl font-serif font-bold text-primary leading-[0.9]"
+          <h2 className="text-6xl md:text-7xl lg:text-8xl font-serif font-bold text-primary leading-[1.1]"
               style={{ letterSpacing: "-0.04em" }}>
-            Words of
-            <br />
-            <span className="italic" style={{ color: "hsl(43 74% 48%)" }}>Appreciation</span>
+            Words of <span className="italic" style={{ color: "hsl(43 74% 48%)" }}>Appreciation</span>
           </h2>
         </motion.div>
 

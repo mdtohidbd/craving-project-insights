@@ -47,7 +47,7 @@ const About = () => {
       <Navbar />
 
       {/* Hero Section */}
-      <section className="bg-primary pt-36 pb-24 relative overflow-hidden">
+      <section className="bg-primary pt-20 pb-12 relative overflow-hidden">
         <div className="absolute inset-0">
           <div className="absolute top-[0%] right-[-10%] w-[600px] h-[600px] rounded-full pointer-events-none" 
                style={{ background: "radial-gradient(circle, hsl(43 60% 50% / 0.05), transparent 70%)" }} />
@@ -57,20 +57,20 @@ const About = () => {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-            className="text-center mb-16"
+            className="text-center mb-10"
           >
-            <span className="text-[11px] uppercase tracking-[0.3em] font-medium mb-6 block"
+            <span className="text-[11px] uppercase tracking-[0.3em] font-medium mb-4 block"
                   style={{ color: "hsl(43 74% 48% / 0.8)" }}>
               ✦ Our Journey
             </span>
-            <h1 className="text-7xl md:text-8xl lg:text-9xl font-serif font-bold text-primary-foreground leading-[0.9] mb-8"
+            <h1 className="text-7xl md:text-8xl lg:text-9xl font-serif font-bold text-primary-foreground leading-[0.9] mb-4"
                 style={{ letterSpacing: "-0.04em" }}>
               The Story of
               <br />
               <span className="italic" style={{ color: "hsl(43 74% 48%)" }}>Craving</span>
             </h1>
             <p className="max-w-xl mx-auto text-[18px] leading-[1.8]"
-               style={{ color: "hsl(40 20% 96% / 0.5)" }}>
+               style={{ color: "hsl(40 20% 96% / 0.85)" }}>
               Discover our steadfast commitment to the highest quality food and
               creating unforgettable dining experiences for every guest.
             </p>
@@ -98,7 +98,7 @@ const About = () => {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.5 }}
-            className="grid grid-cols-2 md:grid-cols-4 gap-10 mt-20"
+            className="grid grid-cols-2 md:grid-cols-4 gap-10 mt-12"
           >
             {stats.map((stat, index) => (
               <div key={index} className="text-center">
@@ -142,22 +142,22 @@ const About = () => {
               viewport={{ once: true }}
               transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
             >
-              <span className="text-[11px] uppercase tracking-[0.3em] font-medium mb-6 block"
+              <span className="text-[11px] uppercase tracking-[0.3em] font-medium mb-3 block"
                     style={{ color: "hsl(43 74% 48% / 0.8)" }}>
                 ✦ Our Difference
               </span>
-              <h2 className="text-5xl md:text-6xl lg:text-7xl font-serif font-bold text-primary mb-8 leading-[0.9]"
+              <h2 className="text-5xl md:text-6xl lg:text-7xl font-serif font-bold text-primary mb-3 leading-[0.9]"
                   style={{ letterSpacing: "-0.04em" }}>
                 Experience the
                 <br />
                 Unique <span className="italic" style={{ color: "hsl(43 74% 48%)" }}>Craving</span>
               </h2>
-              <p className="text-muted-foreground text-[16px] leading-[1.8] mb-6 max-w-md">
+              <p className="text-muted-foreground text-[16px] leading-[1.8] mb-4 max-w-md">
                 At Craving, we believe there's something for every discerning taste.
                 Whether it's a quick meal on-the-go or a special anniversary,
                 we perfectly satisfy every craving.
               </p>
-              <p className="text-muted-foreground text-[16px] leading-[1.8] mb-12 max-w-md">
+              <p className="text-muted-foreground text-[16px] leading-[1.8] mb-5 max-w-md">
                 We're not just another fine dining restaurant — we're your culinary
                 companions. From discovering bold new flavors to mastering authentic classic
                 dishes, expect nothing less than an absolute feast.
@@ -192,11 +192,11 @@ const About = () => {
               viewport={{ once: true }}
               transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
             >
-              <span className="text-[11px] uppercase tracking-[0.3em] font-medium mb-6 block"
+              <span className="text-[11px] uppercase tracking-[0.3em] font-medium mb-3 block"
                     style={{ color: "hsl(43 74% 48% / 0.8)" }}>
                 ✦ Why We Stand Out
               </span>
-              <h2 className="text-5xl md:text-6xl lg:text-7xl font-serif font-bold text-primary mb-12 leading-[0.9]"
+              <h2 className="text-5xl md:text-6xl lg:text-7xl font-serif font-bold text-primary mb-5 leading-[0.9]"
                   style={{ letterSpacing: "-0.04em" }}>
                 Why Choose
                 <br />
@@ -206,7 +206,7 @@ const About = () => {
               <Accordion
                 type="single"
                 collapsible
-                className="w-full mb-16"
+                className="w-full mb-5"
                 defaultValue="item-0"
               >
                 {whyChoose.map((item, index) => (
@@ -225,7 +225,7 @@ const About = () => {
                 ))}
               </Accordion>
               
-              <div className="space-y-6 pt-6 border-t border-border/50">
+              <div className="space-y-4 pt-5 border-t border-border/50">
                 {benefits.map((benefit, index) => (
                   <motion.div
                     key={index}
@@ -235,10 +235,6 @@ const About = () => {
                     transition={{ duration: 0.5, delay: index * 0.1 }}
                     className="flex items-center gap-5 group"
                   >
-                    <div className="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0 transition-all duration-500 shadow-sm"
-                         style={{ background: "hsl(40 18% 96%)", border: "1px solid hsl(38 12% 88%)" }}>
-                      <benefit.icon className="w-5 h-5" style={{ color: "hsl(43 74% 48%)" }} />
-                    </div>
                     <span className="text-foreground font-serif font-bold text-[18px]">
                       {benefit.text}
                     </span>
