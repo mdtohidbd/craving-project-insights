@@ -64,6 +64,12 @@ const MenuDetail = () => {
     fetch(`${apiUrl}/menu`)
       .then(res => res.json())
       .then(data => {
+        data.forEach((m: any) => { 
+          if (m.title === "Guacamole") m.image = "guacamoleCustom";
+          if (m.title === "Original Falafel Wrap") m.image = "originalFalafelWrapCustom";
+          if (m.title === "Beyond Kebab") m.image = "beyondKebabCustom";
+          if (m.title === "Desi Falafel Plate") m.image = "desiFalafelPlateCustom";
+        });
         const found = data.find((m: any) => m.id.toString() === id);
         setItem(found);
         setRelatedItems(data.filter((m: any) => m.id.toString() !== id).slice(0, 3));
