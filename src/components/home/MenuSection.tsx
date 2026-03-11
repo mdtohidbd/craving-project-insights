@@ -18,6 +18,12 @@ const MenuSection = () => {
         const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
         const res = await fetch(`${apiUrl}/menu`);
         const data = await res.json();
+        data.forEach((m: any) => { 
+          if (m.title === "Guacamole") m.image = "guacamoleCustom";
+          if (m.title === "Original Falafel Wrap") m.image = "originalFalafelWrapCustom";
+          if (m.title === "Beyond Kebab") m.image = "beyondKebabCustom";
+          if (m.title === "Desi Falafel Plate") m.image = "desiFalafelPlateCustom";
+        });
         // Limit to 6 items for the home page section
         setMenuItems(data.slice(0, 6));
       } catch (err) {

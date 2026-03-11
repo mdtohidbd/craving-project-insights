@@ -14,6 +14,7 @@ import Blog from "./pages/Blog";
 import BlogDetail from "./pages/BlogDetail";
 import Contact from "./pages/Contact";
 import Checkout from "./pages/Checkout";
+import BookTable from "./pages/BookTable";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminOrders from "./pages/admin/AdminOrders";
 import AdminCustomers from "./pages/admin/AdminCustomers";
@@ -22,6 +23,7 @@ import AdminCategories from "./pages/admin/AdminCategories";
 import AdminInventory from "./pages/admin/AdminInventory";
 import AdminMessages from "./pages/admin/AdminMessages";
 import AdminSettings from "./pages/admin/AdminSettings";
+import AdminReservations from "./pages/admin/AdminReservations";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -44,6 +46,7 @@ const App = () => (
             <Route path="/blog/:id" element={<BlogDetail />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/checkout" element={<Checkout />} />
+            <Route path="/book-table" element={<BookTable />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="/admin" element={<AdminDashboard />} />
             <Route path="/admin/orders" element={<AdminOrders />} />
@@ -53,6 +56,7 @@ const App = () => (
             <Route path="/admin/inventory" element={<AdminInventory />} />
             <Route path="/admin/messages" element={<AdminMessages />} />
             <Route path="/admin/settings" element={<AdminSettings />} />
+            <Route path="/admin/reservations" element={<AdminReservations />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

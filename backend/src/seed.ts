@@ -3,19 +3,20 @@ import dotenv from 'dotenv';
 import { MenuItem } from './models/MenuItem';
 import { InventoryItem } from './models/InventoryItem';
 import Category from './models/Category';
+import { Reservation } from './models/Reservation';
 import connectDB from './config/db';
 
 dotenv.config();
 
 const seedMenuItems = [
   { originalId: 1, title: "Beet Avocado Toast", price: "$13", imageUrl: "https://images.unsplash.com/photo-1525351484163-7529414344d8?w=600", category: "Starters", description: "Beetroot hummus, avocado, pickled red onions, olive oil, sprinkled with everything bagel seasoning.", tags: ["GF"] },
-  { originalId: 2, title: "Guacamole", price: "$10", imageUrl: "https://images.unsplash.com/photo-1547005327-ef31e6a17238?w=600", category: "Starters", description: "Choice of pita chips or corn chips.", tags: ["GF"] },
+  { originalId: 2, title: "Guacamole", price: "$10", imageUrl: "guacamoleCustom", category: "Starters", description: "Choice of pita chips or corn chips.", tags: ["GF"] },
   { originalId: 13, title: "Loaded Cheese Nachos", price: "$14", imageUrl: "https://images.unsplash.com/photo-1513456852971-30c0b8199d4d?w=600", category: "Starters", description: "Corn chips loaded with cheese sauce, black beans, pickled red onions, tomatoes, green onions." },
   { originalId: 3, title: "BYO Pita Wrap or Bowl", price: "$14", imageUrl: "https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=600", category: "Main", description: "Choice of hummus, Cucumber, tomatoes, pickled red onions, mint, parsley, tahini, and pita.", tags: ["V"] },
   { originalId: 14, title: "Tabbouleh Bowl", price: "$16", imageUrl: "https://images.unsplash.com/photo-1540420773420-3366772f4999?w=600", category: "Main", description: "Tabbouleh salad, hummus, cucumber, plum tomatoes, pickles and tahini.", tags: ["V"] },
-  { originalId: 15, title: "Original Falafel Wrap", price: "$13", imageUrl: "https://images.unsplash.com/photo-1547005327-ef31e6a17238?w=600", category: "Main", description: "Hummus, cucumber, pickles, tomatoes, red onions, mint, parsley, tahini.", tags: ["V"] },
-  { originalId: 16, title: "Beyond Kebab", price: "$21", imageUrl: "https://images.unsplash.com/photo-1529006557810-2747c43974e8?w=600", category: "Main", description: "Beyond kebab served wrapped or on a plate with pita bread, rice, and grilled veggies.", tags: ["V"] },
-  { originalId: 17, title: "Desi Falafel Plate", price: "$16", imageUrl: "https://images.unsplash.com/photo-1547005327-ef31e6a17238?w=600", category: "Main", description: "Falafel, hummus, cucumber, chopped tomatoes, and a grilled green chili.", tags: ["V", "GF"] },
+  { originalId: 15, title: "Original Falafel Wrap", price: "$13", imageUrl: "originalFalafelWrapCustom", category: "Main", description: "Hummus, cucumber, pickles, tomatoes, red onions, mint, parsley, tahini.", tags: ["V"] },
+  { originalId: 16, title: "Beyond Kebab", price: "$21", imageUrl: "beyondKebabCustom", category: "Main", description: "Beyond kebab served wrapped or on a plate with pita bread, rice, and grilled veggies.", tags: ["V"] },
+  { originalId: 17, title: "Desi Falafel Plate", price: "$16", imageUrl: "desiFalafelPlateCustom", category: "Main", description: "Falafel, hummus, cucumber, chopped tomatoes, and a grilled green chili.", tags: ["V", "GF"] },
   { originalId: 4, title: "Beyond Burger", price: "$18", imageUrl: "https://images.unsplash.com/photo-1586190848861-99aa4a171e90?w=600", category: "Main", description: "Beyond burger patty, lettuce, tomatoes, and pickled pink onions.", tags: ["V"] },
   { originalId: 20, title: "Beetroot Falafel Burger", price: "$18", imageUrl: "https://images.unsplash.com/photo-1585238342024-78d387f4a707?w=600", category: "Main", description: "Beetroot falafel patty, avocado, tomatoes, greens on a toasted bun.", tags: ["V"] },
   { originalId: 25, title: "Gyro 'Carnitas' Tacos", price: "$18", imageUrl: "https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=600", category: "Main", description: "Vegan carnitas and gyro blend in tacos.", tags: ["V"] },
@@ -51,6 +52,11 @@ const seedCategories = [
     { name: "Mocktails", order: 8 }
 ];
 
+const seedReservations = [
+    { date: "2026-03-12", time: "19:00", guests: "2", name: "Toheed", phone: "01700000000", requests: "Window seat please", bookingId: "RES-777888", status: "pending" },
+    { date: "2026-03-13", time: "20:30", guests: "4", name: "Hasan", phone: "01800000000", requests: "Birthday celebration", bookingId: "RES-999000", status: "confirmed" }
+];
+
 const seedDatabase = async () => {
     try {
         await connectDB();
@@ -58,12 +64,14 @@ const seedDatabase = async () => {
         await MenuItem.deleteMany({});
         await InventoryItem.deleteMany({});
         await Category.deleteMany({});
+        await Reservation.deleteMany({});
         
         console.log("Existing data cleared.");
         
         await MenuItem.insertMany(seedMenuItems);
         await InventoryItem.insertMany(seedInventoryItems);
         await Category.insertMany(seedCategories);
+        await Reservation.insertMany(seedReservations);
         
         console.log("Database seeded successfully!");
         process.exit(0);
