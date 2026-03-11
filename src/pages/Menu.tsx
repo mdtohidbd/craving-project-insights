@@ -32,6 +32,10 @@ import mocktailsCollection from "@/assets/mocktails_collection.png";
 import coffeTeaCollection from "@/assets/coffee_tea_collection.png";
 import friesCollection from "@/assets/fries_collection.png";
 import soupsCollection from "@/assets/soups_collection.png";
+import guacamoleCustom from "@/assets/guacamole_custom.png";
+import originalFalafelWrapCustom from "@/assets/original_falafel_wrap_custom.png";
+import beyondKebabCustom from "@/assets/beyond_kebab_custom.png";
+import desiFalafelPlateCustom from "@/assets/desi_falafel_plate_custom.png";
 
 const DiamondStar = ({ className }: { className?: string }) => (
   <svg viewBox="0 0 24 24" className={className} fill="currentColor">
@@ -58,7 +62,7 @@ export const imageMap: Record<string, any> = {
   beyondBurger, gyroCarnitasTacos, justEggScramble, menuShrimp,
   soupsCollection, friesCollection, dessertsCollection, menuLatte,
   coffeTeaCollection, menuMojito, menuCoconut, mocktailsCollection,
-  menuDessert,
+  menuDessert, guacamoleCustom, originalFalafelWrapCustom, beyondKebabCustom, desiFalafelPlateCustom,
   "https://images.unsplash.com/photo-1585238342024-78d387f4a707?w=600": "https://images.unsplash.com/photo-1585238342024-78d387f4a707?w=600",
   "https://images.unsplash.com/photo-1628840042765-356cda07504e?w=600": "https://images.unsplash.com/photo-1628840042765-356cda07504e?w=600",
   "https://images.unsplash.com/photo-1586190848861-99aa4a171e90?w=600": "https://images.unsplash.com/photo-1586190848861-99aa4a171e90?w=600",
@@ -96,6 +100,12 @@ const Menu = () => {
       .then(async ([menuRes, catRes]) => {
         const menuData = await menuRes.json();
         const catData = await catRes.json();
+        menuData.forEach((m: any) => { 
+          if (m.title === "Guacamole") m.image = "guacamoleCustom";
+          if (m.title === "Original Falafel Wrap") m.image = "originalFalafelWrapCustom";
+          if (m.title === "Beyond Kebab") m.image = "beyondKebabCustom";
+          if (m.title === "Desi Falafel Plate") m.image = "desiFalafelPlateCustom";
+        });
         setAllMenuItems(menuData);
 
         const catNames = catData.filter((c: any) => c.name !== "All").map((c: any) => c.name);
