@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
     LayoutDashboard, Package, MessageSquare,
-    Settings, Bell, Menu, ArrowUpRight, Tag, List, ShoppingCart, Users
+    Settings, Bell, Menu, ArrowUpRight, Tag, List, ShoppingCart, Users, Calendar
 } from "lucide-react";
 
 interface AdminLayoutProps {
@@ -21,6 +21,7 @@ const AdminLayout = ({ children, title }: AdminLayoutProps) => {
         { label: "Menu Items", path: "/admin/menu", icon: <List className="w-5 h-5" /> },
         { label: "Categories", path: "/admin/categories", icon: <Tag className="w-5 h-5" /> },
         { label: "Inventory", path: "/admin/inventory", icon: <Package className="w-5 h-5" /> },
+        { label: "Reservations", path: "/admin/reservations", icon: <Calendar className="w-5 h-5" /> },
         { label: "Messages", path: "/admin/messages", icon: <MessageSquare className="w-5 h-5" /> },
         { label: "Settings", path: "/admin/settings", icon: <Settings className="w-5 h-5" /> },
     ];
