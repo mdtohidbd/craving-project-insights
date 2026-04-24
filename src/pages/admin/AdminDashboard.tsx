@@ -9,6 +9,9 @@ import { toast } from "sonner";
 interface DashboardData {
     metrics: {
         totalSales: number;
+        todaySales: number;
+        monthlySales: number;
+        totalOrders: number;
         activeOrders: number;
         lowStockItems: number;
     };
@@ -54,27 +57,34 @@ const AdminDashboard = () => {
         <AdminLayout title="Overview">
             <div className="space-y-8 pb-10">
                 {/* Metrics */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                     <MetricCard
-                        title="Total Sales"
-                        value={`৳${Math.round(data.metrics.totalSales)}`}
+                        title="Today's Sales"
+                        value={`৳${Math.round(data.metrics.todaySales || 0)}`}
                         trend=""
                         isPositive={true}
                         icon={<TrendingUp className="w-4 h-4 text-emerald-400" />}
+                    />
+                    <MetricCard
+                        title="This Month"
+                        value={`৳${Math.round(data.metrics.monthlySales || 0)}`}
+                        trend=""
+                        isPositive={true}
+                        icon={<TrendingUp className="w-4 h-4 text-emerald-400" />}
+                    />
+                    <MetricCard
+                        title="Total Orders"
+                        value={(data.metrics.totalOrders || 0).toString()}
+                        trend=""
+                        isPositive={true}
+                        icon={<Package className="w-4 h-4 text-blue-400" />}
                     />
                     <MetricCard
                         title="Active Orders"
                         value={data.metrics.activeOrders.toString()}
                         trend=""
                         isPositive={true}
-                        icon={<Package className="w-4 h-4 text-blue-400" />}
-                    />
-                    <MetricCard
-                        title="Low Stock Items"
-                        value={data.metrics.lowStockItems.toString()}
-                        trend=""
-                        isPositive={data.metrics.lowStockItems === 0}
-                        icon={<AlertCircle className="w-4 h-4 text-rose-400" />}
+                        icon={<Clock className="w-4 h-4 text-amber-400" />}
                     />
                 </div>
 
