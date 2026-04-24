@@ -1,10 +1,12 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, ArrowUpRight, ShoppingCart, Minus, Plus, Check } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { useCart } from "@/context/CartContext";
+import { MenuItem } from "@/types";
+import { applyCustomImages } from "@/utils/menuUtils";
 
 import menuMojito from "@/assets/menu-mojito.jpg";
 import menuCoconut from "@/assets/menu-coconut.jpg";
@@ -52,27 +54,36 @@ const MenuDetail = () => {
   const { id } = useParams();
   const { addToCart, cart, updateQuantity } = useCart();
   const [quantity, setQuantity] = useState(1);
-  const [item, setItem] = useState<any>(null);
-  const [relatedItems, setRelatedItems] = useState<any[]>([]);
+  const [item, setItem] = useState<MenuItem | null>(null);
+  const [relatedItems, setRelatedItems] = useState<MenuItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [addedRelated, setAddedRelated] = useState<Record<string, boolean>>({});
+  const timeoutRef = useRef<Record<string, NodeJS.Timeout>>({});
 
   const getCartItem = (itemId: string) => cart.find(c => String(c.id) === String(itemId));
 
   useEffect(() => {
     const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
     fetch(`${apiUrl}/menu`)
-      .then(res => res.json())
+      .then(res => {
+        if (!res.ok) {
+          console.error("Failed to load menu data: Server returned", res.status);
+          setLoading(false);
+          return;
+        }
+        return res.json();
+      })
       .then(data => {
-        data.forEach((m: any) => { 
-          if (m.title === "Guacamole") m.image = "guacamoleCustom";
-          if (m.title === "Original Falafel Wrap") m.image = "originalFalafelWrapCustom";
-          if (m.title === "Beyond Kebab") m.image = "beyondKebabCustom";
-          if (m.title === "Desi Falafel Plate") m.image = "desiFalafelPlateCustom";
-        });
-        const found = data.find((m: any) => m.id.toString() === id);
+        if (!data) return;
+        if (!Array.isArray(data)) {
+          console.error("Failed to load menu data: Expected array, got", typeof data);
+          setLoading(false);
+          return;
+        }
+        const processedData = applyCustomImages(data);
+        const found = processedData.find((m: MenuItem) => m.id.toString() === id);
         setItem(found);
-        setRelatedItems(data.filter((m: any) => m.id.toString() !== id).slice(0, 3));
+        setRelatedItems(processedData.filter((m: MenuItem) => m.id.toString() !== id).slice(0, 3));
         setLoading(false);
       })
       .catch(err => {
@@ -80,6 +91,12 @@ const MenuDetail = () => {
         setLoading(false);
       });
   }, [id]);
+
+  useEffect(() => {
+    return () => {
+      Object.values(timeoutRef.current).forEach(clearTimeout);
+    };
+  }, []);
 
   if (loading) {
     return (
@@ -214,7 +231,7 @@ const MenuDetail = () => {
                     <div className="flex flex-col gap-2">
                       <button
                         onClick={() => {
-                          const numericPrice = parseFloat(item.price.replace(/[^0-9.]/g, ''));
+                          const numericPrice = parseFloat((item.price || '0').replace(/[^0-9.]/g, ''));
                           addToCart({
                             id: Number(item.id),
                             title: item.title,
@@ -315,7 +332,7 @@ const MenuDetail = () => {
 
                       <div className="mt-auto px-4 md:px-8 w-full flex flex-col gap-3 pb-2 z-10">
                         {(() => {
-                          const cartItem = getCartItem(item.id);
+                          const cartItem = getCartItem(String(item.id));
                           if (cartItem) {
                             return (
                               <motion.div
@@ -325,7 +342,7 @@ const MenuDetail = () => {
                                 onClick={(e) => e.preventDefault()}
                               >
                                 <button
-                                  onClick={(e) => { e.preventDefault(); updateQuantity(cartItem.id, cartItem.quantity - 1); }}
+                                  onClick={(e) => { e.preventDefault(); updateQuantity(Number(cartItem.id), cartItem.quantity - 1); }}
                                   className="w-10 h-10 flex items-center justify-center text-white font-bold text-xl hover:bg-white/20 transition-colors rounded-full"
                                 >
                                   −
@@ -335,7 +352,7 @@ const MenuDetail = () => {
                                   {cartItem.quantity} in cart
                                 </span>
                                 <button
-                                  onClick={(e) => { e.preventDefault(); updateQuantity(cartItem.id, cartItem.quantity + 1); }}
+                                  onClick={(e) => { e.preventDefault(); updateQuantity(Number(cartItem.id), cartItem.quantity + 1); }}
                                   className="w-10 h-10 flex items-center justify-center text-white font-bold text-xl hover:bg-white/20 transition-colors rounded-full"
                                 >
                                   +
@@ -347,7 +364,7 @@ const MenuDetail = () => {
                             <button
                               onClick={(e) => {
                                 e.preventDefault();
-                                const numericPrice = parseFloat(item.price.replace(/[^0-9.]/g, ''));
+                                const numericPrice = parseFloat((item.price || '0').replace(/[^0-9.]/g, ''));
                                 addToCart({
                                   id: Number(item.id),
                                   title: item.title,
@@ -356,13 +373,15 @@ const MenuDetail = () => {
                                   image: resolveImage(item.image),
                                 });
                                 setAddedRelated(prev => ({ ...prev, [item.id]: true }));
-                                setTimeout(() => { setAddedRelated(prev => ({ ...prev, [item.id]: false })); }, 1500);
+                                if (timeoutRef.current[item.id]) {
+                                  clearTimeout(timeoutRef.current[item.id]);
+                                }
+                                timeoutRef.current[item.id] = setTimeout(() => { setAddedRelated(prev => ({ ...prev, [item.id]: false })); }, 1500);
                               }}
-                              className={`flex items-center justify-center gap-2 w-full py-2.5 rounded-full text-[11px] uppercase tracking-[0.1em] font-bold transition-all duration-300 z-20 ${
-                                addedRelated[item.id]
-                                  ? 'bg-emerald-500 text-white shadow-[0_4px_14px_rgba(16,185,129,0.4)] scale-95'
-                                  : 'bg-[hsl(43_74%_48%)] text-[hsl(195_30%_8%)] shadow-[0_4px_14px_rgba(228,168,32,0.3)] hover:scale-105 hover:bg-[hsl(43_74%_48%)]/90'
-                              }`}
+                              className={`flex items-center justify-center gap-2 w-full py-2.5 rounded-full text-[11px] uppercase tracking-[0.1em] font-bold transition-all duration-300 z-20 ${addedRelated[item.id]
+                                ? 'bg-emerald-500 text-white shadow-[0_4px_14px_rgba(16,185,129,0.4)] scale-95'
+                                : 'bg-[hsl(43_74%_48%)] text-[hsl(195_30%_8%)] shadow-[0_4px_14px_rgba(228,168,32,0.3)] hover:scale-105 hover:bg-[hsl(43_74%_48%)]/90'
+                                }`}
                             >
                               <AnimatePresence mode="wait">
                                 {addedRelated[item.id] ? (

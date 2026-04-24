@@ -1,14 +1,17 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowUpRight, ShoppingCart, Check } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { resolveImage } from "@/pages/Menu";
+import { MenuItem } from "@/types";
+import { applyCustomImages } from "@/utils/menuUtils";
 
 const MenuSection = () => {
   const { addToCart, cart, updateQuantity } = useCart();
-  const [menuItems, setMenuItems] = useState<any[]>([]);
+  const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
   const [addedItems, setAddedItems] = useState<Record<string, boolean>>({});
+  const timeoutRef = useRef<Record<string, NodeJS.Timeout>>({});
 
   const getCartItem = (itemId: string) => cart.find(c => String(c.id) === String(itemId));
 
@@ -17,15 +20,18 @@ const MenuSection = () => {
       try {
         const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
         const res = await fetch(`${apiUrl}/menu`);
+        if (!res.ok) {
+          console.error("Failed to load menu data: Server returned", res.status);
+          return;
+        }
         const data = await res.json();
-        data.forEach((m: any) => { 
-          if (m.title === "Guacamole") m.image = "guacamoleCustom";
-          if (m.title === "Original Falafel Wrap") m.image = "originalFalafelWrapCustom";
-          if (m.title === "Beyond Kebab") m.image = "beyondKebabCustom";
-          if (m.title === "Desi Falafel Plate") m.image = "desiFalafelPlateCustom";
-        });
+        if (!Array.isArray(data)) {
+          console.error("Failed to load menu data: Expected array, got", typeof data);
+          return;
+        }
+        const processedData = applyCustomImages(data);
         // Limit to 6 items for the home page section
-        setMenuItems(data.slice(0, 6));
+        setMenuItems(processedData.slice(0, 6));
       } catch (err) {
         console.error("Failed to load menu data", err);
       }
@@ -33,21 +39,30 @@ const MenuSection = () => {
     fetchMenu();
   }, []);
 
-  const handleAddToCart = (e: React.MouseEvent, item: any) => {
+  const handleAddToCart = (e: React.MouseEvent, item: MenuItem) => {
     e.preventDefault();
-    const numericPrice = parseFloat(item.price.replace(/[^0-9.]/g, ''));
+    const numericPrice = parseFloat((item.price || '0').replace(/[^0-9.]/g, ''));
     addToCart({
-      id: item.id,
+      id: Number(item.id),
       title: item.title,
       price: isNaN(numericPrice) ? 0 : numericPrice,
       priceStr: item.price?.replace('$', '৳').replace('.00', ''),
       image: resolveImage(item.image),
     });
     setAddedItems(prev => ({ ...prev, [item.id]: true }));
-    setTimeout(() => {
+    if (timeoutRef.current[item.id]) {
+      clearTimeout(timeoutRef.current[item.id]);
+    }
+    timeoutRef.current[item.id] = setTimeout(() => {
       setAddedItems(prev => ({ ...prev, [item.id]: false }));
     }, 2000);
   };
+
+  useEffect(() => {
+    return () => {
+      Object.values(timeoutRef.current).forEach(clearTimeout);
+    };
+  }, []);
 
   return (
     <section className="section-divide bg-background relative overflow-hidden">
@@ -128,7 +143,7 @@ const MenuSection = () => {
                     </p>
                     <div className="mt-auto">
                       {(() => {
-                        const cartItem = getCartItem(item.id);
+                        const cartItem = getCartItem(String(item.id));
                         if (cartItem) {
                           return (
                             <motion.div
@@ -138,17 +153,17 @@ const MenuSection = () => {
                               onClick={(e) => e.preventDefault()}
                             >
                               <button
-                                onClick={(e) => { e.preventDefault(); updateQuantity(cartItem.id, cartItem.quantity - 1); }}
+                                onClick={(e) => { e.preventDefault(); updateQuantity(Number(cartItem.id), cartItem.quantity - 1); }}
                                 className="w-10 h-10 flex items-center justify-center text-white font-bold text-xl hover:bg-white/20 transition-colors rounded-full"
                               >
-                                −
+                                +
                               </button>
                               <span className="text-white font-bold text-sm flex items-center gap-1.5">
                                 <Check size={13} strokeWidth={3} />
                                 {cartItem.quantity} in cart
                               </span>
                               <button
-                                onClick={(e) => { e.preventDefault(); updateQuantity(cartItem.id, cartItem.quantity + 1); }}
+                                onClick={(e) => { e.preventDefault(); updateQuantity(Number(cartItem.id), cartItem.quantity + 1); }}
                                 className="w-10 h-10 flex items-center justify-center text-white font-bold text-xl hover:bg-white/20 transition-colors rounded-full"
                               >
                                 +
@@ -159,11 +174,10 @@ const MenuSection = () => {
                         return (
                           <button
                             onClick={(e) => handleAddToCart(e, item)}
-                            className={`flex items-center justify-center gap-2 w-full py-2.5 rounded-full text-[12px] uppercase tracking-[0.1em] font-bold transition-all duration-300 z-20 ${
-                              addedItems[item.id]
-                                ? 'bg-emerald-500 text-white shadow-[0_4px_14px_rgba(16,185,129,0.4)] scale-95'
-                                : 'bg-[hsl(43_74%_48%)] text-[hsl(195_30%_8%)] shadow-[0_4px_14px_rgba(228,168,32,0.3)] hover:scale-105 hover:bg-[hsl(43_74%_48%)]/90'
-                            }`}
+                            className={`flex items-center justify-center gap-2 w-full py-2.5 rounded-full text-[12px] uppercase tracking-[0.1em] font-bold transition-all duration-300 z-20 ${addedItems[item.id]
+                              ? 'bg-emerald-500 text-white shadow-[0_4px_14px_rgba(16,185,129,0.4)] scale-95'
+                              : 'bg-[hsl(43_74%_48%)] text-[hsl(195_30%_8%)] shadow-[0_4px_14px_rgba(228,168,32,0.3)] hover:scale-105 hover:bg-[hsl(43_74%_48%)]/90'
+                              }`}
                           >
                             <AnimatePresence mode="wait">
                               {addedItems[item.id] ? (

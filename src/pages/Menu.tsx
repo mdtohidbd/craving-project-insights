@@ -7,6 +7,8 @@ import Footer from "@/components/Footer";
 import gsap from "gsap";
 import ScrollTrigger from "gsap/ScrollTrigger";
 import { useCart } from "@/context/CartContext";
+import { MenuItem } from "@/types";
+import { applyCustomImages } from "@/utils/menuUtils";
 
 // ... existing imports
 
@@ -84,9 +86,11 @@ const Menu = () => {
   const { addToCart, cart, updateQuantity } = useCart();
   const [categories, setCategories] = useState<string[]>([]);
   const [activeCategory, setActiveCategory] = useState("");
-  const [allMenuItems, setAllMenuItems] = useState<any[]>([]);
+  const [allMenuItems, setAllMenuItems] = useState<MenuItem[]>([]);
   const [addedItems, setAddedItems] = useState<Record<string, boolean>>({});
   const containerRef = useRef<HTMLDivElement>(null);
+  const timeoutRef = useRef<Record<string, NodeJS.Timeout>>({});
+  const scrollTriggersRef = useRef<ScrollTrigger[]>([]);
 
   const getCartItem = (itemId: string) => cart.find(c => String(c.id) === String(itemId));
 
@@ -98,17 +102,28 @@ const Menu = () => {
       fetch(`${apiUrl}/categories`)
     ])
       .then(async ([menuRes, catRes]) => {
+        if (!menuRes.ok) {
+          console.error("Failed to load menu data: Server returned", menuRes.status);
+          return;
+        }
+        if (!catRes.ok) {
+          console.error("Failed to load categories: Server returned", catRes.status);
+          return;
+        }
         const menuData = await menuRes.json();
         const catData = await catRes.json();
-        menuData.forEach((m: any) => { 
-          if (m.title === "Guacamole") m.image = "guacamoleCustom";
-          if (m.title === "Original Falafel Wrap") m.image = "originalFalafelWrapCustom";
-          if (m.title === "Beyond Kebab") m.image = "beyondKebabCustom";
-          if (m.title === "Desi Falafel Plate") m.image = "desiFalafelPlateCustom";
-        });
-        setAllMenuItems(menuData);
+        if (!Array.isArray(menuData)) {
+          console.error("Failed to load menu data: Expected array, got", typeof menuData);
+          return;
+        }
+        if (!Array.isArray(catData)) {
+          console.error("Failed to load categories: Expected array, got", typeof catData);
+          return;
+        }
+        const processedMenuData = applyCustomImages(menuData);
+        setAllMenuItems(processedMenuData);
 
-        const catNames = catData.filter((c: any) => c.name !== "All").map((c: any) => c.name);
+        const catNames = catData.filter((c: { name: string }) => c.name !== "All").map((c: { name: string }) => c.name);
         setCategories(catNames);
         if (catNames.length > 0) setActiveCategory(catNames[0]);
       })
@@ -127,6 +142,13 @@ const Menu = () => {
       const cards = document.querySelectorAll('.gsap-menu-card');
 
       cards.forEach((card, i) => {
+        const trigger = ScrollTrigger.create({
+          trigger: card,
+          start: "top 90%",
+          toggleActions: "play none none reverse"
+        });
+        scrollTriggersRef.current.push(trigger);
+
         gsap.fromTo(card,
           { opacity: 0, y: 50 },
           {
@@ -134,11 +156,7 @@ const Menu = () => {
             y: 0,
             duration: 1,
             ease: "power3.out",
-            scrollTrigger: {
-              trigger: card,
-              start: "top 90%",
-              toggleActions: "play none none reverse"
-            }
+            scrollTrigger: trigger
           }
         );
       });
@@ -147,7 +165,8 @@ const Menu = () => {
     // Cleanup scroll hints
     return () => {
       clearTimeout(timeout);
-      ScrollTrigger.getAll().forEach(t => t.kill());
+      scrollTriggersRef.current.forEach(t => t.kill());
+      scrollTriggersRef.current = [];
     };
   }, [allMenuItems]);
 
@@ -173,17 +192,23 @@ const Menu = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, [categories]);
 
+  useEffect(() => {
+    return () => {
+      Object.values(timeoutRef.current).forEach(clearTimeout);
+    };
+  }, []);
+
   // Auto-scroll the category bar to keep the active item visible
   useEffect(() => {
     if (activeCategory) {
       const activeBtn = document.getElementById(`cat-btn-${toId(activeCategory)}`);
       const navContainer = document.getElementById('category-nav');
-      
+
       if (activeBtn && navContainer) {
         const containerWidth = navContainer.offsetWidth;
         const btnLeft = activeBtn.offsetLeft;
         const btnWidth = activeBtn.offsetWidth;
-        
+
         // Center the active button in the scrollable container
         navContainer.scrollTo({
           left: btnLeft - (containerWidth / 2) + (btnWidth / 2),
@@ -235,7 +260,7 @@ const Menu = () => {
       {/* Sticky Category Nav */}
       <div className="sticky top-20 z-40 bg-[hsl(40_18%_96%)]/95 backdrop-blur-xl border-b border-primary/10 shadow-sm py-3 transition-all duration-300">
         <div className="container mx-auto px-4 md:px-12">
-          <div 
+          <div
             id="category-nav"
             className="flex overflow-x-auto gap-2 md:gap-4 hide-scrollbar justify-start md:justify-center items-center py-1"
           >
@@ -327,7 +352,7 @@ const Menu = () => {
 
                         <div className="mt-auto px-4 md:px-8 w-full flex flex-col gap-3 pb-2 z-10">
                           {(() => {
-                            const cartItem = getCartItem(item.id);
+                            const cartItem = getCartItem(String(item.id));
                             if (cartItem) {
                               return (
                                 <motion.div
@@ -337,7 +362,7 @@ const Menu = () => {
                                   onClick={(e) => e.preventDefault()}
                                 >
                                   <button
-                                    onClick={(e) => { e.preventDefault(); updateQuantity(cartItem.id, cartItem.quantity - 1); }}
+                                    onClick={(e) => { e.preventDefault(); updateQuantity(Number(cartItem.id), cartItem.quantity - 1); }}
                                     className="w-10 h-10 flex items-center justify-center text-white font-bold text-xl hover:bg-white/20 transition-colors rounded-full"
                                   >
                                     −
@@ -347,7 +372,7 @@ const Menu = () => {
                                     {cartItem.quantity} in cart
                                   </span>
                                   <button
-                                    onClick={(e) => { e.preventDefault(); updateQuantity(cartItem.id, cartItem.quantity + 1); }}
+                                    onClick={(e) => { e.preventDefault(); updateQuantity(Number(cartItem.id), cartItem.quantity + 1); }}
                                     className="w-10 h-10 flex items-center justify-center text-white font-bold text-xl hover:bg-white/20 transition-colors rounded-full"
                                   >
                                     +
@@ -359,22 +384,24 @@ const Menu = () => {
                               <button
                                 onClick={(e) => {
                                   e.preventDefault();
-                                  const numericPrice = parseFloat(item.price.replace(/[^0-9.]/g, ''));
+                                  const numericPrice = parseFloat((item.price || '0').replace(/[^0-9.]/g, ''));
                                   addToCart({
-                                    id: item.id,
+                                    id: Number(item.id),
                                     title: item.title,
                                     price: isNaN(numericPrice) ? 0 : numericPrice,
                                     priceStr: item.price?.replace('$', '৳').replace('.00', ''),
                                     image: resolveImage(item.image),
                                   });
                                   setAddedItems(prev => ({ ...prev, [item.id]: true }));
-                                  setTimeout(() => { setAddedItems(prev => ({ ...prev, [item.id]: false })); }, 1500);
+                                  if (timeoutRef.current[item.id]) {
+                                    clearTimeout(timeoutRef.current[item.id]);
+                                  }
+                                  timeoutRef.current[item.id] = setTimeout(() => { setAddedItems(prev => ({ ...prev, [item.id]: false })); }, 1500);
                                 }}
-                                className={`flex items-center justify-center gap-2 w-full py-2.5 rounded-full text-[11px] uppercase tracking-[0.1em] font-bold transition-all duration-300 z-20 ${
-                                  addedItems[item.id]
-                                    ? 'bg-emerald-500 text-white shadow-[0_4px_14px_rgba(16,185,129,0.4)] scale-95'
-                                    : 'bg-[hsl(43_74%_48%)] text-[hsl(195_30%_8%)] shadow-[0_4px_14px_rgba(228,168,32,0.3)] hover:scale-105'
-                                }`}
+                                className={`flex items-center justify-center gap-2 w-full py-2.5 rounded-full text-[11px] uppercase tracking-[0.1em] font-bold transition-all duration-300 z-20 ${addedItems[item.id]
+                                  ? 'bg-emerald-500 text-white shadow-[0_4px_14px_rgba(16,185,129,0.4)] scale-95'
+                                  : 'bg-[hsl(43_74%_48%)] text-[hsl(195_30%_8%)] shadow-[0_4px_14px_rgba(228,168,32,0.3)] hover:scale-105'
+                                  }`}
                               >
                                 <AnimatePresence mode="wait">
                                   {addedItems[item.id] ? (
