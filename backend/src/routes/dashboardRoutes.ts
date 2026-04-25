@@ -10,6 +10,20 @@ router.get('/', async (req, res) => {
         // 1. Calculate Total Sales (completed orders or all paid orders)
         const completedOrders = await Order.find({ status: { $ne: 'cancelled' } });
         const totalSales = completedOrders.reduce((sum, order) => sum + order.total, 0);
+        const totalOrders = completedOrders.length;
+        
+        // Calculate Today's Sales
+        const startOfToday = new Date();
+        startOfToday.setHours(0, 0, 0, 0);
+        const todayOrders = completedOrders.filter(o => new Date(o.createdAt || new Date()) >= startOfToday);
+        const todaySales = todayOrders.reduce((sum, order) => sum + order.total, 0);
+
+        // Calculate Monthly Sales
+        const startOfMonth = new Date();
+        startOfMonth.setDate(1);
+        startOfMonth.setHours(0, 0, 0, 0);
+        const monthOrders = completedOrders.filter(o => new Date(o.createdAt || new Date()) >= startOfMonth);
+        const monthlySales = monthOrders.reduce((sum, order) => sum + order.total, 0);
         
         // 2. Count Active Orders
         const activeOrders = await Order.countDocuments({ status: { $in: ['pending', 'preparing', 'ready'] } });
@@ -77,6 +91,9 @@ router.get('/', async (req, res) => {
         res.json({
             metrics: {
                 totalSales,
+                todaySales,
+                monthlySales,
+                totalOrders,
                 activeOrders,
                 lowStockItems,
             },
