@@ -7,6 +7,12 @@ const orderItemSchema = new mongoose.Schema({
     quantity: { type: Number, required: true }
 }, { _id: false });
 
+const splitPaymentSchema = new mongoose.Schema({
+    method: { type: String, required: true },
+    amount: { type: Number, required: true },
+    transactionId: { type: String }
+}, { _id: false });
+
 const orderSchema = new mongoose.Schema({
     customerInfo: {
         name: { type: String, required: true },
@@ -17,10 +23,19 @@ const orderSchema = new mongoose.Schema({
     items: [orderItemSchema],
     subtotal: { type: Number, required: true },
     tax: { type: Number, required: true },
+    discount: { type: Number, default: 0 },
     total: { type: Number, required: true },
     status: { type: String, default: 'pending' },
     smsStatus: { type: String, default: 'pending' },
-    customerId: { type: mongoose.Schema.Types.ObjectId, ref: 'Customer' }
+    customerId: { type: mongoose.Schema.Types.ObjectId, ref: 'Customer' },
+    paymentMethod: { type: String },
+    amountReceived: { type: Number, default: 0 },
+    changeAmount: { type: Number, default: 0 },
+    splitPayments: [splitPaymentSchema],
+    isHeld: { type: Boolean, default: false },
+    heldAt: { type: Date },
+    tableNumber: { type: String },
+    orderType: { type: String, default: 'dine-in' } // dine-in, takeout, delivery
 }, {
     timestamps: true
 });

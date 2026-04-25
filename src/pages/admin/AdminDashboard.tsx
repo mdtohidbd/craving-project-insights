@@ -92,11 +92,11 @@ const AdminDashboard = () => {
                     {/* Sales Chart & Inventory */}
                     <div className="lg:col-span-2 space-y-8">
                         {/* Chart Section */}
-                        <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-6 shadow-sm">
+                        <div className="bg-white border border-neutral-200 rounded-xl p-6 shadow-sm">
                             <div className="flex items-center justify-between mb-6">
                                 <div>
-                                    <h2 className="text-lg font-semibold">Daily Sales</h2>
-                                    <p className="text-sm text-neutral-400">Revenue overview for the last 7 days</p>
+                                    <h2 className="text-lg font-semibold text-neutral-900">Daily Sales</h2>
+                                    <p className="text-sm text-neutral-500">Revenue overview for the last 7 days</p>
                                 </div>
                             </div>
                             <div className="h-[300px] w-full">
@@ -137,16 +137,16 @@ const AdminDashboard = () => {
                         </div>
 
                         {/* Inventory Table */}
-                        <div className="bg-neutral-900 border border-neutral-800 rounded-xl overflow-hidden shadow-sm">
-                            <div className="p-6 border-b border-neutral-800 flex items-center justify-between">
+                        <div className="bg-white border border-neutral-200 rounded-xl overflow-hidden shadow-sm">
+                            <div className="p-6 border-b border-neutral-200 flex items-center justify-between">
                                 <div>
-                                    <h2 className="text-lg font-semibold">Inventory Preview</h2>
-                                    <p className="text-sm text-neutral-400">Manage your product stock levels</p>
+                                    <h2 className="text-lg font-semibold text-neutral-900">Inventory Preview</h2>
+                                    <p className="text-sm text-neutral-500">Manage your product stock levels</p>
                                 </div>
                             </div>
                             <div className="overflow-x-auto">
                                 <table className="w-full text-sm text-left">
-                                    <thead className="text-xs text-neutral-400 bg-neutral-900/50 uppercase border-b border-neutral-800">
+                                    <thead className="text-xs text-neutral-500 bg-neutral-50 uppercase border-b border-neutral-200">
                                         <tr>
                                             <th className="px-6 py-4 font-medium">Item Name</th>
                                             <th className="px-6 py-4 font-medium">Category</th>
@@ -156,14 +156,14 @@ const AdminDashboard = () => {
                                     </thead>
                                     <tbody>
                                         {data.inventoryData.map((item) => (
-                                            <tr key={item.id} className="border-b border-neutral-800/50 hover:bg-neutral-800/20 transition-colors">
-                                                <td className="px-6 py-4 font-medium text-neutral-100">{item.name}</td>
-                                                <td className="px-6 py-4 text-neutral-400">{item.category}</td>
+                                            <tr key={item.id} className="border-b border-neutral-200 hover:bg-neutral-50 transition-colors">
+                                                <td className="px-6 py-4 font-medium text-neutral-900">{item.name}</td>
+                                                <td className="px-6 py-4 text-neutral-600">{item.category}</td>
                                                 <td className="px-6 py-4 font-medium">{item.stock}</td>
                                                 <td className="px-6 py-4">
                                                     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${item.status === 'In Stock'
-                                                            ? 'bg-emerald-400/10 text-emerald-400 border border-emerald-400/20'
-                                                            : 'bg-rose-400/10 text-rose-400 border border-rose-400/20'
+                                                            ? 'bg-emerald-100 text-emerald-700 border border-emerald-200'
+                                                            : 'bg-rose-100 text-rose-700 border border-rose-200'
                                                         }`}>
                                                         {item.status}
                                                     </span>
@@ -181,13 +181,13 @@ const AdminDashboard = () => {
 
                     {/* SMS Sidebar */}
                     <div className="space-y-6">
-                        <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-6 shadow-sm flex flex-col h-full min-h-[500px]">
+                        <div className="bg-white border border-neutral-200 rounded-xl p-6 shadow-sm flex flex-col h-full min-h-[500px]">
                             <div className="flex items-center justify-between mb-6">
                                 <div className="flex items-center gap-2">
                                     <div className="p-2 bg-primary/10 rounded-lg">
                                         <Phone className="w-5 h-5 text-primary" />
                                     </div>
-                                    <h2 className="text-lg font-semibold">SMS Logs</h2>
+                                    <h2 className="text-lg font-semibold text-neutral-900">SMS Logs</h2>
                                 </div>
                             </div>
 
@@ -196,18 +196,18 @@ const AdminDashboard = () => {
                                     <div
                                         key={sms.id}
                                         className={`p-4 rounded-xl border transition-all ${sms.unread
-                                                ? 'bg-neutral-800/50 border-primary/30'
-                                                : 'bg-neutral-900/50 border-neutral-800'
+                                                ? 'bg-primary/5 border-primary/30'
+                                                : 'bg-neutral-50 border-neutral-200'
                                             }`}
                                     >
                                         <div className="flex items-center justify-between mb-2">
-                                            <span className="text-sm font-semibold text-neutral-200">{sms.from}</span>
+                                            <span className="text-sm font-semibold text-neutral-900">{sms.from}</span>
                                             <span className="text-xs text-neutral-500 flex items-center gap-1">
                                                 <Clock className="w-3 h-3" />
                                                 {sms.time}
                                             </span>
                                         </div>
-                                        <p className="text-sm text-neutral-300 leading-relaxed">
+                                        <p className="text-sm text-neutral-600 leading-relaxed">
                                             {sms.message}
                                         </p>
                                     </div>
@@ -226,17 +226,17 @@ const AdminDashboard = () => {
 
 // Sub-component for clean metric cards
 const MetricCard = ({ title, value, trend, isPositive, icon }: { title: string, value: string, trend: string, isPositive: boolean, icon: React.ReactNode }) => (
-    <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-6 shadow-sm flex flex-col justify-between group hover:border-neutral-700 transition-colors">
+    <div className="bg-white border border-neutral-200 rounded-xl p-6 shadow-sm flex flex-col justify-between group hover:border-neutral-300 transition-colors">
         <div className="flex justify-between items-start mb-4">
-            <h3 className="text-sm font-medium text-neutral-400">{title}</h3>
-            <div className="p-2 bg-neutral-800 rounded-lg group-hover:bg-neutral-700/50 transition-colors">
+            <h3 className="text-sm font-medium text-neutral-600">{title}</h3>
+            <div className="p-2 bg-neutral-100 rounded-lg group-hover:bg-neutral-200 transition-colors">
                 {icon}
             </div>
         </div>
         <div className="flex items-baseline gap-2 mt-auto">
-            <span className="text-3xl font-bold tracking-tight text-neutral-50">{value}</span>
+            <span className="text-3xl font-bold tracking-tight text-neutral-900">{value}</span>
             {trend && (
-                <span className={`text-sm font-medium flex items-center gap-1 ${isPositive ? 'text-emerald-400' : 'text-rose-400'}`}>
+                <span className={`text-sm font-medium flex items-center gap-1 ${isPositive ? 'text-emerald-600' : 'text-rose-600'}`}>
                     {isPositive ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
                     {trend}
                 </span>

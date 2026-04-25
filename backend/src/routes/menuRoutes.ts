@@ -28,7 +28,11 @@ router.get('/', async (req, res) => {
             category: item.category,
             description: item.description,
             tags: item.tags,
-            image: item.imageUrl
+            image: item.imageUrl,
+            sku: item.sku,
+            discountPrice: item.discountPrice,
+            taxIncluded: item.taxIncluded,
+            available: item.available
         }));
         res.json(mappedItems);
     } catch (error) {
@@ -39,7 +43,7 @@ router.get('/', async (req, res) => {
 
 router.post('/', upload.single('image'), async (req, res) => {
     try {
-        const { title, price, category, description, tags, originalId } = req.body;
+        const { title, price, category, description, tags, originalId, sku, discountPrice, taxIncluded, available } = req.body;
         
         // Wait, what if there's no image?
         if (!req.file) {
@@ -67,7 +71,11 @@ router.post('/', upload.single('image'), async (req, res) => {
             category,
             description,
             tags: tagsArray,
-            imageUrl: result.secure_url
+            imageUrl: result.secure_url,
+            sku,
+            discountPrice,
+            taxIncluded: taxIncluded === 'true' || taxIncluded === true,
+            available: available !== 'false' && available !== false
         });
 
         const savedItem = await newMenuItem.save();
@@ -80,9 +88,13 @@ router.post('/', upload.single('image'), async (req, res) => {
 
 router.put('/:id', upload.single('image'), async (req, res) => {
     try {
-        const { title, price, category, description, tags } = req.body;
+        const { title, price, category, description, tags, sku, discountPrice, taxIncluded, available } = req.body;
         
-        let updateData: any = { title, price, category, description };
+        let updateData: any = { 
+            title, price, category, description, sku, discountPrice,
+            taxIncluded: taxIncluded === 'true' || taxIncluded === true,
+            available: available !== 'false' && available !== false
+        };
         if (tags) {
             updateData.tags = typeof tags === 'string' ? JSON.parse(tags) : tags;
         }

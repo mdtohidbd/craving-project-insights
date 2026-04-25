@@ -2,8 +2,8 @@ import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
     LayoutDashboard, Package, MessageSquare,
-    Settings, Bell, Menu, ArrowUpRight, Tag, List, ShoppingCart, Users, Calendar, MonitorSmartphone,
-    Table, BarChart3
+    Settings, Bell, Menu, ArrowUpRight, Tag, List, ShoppingCart, Users, Calendar,
+    Table, CreditCard
 } from "lucide-react";
 
 interface AdminLayoutProps {
@@ -17,23 +17,22 @@ const AdminLayout = ({ children, title }: AdminLayoutProps) => {
 
     const navItems = [
         { label: "Dashboard", path: "/admin", icon: <LayoutDashboard className="w-5 h-5" /> },
+        { label: "POS System", path: "/admin/pos", icon: <CreditCard className="w-5 h-5" /> },
         { label: "Tables", path: "/admin/tables", icon: <Table className="w-5 h-5" /> },
-        { label: "POS System", path: "/admin/pos", icon: <MonitorSmartphone className="w-5 h-5" /> },
         { label: "Orders", path: "/admin/orders", icon: <ShoppingCart className="w-5 h-5" /> },
         { label: "Customers", path: "/admin/customers", icon: <Users className="w-5 h-5" /> },
         { label: "Menu Items", path: "/admin/menu", icon: <List className="w-5 h-5" /> },
         { label: "Categories", path: "/admin/categories", icon: <Tag className="w-5 h-5" /> },
         { label: "Inventory", path: "/admin/inventory", icon: <Package className="w-5 h-5" /> },
-        { label: "Reports", path: "/admin/reports", icon: <BarChart3 className="w-5 h-5" /> },
         { label: "Reservations", path: "/admin/reservations", icon: <Calendar className="w-5 h-5" /> },
         { label: "Messages", path: "/admin/messages", icon: <MessageSquare className="w-5 h-5" /> },
         { label: "Settings", path: "/admin/settings", icon: <Settings className="w-5 h-5" /> },
     ];
 
     return (
-        <div className="flex h-screen bg-neutral-950 text-neutral-50 overflow-hidden font-sans flex-col">
+        <div className="flex h-screen bg-white text-neutral-900 overflow-hidden font-sans flex-col">
             {/* Header with Horizontal Navigation */}
-            <header className="bg-neutral-900 border-b border-neutral-800 shrink-0 print:hidden">
+            <header className="bg-white border-b border-neutral-200 shrink-0 print:hidden">
                 {/* Top Bar */}
                 <div className="h-16 flex items-center justify-between px-4 lg:px-8">
                     <div className="flex items-center gap-4">
@@ -43,21 +42,21 @@ const AdminLayout = ({ children, title }: AdminLayoutProps) => {
                             </div>
                             <span className="text-lg font-semibold tracking-tight">Skybridge Admin</span>
                         </div>
-                        <h1 className="text-xl font-semibold text-neutral-300">| {title}</h1>
+                        <h1 className="text-xl font-semibold text-neutral-600">| {title}</h1>
                     </div>
                     <div className="flex items-center gap-4">
-                        <button className="relative p-2 text-neutral-400 hover:text-neutral-50 transition-colors rounded-full hover:bg-neutral-800">
+                        <button className="relative p-2 text-neutral-400 hover:text-neutral-900 transition-colors rounded-full hover:bg-neutral-100">
                             <Bell className="w-5 h-5" />
                             <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-primary rounded-full"></span>
                         </button>
-                        <div className="w-8 h-8 rounded-full bg-neutral-800 border border-neutral-700 overflow-hidden">
+                        <div className="w-8 h-8 rounded-full bg-neutral-200 border border-neutral-300 overflow-hidden">
                             <img src="https://ui-avatars.com/api/?name=Admin&background=random" alt="Admin" className="w-full h-full object-cover" />
                         </div>
                     </div>
                 </div>
 
                 {/* Horizontal Navigation */}
-                <nav className="border-t border-neutral-800">
+                <nav className="border-t border-neutral-200">
                     <div className="px-4 lg:px-8">
                         <div className="flex items-center gap-1 py-3 overflow-x-auto custom-scrollbar" data-lenis-prevent="true">
                             {navItems.map((item) => {
@@ -68,8 +67,8 @@ const AdminLayout = ({ children, title }: AdminLayoutProps) => {
                                         key={item.path}
                                         to={item.path}
                                         className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors whitespace-nowrap ${isActive
-                                            ? 'bg-neutral-800 text-neutral-50 font-medium'
-                                            : 'text-neutral-400 hover:text-neutral-50 hover:bg-neutral-800/50 font-medium'
+                                            ? 'bg-neutral-100 text-neutral-900 font-medium'
+                                            : 'text-neutral-600 hover:text-neutral-900 hover:bg-neutral-50 font-medium'
                                             }`}
                                     >
                                         {item.icon}

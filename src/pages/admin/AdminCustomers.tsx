@@ -100,7 +100,7 @@ const AdminCustomers = () => {
                             placeholder="Search customers by name or phone..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full bg-neutral-900 border border-neutral-800 text-neutral-100 rounded-lg pl-10 pr-4 py-2 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all placeholder:text-neutral-600"
+                            className="w-full bg-white border border-neutral-200 text-neutral-900 rounded-lg pl-10 pr-4 py-2 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all placeholder:text-neutral-400"
                         />
                     </div>
                 </div>
@@ -112,23 +112,23 @@ const AdminCustomers = () => {
                 ) : (
                     <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                         {filteredCustomers.map(customer => (
-                            <div key={customer._id} className="bg-neutral-900 border border-neutral-800 rounded-xl p-5 hover:border-neutral-700 transition-all">
+                            <div key={customer._id} className="bg-white border border-neutral-200 rounded-xl p-5 hover:border-neutral-300 transition-all">
                                 <div className="flex items-start justify-between mb-4">
                                     <div className="flex items-center gap-3">
-                                        <div className="w-10 h-10 rounded-full bg-indigo-500/10 text-indigo-400 flex items-center justify-center font-bold text-lg">
+                                        <div className="w-10 h-10 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold text-lg">
                                             {customer.name.charAt(0).toUpperCase()}
                                         </div>
                                         <div>
-                                            <h3 className="font-semibold text-neutral-100">{customer.name}</h3>
+                                            <h3 className="font-semibold text-neutral-900">{customer.name}</h3>
                                             <p className="text-xs text-neutral-500">Joined {new Date(customer.createdAt).toLocaleDateString()}</p>
                                         </div>
                                     </div>
-                                    <div className="bg-neutral-800/50 text-neutral-300 text-xs px-2.5 py-1 rounded-full font-medium">
+                                    <div className={`bg-${customer.orders?.length > 0 ? 'emerald-100' : 'neutral-200'} text-${customer.orders?.length > 0 ? 'emerald-700' : 'neutral-600'} text-xs px-2.5 py-1 rounded-full font-medium`}>
                                         {customer.orders?.length || 0} Orders
                                     </div>
                                 </div>
                                 <div className="space-y-2 mb-6">
-                                    <div className="flex items-center gap-2 text-sm text-neutral-400">
+                                    <div className="flex items-center gap-2 text-sm text-neutral-600">
                                         <Phone className="w-4 h-4" />
                                         {customer.phone}
                                     </div>
@@ -140,7 +140,7 @@ const AdminCustomers = () => {
                                 <div className="flex gap-2">
                                     <button
                                         onClick={() => setSelectedCustomer(customer)}
-                                        className="flex-1 flex items-center justify-center gap-2 py-2 bg-neutral-800 hover:bg-neutral-700 text-neutral-200 text-sm font-medium rounded-lg transition-colors border border-neutral-700 hover:border-neutral-600"
+                                        className="flex-1 flex items-center justify-center gap-2 py-2 bg-neutral-100 hover:bg-neutral-200 text-neutral-700 text-sm font-medium rounded-lg transition-colors border border-neutral-200 hover:border-neutral-300"
                                     >
                                         <Eye className="w-4 h-4" /> View Details
                                     </button>
@@ -148,9 +148,9 @@ const AdminCustomers = () => {
                             </div>
                         ))}
                         {filteredCustomers.length === 0 && (
-                            <div className="col-span-full py-12 text-center border border-dashed border-neutral-800 rounded-xl">
-                                <User className="w-12 h-12 text-neutral-600 mx-auto mb-3" />
-                                <h3 className="text-lg font-medium text-neutral-300 mb-1">No customers found</h3>
+                            <div className="col-span-full py-12 text-center border border-dashed border-neutral-300 rounded-xl">
+                                <User className="w-12 h-12 text-neutral-400 mx-auto mb-3" />
+                                <h3 className="text-lg font-medium text-neutral-700 mb-1">No customers found</h3>
                                 <p className="text-neutral-500 text-sm">Try adjusting your search query.</p>
                             </div>
                         )}
@@ -173,16 +173,16 @@ const AdminCustomers = () => {
                             initial={{ opacity: 0, scale: 0.95 }}
                             animate={{ opacity: 1, scale: 1 }}
                             exit={{ opacity: 0, scale: 0.95 }}
-                            className="relative bg-neutral-900 border border-neutral-800 rounded-2xl w-full max-w-3xl max-h-[90vh] overflow-hidden flex flex-col shadow-2xl"
+                            className="relative bg-white border border-neutral-200 rounded-2xl w-full max-w-3xl max-h-[90vh] overflow-hidden flex flex-col shadow-2xl"
                         >
-                            <div className="flex items-center justify-between p-6 border-b border-neutral-800 shrink-0">
+                            <div className="flex items-center justify-between p-6 border-b border-neutral-200 shrink-0">
                                 <div>
-                                    <h2 className="text-xl font-bold text-neutral-100">{selectedCustomer.name}'s Profile</h2>
-                                    <p className="text-sm text-neutral-400">{selectedCustomer.phone} • {selectedCustomer.address}</p>
+                                    <h2 className="text-xl font-bold text-neutral-900">{selectedCustomer.name}'s Profile</h2>
+                                    <p className="text-sm text-neutral-500">{selectedCustomer.phone} • {selectedCustomer.address}</p>
                                 </div>
                                 <button
                                     onClick={() => setSelectedCustomer(null)}
-                                    className="p-2 text-neutral-400 hover:text-white hover:bg-neutral-800 rounded-lg transition-colors"
+                                    className="p-2 text-neutral-400 hover:text-neutral-900 hover:bg-neutral-100 rounded-lg transition-colors"
                                 >
                                     <X className="w-5 h-5" />
                                 </button>
@@ -191,27 +191,27 @@ const AdminCustomers = () => {
                             <div className="flex-1 overflow-y-auto p-6 flex flex-col md:flex-row gap-8 custom-scrollbar">
                                 {/* Order History Column */}
                                 <div className="flex-1">
-                                    <h3 className="text-lg font-semibold text-neutral-200 mb-4 flex items-center gap-2">
+                                    <h3 className="text-lg font-semibold text-neutral-900 mb-4 flex items-center gap-2">
                                         <Eye className="w-5 h-5 text-indigo-400" /> Order History
                                     </h3>
                                     <div className="space-y-4">
                                         {selectedCustomer.orders?.length > 0 ? selectedCustomer.orders.map(order => (
-                                            <div key={order._id} className="bg-neutral-950 border border-neutral-800 rounded-lg p-4">
+                                            <div key={order._id} className="bg-neutral-50 border border-neutral-200 rounded-lg p-4">
                                                 <div className="flex justify-between items-start mb-3">
                                                     <div>
                                                         <span className="text-xs font-mono text-neutral-500 uppercase">#{order._id.slice(-6)}</span>
-                                                        <p className="text-sm font-medium text-neutral-300">{new Date(order.createdAt).toLocaleDateString()}</p>
+                                                        <p className="text-sm font-medium text-neutral-700">{new Date(order.createdAt).toLocaleDateString()}</p>
                                                     </div>
                                                     <div className="text-right">
-                                                        <span className={`text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 rounded-full ${order.status === 'completed' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-neutral-800 text-neutral-400'}`}>
+                                                        <span className={`text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 rounded-full ${order.status === 'completed' ? 'bg-emerald-100 text-emerald-700' : 'bg-neutral-200 text-neutral-600'}`}>
                                                             {order.status}
                                                         </span>
-                                                        <p className="font-bold text-neutral-100 mt-1">৳{Math.round(order.total)}</p>
+                                                        <p className="font-bold text-neutral-900 mt-1">৳{Math.round(order.total)}</p>
                                                     </div>
                                                 </div>
-                                                <div className="pt-3 border-t border-neutral-800/50 space-y-1">
+                                                <div className="pt-3 border-t border-neutral-200 space-y-1">
                                                     {order.items.map((item, i) => (
-                                                        <div key={i} className="flex justify-between text-xs text-neutral-400">
+                                                        <div key={i} className="flex justify-between text-xs text-neutral-600">
                                                             <span>{item.quantity}x {item.title}</span>
                                                             <span>৳{Math.round(item.price * item.quantity)}</span>
                                                         </div>
@@ -226,12 +226,12 @@ const AdminCustomers = () => {
 
                                 {/* Send SMS Column */}
                                 <div className="w-full md:w-80 shrink-0">
-                                    <h3 className="text-lg font-semibold text-neutral-200 mb-4 flex items-center gap-2">
+                                    <h3 className="text-lg font-semibold text-neutral-900 mb-4 flex items-center gap-2">
                                         <MessageSquare className="w-5 h-5 text-indigo-400" /> Send Message
                                     </h3>
-                                    <div className="bg-neutral-950 border border-neutral-800 rounded-lg p-4">
-                                        <p className="text-xs text-neutral-400 mb-4 leading-relaxed">
-                                            Send a direct SMS to <span className="text-neutral-200 font-medium">{selectedCustomer.phone}</span> using the MimSMS API integration.
+                                    <div className="bg-neutral-50 border border-neutral-200 rounded-lg p-4">
+                                        <p className="text-xs text-neutral-500 mb-4 leading-relaxed">
+                                            Send a direct SMS to <span className="text-neutral-900 font-medium">{selectedCustomer.phone}</span> using the MimSMS API integration.
                                         </p>
                                         <form onSubmit={handleSendSMS} className="space-y-4">
                                             <textarea
@@ -240,7 +240,7 @@ const AdminCustomers = () => {
                                                 value={smsMessage}
                                                 onChange={(e) => setSmsMessage(e.target.value)}
                                                 placeholder="Type your message here..."
-                                                className="w-full bg-neutral-900 border border-neutral-800 rounded-lg p-3 text-sm text-neutral-100 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 resize-none"
+                                                className="w-full bg-white border border-neutral-200 rounded-lg p-3 text-sm text-neutral-900 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 resize-none"
                                             ></textarea>
                                             <button
                                                 type="submit"
