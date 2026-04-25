@@ -11,6 +11,7 @@ import customerRoutes from './routes/customerRoutes';
 import messageRoutes from './routes/messageRoutes';
 import dashboardRoutes from './routes/dashboardRoutes';
 import reservationRoutes from './routes/reservationRoutes';
+import tableRoutes from './routes/tables';
 
 dotenv.config();
 
@@ -35,6 +36,7 @@ app.use('/api/customers', customerRoutes);
 app.use('/api/messages', messageRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/reservations', reservationRoutes);
+app.use('/api/tables', tableRoutes);
 
 const PORT = process.env.PORT || 5000;
 

@@ -111,21 +111,28 @@ const Menu = () => {
           return;
         }
         const menuData = await menuRes.json();
-        const catData = await catRes.json();
-        if (!Array.isArray(menuData)) {
-          console.error("Failed to load menu data: Expected array, got", typeof menuData);
-          return;
+        let catData = [];
+        if (catRes.ok) {
+           try { catData = await catRes.json(); } catch(e) {}
         }
-        if (!Array.isArray(catData)) {
-          console.error("Failed to load categories: Expected array, got", typeof catData);
-          return;
-        }
-        const processedMenuData = applyCustomImages(menuData);
-        setAllMenuItems(processedMenuData);
+        
+        menuData.forEach((m: any) => { 
+          if (m.title === "Guacamole") m.image = "guacamoleCustom";
+          if (m.title === "Original Falafel Wrap") m.image = "originalFalafelWrapCustom";
+          if (m.title === "Beyond Kebab") m.image = "beyondKebabCustom";
+          if (m.title === "Desi Falafel Plate") m.image = "desiFalafelPlateCustom";
+        });
+        setAllMenuItems(menuData);
 
-        const catNames = catData.filter((c: { name: string }) => c.name !== "All").map((c: { name: string }) => c.name);
-        setCategories(catNames);
-        if (catNames.length > 0) setActiveCategory(catNames[0]);
+        let catNames = catData.filter((c: any) => c.name !== "All").map((c: any) => c.name);
+        
+        // Fallback: If categories API is empty but menu has items, extract categories from menu items
+        if (catNames.length === 0 && menuData.length > 0) {
+            catNames = Array.from(new Set(menuData.map((m: any) => m.category))).filter(Boolean);
+        }
+        
+        setCategories(catNames as string[]);
+        if (catNames.length > 0) setActiveCategory(catNames[0] as string);
       })
       .catch((err) => console.error("Failed to load menu data", err));
   }, []);
@@ -320,7 +327,7 @@ const Menu = () => {
                     <Link
                       key={item.id}
                       to={`/menu/${item.id}`}
-                      className="group gsap-menu-card opacity-0 block h-full"
+                      className="group gsap-menu-card block h-full"
                     >
                       <div className="flex flex-col items-center bg-transparent group mb-6 cursor-pointer h-full hoverable">
                         <div className={`relative overflow-hidden aspect-square w-full max-w-[260px] mx-auto mb-4 transition-transform duration-500 group-hover:scale-105 shadow-[0_10px_30px_rgba(0,0,0,0.08)] bg-white border border-black/5 ${shapeClass}`}>
