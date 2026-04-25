@@ -88,15 +88,15 @@ const AdminSettings = () => {
             <div className="max-w-4xl space-y-8">
 
                 {/* Security Settings */}
-                <div className="bg-neutral-900 border border-neutral-800 rounded-xl overflow-hidden shadow-sm">
-                    <div className="p-6 border-b border-neutral-800 bg-neutral-900/50">
+                <div className="bg-white border border-neutral-200 rounded-xl overflow-hidden shadow-sm">
+                    <div className="p-6 border-b border-neutral-200 bg-neutral-50">
                         <div className="flex items-center gap-3">
-                            <div className="p-2 bg-indigo-500/10 rounded-lg">
-                                <Lock className="w-5 h-5 text-indigo-400" />
+                            <div className="p-2 bg-indigo-100 rounded-lg">
+                                <Lock className="w-5 h-5 text-indigo-600" />
                             </div>
                             <div>
-                                <h2 className="text-lg font-semibold text-neutral-100">Security & Password</h2>
-                                <p className="text-sm text-neutral-400">Update your admin login credentials</p>
+                                <h2 className="text-lg font-semibold text-neutral-900">Security & Password</h2>
+                                <p className="text-sm text-neutral-500">Update your admin login credentials</p>
                             </div>
                         </div>
                     </div>
@@ -104,12 +104,12 @@ const AdminSettings = () => {
                     <div className="p-6 space-y-6">
                         <div className="space-y-4 max-w-md">
                             <div>
-                                <label className="block text-sm font-medium text-neutral-300 mb-1">Current Password</label>
+                                <label className="block text-sm font-medium text-neutral-600 mb-1">Current Password</label>
                                 <input
                                     type="password"
                                     value={currentPassword}
                                     onChange={(e) => setCurrentPassword(e.target.value)}
-                                    className="w-full bg-neutral-950 border border-neutral-800 text-neutral-100 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all placeholder:text-neutral-600"
+                                    className="w-full bg-white border border-neutral-200 text-neutral-900 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all placeholder:text-neutral-400"
                                     placeholder="Enter current password"
                                 />
                             </div>
@@ -120,7 +120,7 @@ const AdminSettings = () => {
                                     type="password"
                                     value={newPassword}
                                     onChange={(e) => setNewPassword(e.target.value)}
-                                    className="w-full bg-neutral-950 border border-neutral-800 text-neutral-100 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all placeholder:text-neutral-600"
+                                    className="w-full bg-white border border-neutral-200 text-neutral-900 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all placeholder:text-neutral-400"
                                     placeholder="8+ characters"
                                 />
                             </div>
@@ -131,13 +131,13 @@ const AdminSettings = () => {
                                     type="password"
                                     value={confirmPassword}
                                     onChange={(e) => setConfirmPassword(e.target.value)}
-                                    className="w-full bg-neutral-950 border border-neutral-800 text-neutral-100 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all placeholder:text-neutral-600"
+                                    className="w-full bg-white border border-neutral-200 text-neutral-900 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all placeholder:text-neutral-400"
                                     placeholder="Repeat new password"
                                 />
                             </div>
                         </div>
 
-                        <div className="flex items-center justify-between py-4 mt-6 border-t border-neutral-800">
+                        <div className="flex items-center justify-between py-4 mt-6 border-t border-neutral-200">
                             <p className="text-xs text-neutral-500 flex items-center gap-1.5 flex-1">
                                 <ShieldCheck className="w-4 h-4 text-emerald-500" />
                                 Secure connection active.
@@ -151,26 +151,26 @@ const AdminSettings = () => {
                 </div>
 
                 {/* Notification Settings */}
-                <div className="bg-neutral-900 border border-neutral-800 rounded-xl overflow-hidden shadow-sm">
-                    <div className="p-6 border-b border-neutral-800 bg-neutral-900/50">
+                <div className="bg-white border border-neutral-200 rounded-xl overflow-hidden shadow-sm">
+                    <div className="p-6 border-b border-neutral-200 bg-neutral-50">
                         <div className="flex items-center gap-3">
-                            <div className="p-2 bg-emerald-500/10 rounded-lg">
-                                <Smartphone className="w-5 h-5 text-emerald-400" />
+                            <div className="p-2 bg-emerald-100 rounded-lg">
+                                <Smartphone className="w-5 h-5 text-emerald-600" />
                             </div>
                             <div>
-                                <h2 className="text-lg font-semibold text-neutral-100">SMS Notifications</h2>
-                                <p className="text-sm text-neutral-400">Manage where order alerts are sent</p>
+                                <h2 className="text-lg font-semibold text-neutral-900">SMS Notifications</h2>
+                                <p className="text-sm text-neutral-500">Manage where order alerts are sent</p>
                             </div>
                         </div>
                     </div>
 
                     <div className="p-6 space-y-6">
 
-                        <div className="flex items-start gap-4 p-4 bg-neutral-950 border border-neutral-800 rounded-lg max-w-md">
+                        <div className="flex items-start gap-4 p-4 bg-neutral-50 border border-neutral-200 rounded-lg max-w-md">
                             <div className="mt-0.5"><Phone className="w-5 h-5 text-neutral-500" /></div>
                             <div>
-                                <p className="text-sm text-neutral-400 mb-1">Current receiving number</p>
-                                <p className="text-lg font-medium text-neutral-100">{smsNumber}</p>
+                                <p className="text-sm text-neutral-500 mb-1">Current receiving number</p>
+                                <p className="text-lg font-medium text-neutral-900">{smsNumber}</p>
                             </div>
                         </div>
 
@@ -181,7 +181,7 @@ const AdminSettings = () => {
                                     type="text"
                                     value={newSmsNumber}
                                     onChange={(e) => setNewSmsNumber(e.target.value)}
-                                    className="flex-1 bg-neutral-950 border border-neutral-800 text-neutral-100 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all placeholder:text-neutral-600"
+                                    className="flex-1 bg-white border border-neutral-200 text-neutral-900 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all placeholder:text-neutral-400"
                                     placeholder="e.g. +1 (555) 0000"
                                 />
                             </div>
@@ -191,7 +191,7 @@ const AdminSettings = () => {
                             </p>
                         </div>
 
-                        <div className="flex items-center justify-end py-4 mt-6 border-t border-neutral-800">
+                        <div className="flex items-center justify-end py-4 mt-6 border-t border-neutral-200">
                             <button onClick={handleSaveSmsNumber} className="flex items-center justify-center gap-2 px-5 py-2.5 bg-emerald-500 text-emerald-950 text-sm font-medium rounded-lg hover:bg-emerald-400 transition-colors shadow-sm shadow-emerald-500/20">
                                 <Save className="w-4 h-4" />
                                 Save Number
@@ -201,44 +201,44 @@ const AdminSettings = () => {
                 </div>
 
                 {/* Delivery Settings */}
-                <div className="bg-neutral-900 border border-neutral-800 rounded-xl overflow-hidden shadow-sm">
-                    <div className="p-6 border-b border-neutral-800 bg-neutral-900/50">
+                <div className="bg-white border border-neutral-200 rounded-xl overflow-hidden shadow-sm">
+                    <div className="p-6 border-b border-neutral-200 bg-neutral-50">
                         <div className="flex items-center gap-3">
-                            <div className="p-2 bg-amber-500/10 rounded-lg">
-                                <Truck className="w-5 h-5 text-amber-400" />
+                            <div className="p-2 bg-amber-100 rounded-lg">
+                                <Truck className="w-5 h-5 text-amber-600" />
                             </div>
                             <div>
-                                <h2 className="text-lg font-semibold text-neutral-100">Delivery Configuration</h2>
-                                <p className="text-sm text-neutral-400">Configure delivery charges across the site</p>
+                                <h2 className="text-lg font-semibold text-neutral-900">Delivery Configuration</h2>
+                                <p className="text-sm text-neutral-500">Configure delivery charges across the site</p>
                             </div>
                         </div>
                     </div>
 
                     <div className="p-6 space-y-6">
 
-                        <div className="flex items-start gap-4 p-4 bg-neutral-950 border border-neutral-800 rounded-lg max-w-md">
+                        <div className="flex items-start gap-4 p-4 bg-neutral-50 border border-neutral-200 rounded-lg max-w-md">
                             <div className="mt-0.5"><Truck className="w-5 h-5 text-neutral-500" /></div>
                             <div>
-                                <p className="text-sm text-neutral-400 mb-1">Current Delivery Fee</p>
-                                <p className="text-lg font-medium text-neutral-100">৳{deliveryFee}</p>
+                                <p className="text-sm text-neutral-500 mb-1">Current Delivery Fee</p>
+                                <p className="text-lg font-medium text-neutral-900">৳{deliveryFee}</p>
                             </div>
                         </div>
 
                         <div className="max-w-md">
-                            <label className="block text-sm font-medium text-neutral-300 mb-1">Update Delivery Fee (৳)</label>
+                            <label className="block text-sm font-medium text-neutral-600 mb-1">Update Delivery Fee (৳)</label>
                             <div className="flex gap-3">
                                 <input
                                     type="number"
                                     value={newDeliveryFee}
                                     onChange={(e) => setNewDeliveryFee(e.target.value)}
-                                    className="flex-1 bg-neutral-950 border border-neutral-800 text-neutral-100 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-all placeholder:text-neutral-600"
+                                    className="flex-1 bg-white border border-neutral-200 text-neutral-900 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-all placeholder:text-neutral-400"
                                     placeholder="e.g. 50"
                                     min="0"
                                 />
                             </div>
                         </div>
 
-                        <div className="flex items-center justify-end py-4 mt-6 border-t border-neutral-800">
+                        <div className="flex items-center justify-end py-4 mt-6 border-t border-neutral-200">
                             <button onClick={handleSaveDeliveryFee} className="flex items-center justify-center gap-2 px-5 py-2.5 bg-amber-500 text-amber-950 text-sm font-medium rounded-lg hover:bg-amber-400 transition-colors shadow-sm shadow-amber-500/20">
                                 <Save className="w-4 h-4" />
                                 Save Fee

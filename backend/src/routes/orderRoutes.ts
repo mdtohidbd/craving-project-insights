@@ -43,7 +43,13 @@ router.post('/', async (req, res) => {
         const apiKey = process.env.MIMSMS_API_KEY;
         const senderId = process.env.MIMSMS_SENDER_ID;
         
-        if (apiKey && senderId && smsPhone) {
+        // Check for valid credentials (not placeholder values)
+        const isValidCredentials = apiKey && senderId && 
+            apiKey !== 'your_mimsms_api_key_here' && 
+            senderId !== 'your_sender_id_here' &&
+            smsPhone && smsPhone !== 'N/A';
+        
+        if (isValidCredentials) {
             const smsMessage = `Thank you for your order! Your order (Total: $${savedOrder.total}) has been received by Craving Insights.`;
             let smsSuccess = false;
             
@@ -73,7 +79,7 @@ router.post('/', async (req, res) => {
             });
             
         } else {
-            console.log('MimSMS credentials or customer phone missing. SMS not sent.');
+            console.log('MimSMS credentials not configured or invalid. SMS not sent.');
             savedOrder.smsStatus = 'pending';
             
             const smsMessage = `Thank you for your order! Your order (Total: $${savedOrder.total}) has been received by Craving Insights.`;
@@ -114,6 +120,125 @@ router.put('/:id', async (req, res) => {
         res.json(order);
     } catch (error) {
         res.status(500).json({ message: 'Failed to update order' });
+    }
+});
+
+// Hold order endpoint
+router.put('/:id/hold', async (req, res) => {
+    try {
+        const order = await Order.findByIdAndUpdate(
+            req.params.id,
+            { 
+                isHeld: true, 
+                heldAt: new Date(),
+                status: 'held'
+            },
+            { new: true }
+        );
+        if (!order) {
+            return res.status(404).json({ message: 'Order not found' });
+        }
+        res.json(order);
+    } catch (error) {
+        res.status(500).json({ message: 'Failed to hold order' });
+    }
+});
+
+// Release held order endpoint
+router.put('/:id/release', async (req, res) => {
+    try {
+        const order = await Order.findByIdAndUpdate(
+            req.params.id,
+            { 
+                isHeld: false, 
+                heldAt: null,
+                status: 'pending'
+            },
+            { new: true }
+        );
+        if (!order) {
+            return res.status(404).json({ message: 'Order not found' });
+        }
+        res.json(order);
+    } catch (error) {
+        res.status(500).json({ message: 'Failed to release order' });
+    }
+});
+
+// Get held orders
+router.get('/held/all', async (req, res) => {
+    try {
+        const heldOrders = await Order.find({ isHeld: true }).sort({ heldAt: -1 });
+        res.json(heldOrders);
+    } catch (error) {
+        res.status(500).json({ message: 'Failed to fetch held orders' });
+    }
+});
+
+// Split payment endpoint
+router.post('/:id/split-payment', async (req, res) => {
+    try {
+        const { payments } = req.body; // Array of { method, amount, transactionId }
+        
+        const order = await Order.findById(req.params.id);
+        if (!order) {
+            return res.status(404).json({ message: 'Order not found' });
+        }
+
+        const totalPaid = payments.reduce((sum: number, p: any) => sum + p.amount, 0);
+        
+        // Update order with split payments
+        order.splitPayments = payments;
+        order.amountReceived = totalPaid;
+        order.changeAmount = totalPaid - order.total;
+        order.paymentMethod = 'split';
+        
+        if (totalPaid >= order.total) {
+            order.status = 'completed';
+        }
+
+        await order.save();
+        res.json(order);
+    } catch (error) {
+        res.status(500).json({ message: 'Failed to process split payment' });
+    }
+});
+
+// Process payment with change calculation
+router.post('/:id/payment', async (req, res) => {
+    try {
+        const { paymentMethod, amountReceived } = req.body;
+        
+        const order = await Order.findById(req.params.id);
+        if (!order) {
+            return res.status(404).json({ message: 'Order not found' });
+        }
+
+        order.paymentMethod = paymentMethod;
+        order.amountReceived = amountReceived || order.total;
+        order.changeAmount = order.amountReceived - order.total;
+        
+        if (order.amountReceived >= order.total) {
+            order.status = 'completed';
+        }
+
+        await order.save();
+        res.json(order);
+    } catch (error) {
+        res.status(500).json({ message: 'Failed to process payment' });
+    }
+});
+
+// Delete order endpoint
+router.delete('/:id', async (req, res) => {
+    try {
+        const order = await Order.findByIdAndDelete(req.params.id);
+        if (!order) {
+            return res.status(404).json({ message: 'Order not found' });
+        }
+        res.json({ message: 'Order deleted successfully' });
+    } catch (error) {
+        res.status(500).json({ message: 'Failed to delete order' });
     }
 });
 

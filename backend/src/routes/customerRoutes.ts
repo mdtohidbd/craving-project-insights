@@ -26,6 +26,39 @@ router.get('/:id', async (req, res) => {
     }
 });
 
+// Create a new customer
+router.post('/', async (req, res) => {
+    try {
+        const { name, phone, address } = req.body;
+        
+        // Basic validation
+        if (!name) {
+            return res.status(400).json({ message: 'Name is required' });
+        }
+
+        // Check if customer with same phone already exists
+        if (phone) {
+            const existingCustomer = await Customer.findOne({ phone });
+            if (existingCustomer) {
+                return res.status(400).json({ message: 'Customer with this phone number already exists' });
+            }
+        }
+
+        const newCustomer = new Customer({
+            name,
+            phone: phone || 'N/A',
+            address: address || 'N/A',
+            orders: []
+        });
+
+        const savedCustomer = await newCustomer.save();
+        res.status(201).json(savedCustomer);
+    } catch (error) {
+        console.error('Create Customer Error:', error);
+        res.status(500).json({ message: 'Failed to create customer' });
+    }
+});
+
 // Send custom SMS
 router.post('/:id/message', async (req, res) => {
     try {
