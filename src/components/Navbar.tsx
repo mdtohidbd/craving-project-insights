@@ -12,7 +12,7 @@ const navLinks = [
   { name: "Book Table", path: "/book-table" },
 ];
 
-const Navbar = () => {
+const Navbar = ({ theme = "dark" }: { theme?: "light" | "dark" }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const location = useLocation();
@@ -29,17 +29,16 @@ const Navbar = () => {
         initial={{ y: -100 }}
         animate={{ y: 0 }}
         transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-        className={`transition-all duration-700 ${
-          scrolled
-            ? "bg-primary/95 backdrop-blur-xl shadow-[0_4px_30px_rgba(30,50,45,0.2)]"
-            : "bg-transparent"
-        }`}
+        className={`transition-all duration-700 ${scrolled
+          ? "bg-primary/95 backdrop-blur-xl shadow-[0_4px_30px_rgba(30,50,45,0.2)]"
+          : "bg-transparent"
+          }`}
       >
         <div className="container mx-auto px-6 md:px-12">
           <div className="flex items-center justify-between h-20">
             {/* Logo */}
             <Link to="/" className="flex items-center gap-3 group">
-              <span className="text-3xl font-serif font-bold text-primary-foreground" style={{ letterSpacing: "-0.01em" }}>
+              <span className={`text-3xl font-serif font-bold ${scrolled || theme === "dark" ? "text-primary-foreground" : "text-primary"}`} style={{ letterSpacing: "-0.01em" }}>
                 Craving
               </span>
             </Link>
@@ -53,21 +52,19 @@ const Navbar = () => {
                   className="relative group py-2"
                 >
                   <span
-                    className={`text-[12px] uppercase tracking-[0.2em] font-medium transition-colors duration-300 ${
-                      location.pathname === link.path
-                        ? ""
-                        : "text-primary-foreground/70 group-hover:text-primary-foreground"
-                    }`}
+                    className={`text-[12px] uppercase tracking-[0.2em] font-medium transition-colors duration-300 ${location.pathname === link.path
+                      ? ""
+                      : (scrolled || theme === "dark" ? "text-primary-foreground/70 group-hover:text-primary-foreground" : "text-primary/70 group-hover:text-primary")
+                      }`}
                     style={location.pathname === link.path ? { color: "hsl(43 74% 48%)" } : {}}
                   >
                     {link.name}
                   </span>
                   <span
-                    className={`absolute bottom-0 left-0 h-[1.5px] transition-all duration-500 ${
-                      location.pathname === link.path
-                        ? "w-full"
-                        : "w-0 group-hover:w-full"
-                    }`}
+                    className={`absolute bottom-0 left-0 h-[1.5px] transition-all duration-500 ${location.pathname === link.path
+                      ? "w-full"
+                      : "w-0 group-hover:w-full"
+                      }`}
                     style={{ background: "hsl(43 74% 48%)" }}
                   />
                 </Link>
@@ -76,7 +73,7 @@ const Navbar = () => {
 
             {/* CTA Button and Cart */}
             <div className="hidden md:flex items-center gap-6">
-              <Cart />
+              <Cart className={scrolled || theme === "dark" ? "text-primary-foreground" : "text-primary"} />
               <Link
                 to="/menu"
                 className="inline-flex items-center px-7 py-3 text-[11px] uppercase tracking-[0.15em] font-bold rounded-full transition-all duration-500 hover:-translate-y-0.5"
@@ -92,10 +89,10 @@ const Navbar = () => {
 
             {/* Mobile Menu Button */}
             <div className="md:hidden flex items-center gap-4">
-              <Cart />
+              <Cart className={scrolled || theme === "dark" ? "text-primary-foreground" : "text-primary"} />
               <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="text-primary-foreground p-2 transition-colors duration-300 hover:opacity-80 appearance-none"
+                className={`${scrolled || theme === "dark" ? "text-primary-foreground" : "text-primary"} p-2 transition-colors duration-300 hover:opacity-80 appearance-none`}
                 aria-label="Toggle menu"
               >
                 {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -126,11 +123,10 @@ const Navbar = () => {
                   <Link
                     to={link.path}
                     onClick={() => setIsOpen(false)}
-                    className={`block py-3 text-2xl font-serif tracking-tight transition-colors ${
-                      location.pathname === link.path
-                        ? ""
-                        : "text-primary-foreground/70 active:text-primary-foreground"
-                    }`}
+                    className={`block py-3 text-2xl font-serif tracking-tight transition-colors ${location.pathname === link.path
+                      ? ""
+                      : "text-primary-foreground/70 active:text-primary-foreground"
+                      }`}
                     style={location.pathname === link.path ? { color: "hsl(43 74% 48%)" } : {}}
                   >
                     {link.name}
