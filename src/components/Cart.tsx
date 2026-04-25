@@ -13,7 +13,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 
-export const Cart = () => {
+export const Cart = ({ className }: { className?: string }) => {
   const { cart, removeFromCart, updateQuantity, clearCart, totalItems, totalAmount } = useCart();
   const [isOpen, setIsOpen] = useState(false);
   const [bouncing, setBouncing] = useState(false);
@@ -40,12 +40,12 @@ export const Cart = () => {
   return (
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
       <SheetTrigger asChild>
-        <button className="relative p-2 flex items-center justify-center" aria-label="Cart">
+        <button className={`relative p-2 flex items-center justify-center ${className || ""}`} aria-label="Cart">
           <motion.div
             animate={bouncing ? { scale: [1, 1.4, 0.85, 1.15, 1], rotate: [0, -12, 12, -6, 0] } : {}}
             transition={{ duration: 0.5, ease: "easeOut" }}
           >
-            <ShoppingCart className="w-6 h-6" style={{ color: "hsl(40 20% 96%)" }} />
+            <ShoppingCart className="w-6 h-6" />
           </motion.div>
           {totalItems > 0 && (
             <motion.span
@@ -84,7 +84,7 @@ export const Cart = () => {
                   <p className="text-xl font-bold mt-1 text-accent">{item.priceStr?.replace('$', '৳')}</p>
                 </div>
                 <div className="flex flex-col items-end gap-3 shrink-0">
-                  <button 
+                  <button
                     onClick={() => removeFromCart(item.id)}
                     className="text-red-500 hover:text-red-700 hover:bg-red-50 p-2 rounded-full transition-colors self-end"
                   >

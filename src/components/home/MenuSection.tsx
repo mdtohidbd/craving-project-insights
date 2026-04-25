@@ -6,11 +6,13 @@ import { useCart } from "@/context/CartContext";
 import { resolveImage } from "@/pages/Menu";
 import { MenuItem } from "@/types";
 import { applyCustomImages } from "@/utils/menuUtils";
+import { generateSlug } from "@/utils/slugUtils";
 
 const MenuSection = () => {
   const { addToCart, cart, updateQuantity } = useCart();
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
   const [addedItems, setAddedItems] = useState<Record<string, boolean>>({});
+  const [isLoading, setIsLoading] = useState(true);
   const timeoutRef = useRef<Record<string, NodeJS.Timeout>>({});
 
   const getCartItem = (itemId: string) => cart.find(c => String(c.id) === String(itemId));
@@ -19,21 +21,24 @@ const MenuSection = () => {
     const fetchMenu = async () => {
       try {
         const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
-        const res = await fetch(`${apiUrl}/menu`);
+        const [res] = await Promise.all([
+          fetch(`${apiUrl}/menu`),
+          new Promise(resolve => setTimeout(resolve, 800)) // Artificial delay to ensure skeletons are seen
+        ]);
+        
         if (!res.ok) {
           console.error("Failed to load menu data: Server returned", res.status);
           return;
         }
+        
         const data = await res.json();
-        if (!Array.isArray(data)) {
-          console.error("Failed to load menu data: Expected array, got", typeof data);
-          return;
-        }
         const processedData = applyCustomImages(data);
         // Limit to 6 items for the home page section
         setMenuItems(processedData.slice(0, 6));
       } catch (err) {
         console.error("Failed to load menu data", err);
+      } finally {
+        setIsLoading(false);
       }
     };
     fetchMenu();
@@ -50,6 +55,7 @@ const MenuSection = () => {
       image: resolveImage(item.image),
     });
     setAddedItems(prev => ({ ...prev, [item.id]: true }));
+    
     if (timeoutRef.current[item.id]) {
       clearTimeout(timeoutRef.current[item.id]);
     }
@@ -92,113 +98,129 @@ const MenuSection = () => {
         </motion.div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-10">
-          {menuItems.map((item, index) => (
-            <motion.div
-              key={item.id}
-              initial={{ opacity: 0, y: 40 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{
-                duration: 0.7,
-                delay: index * 0.08,
-                ease: [0.16, 1, 0.3, 1],
-              }}
-              className="group"
-            >
-              <Link to={`/menu/${item.id}`} className="block h-full">
-                <div className="menu-card h-full flex flex-col">
-                  <div className="relative overflow-hidden aspect-[4/3]" style={{ borderRadius: "1.5rem" }}>
-                    <img
-                      src={resolveImage(item.image)}
-                      alt={item.title}
-                      className="w-full h-full object-cover transition-transform [transition-duration:1.5s] group-hover:scale-105"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-primary/60 via-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+          {isLoading ? (
+            Array.from({ length: 6 }).map((_, index) => (
+              <div key={`skeleton-${index}`} className="menu-card h-full flex flex-col animate-pulse bg-white/50 rounded-[1.5rem] p-4 border border-black/5">
+                <div className="relative overflow-hidden aspect-[4/3] bg-gray-200 rounded-[1.5rem]"></div>
+                <div className="p-7 flex flex-col flex-1">
+                  <div className="flex items-start justify-between gap-5 mb-3">
+                    <div className="w-1/2 h-6 bg-gray-200 rounded"></div>
+                    <div className="w-1/4 h-6 bg-gray-200 rounded"></div>
+                  </div>
+                  <div className="w-full h-4 bg-gray-200 rounded mb-2"></div>
+                  <div className="w-5/6 h-4 bg-gray-200 rounded mb-6"></div>
+                  <div className="mt-auto w-full h-11 bg-gray-200 rounded-full"></div>
+                </div>
+              </div>
+            ))
+          ) : (
+            menuItems.map((item, index) => (
+              <motion.div
+                key={item.id}
+                initial={{ opacity: 0, y: 40 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{
+                  duration: 0.7,
+                  delay: index * 0.08,
+                  ease: [0.16, 1, 0.3, 1],
+                }}
+                className="group"
+              >
+                <Link to={`/menu/${generateSlug(item.title)}`} className="block h-full">
+                  <div className="menu-card h-full flex flex-col">
+                    <div className="relative overflow-hidden aspect-[4/3]" style={{ borderRadius: "1.5rem" }}>
+                      <img
+                        src={resolveImage(item.image)}
+                        alt={item.title}
+                        className="w-full h-full object-cover transition-transform [transition-duration:1.5s] group-hover:scale-105"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-primary/60 via-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
-                    <div className="absolute top-5 left-5 z-10">
-                      <span className="category-tag shadow-sm backdrop-blur-md">
-                        {item.category}
-                      </span>
+                      <div className="absolute top-5 left-5 z-10">
+                        <span className="category-tag shadow-sm backdrop-blur-md">
+                          {item.category}
+                        </span>
+                      </div>
+
+                      <div className="absolute bottom-5 right-5 opacity-0 group-hover:opacity-100 transition-all duration-500 transform translate-y-2 group-hover:translate-y-0 z-10 pointer-events-none">
+                        <div className="w-11 h-11 rounded-full flex items-center justify-center shadow-lg"
+                          style={{ background: "hsl(43 74% 48%)", color: "hsl(195 30% 8%)" }}>
+                          <ArrowUpRight className="w-5 h-5" />
+                        </div>
+                      </div>
                     </div>
 
-                    <div className="absolute bottom-5 right-5 opacity-0 group-hover:opacity-100 transition-all duration-500 transform translate-y-2 group-hover:translate-y-0 z-10 pointer-events-none">
-                      <div className="w-11 h-11 rounded-full flex items-center justify-center shadow-lg"
-                        style={{ background: "hsl(43 74% 48%)", color: "hsl(195 30% 8%)" }}>
-                        <ArrowUpRight className="w-5 h-5" />
+                    <div className="p-7 flex flex-col flex-1">
+                      <div className="flex items-start justify-between gap-5 mb-3">
+                        <h3 className="text-2xl font-serif font-bold text-card-foreground transition-colors duration-300 group-hover:text-accent group-hover:opacity-90">
+                          {item.title}
+                        </h3>
+                        <span className="font-serif font-bold text-2xl md:text-3xl italic text-accent">
+                          {item.price?.replace('$', '৳').replace('.00', '')}
+                        </span>
+                      </div>
+                      <p className="text-muted-foreground text-[15px] leading-[1.7] opacity-90 mb-6">
+                        {item.description}
+                      </p>
+                      <div className="mt-auto">
+                        {(() => {
+                          const cartItem = getCartItem(String(item.id));
+                          if (cartItem) {
+                            return (
+                              <motion.div
+                                initial={{ opacity: 0, scale: 0.8 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                className="flex items-center justify-between w-full bg-emerald-500 rounded-full overflow-hidden shadow-[0_4px_14px_rgba(16,185,129,0.35)]"
+                                onClick={(e) => e.preventDefault()}
+                              >
+                                <button
+                                  onClick={(e) => { e.preventDefault(); updateQuantity(Number(cartItem.id), cartItem.quantity - 1); }}
+                                  className="w-10 h-10 flex items-center justify-center text-white font-bold text-xl hover:bg-white/20 transition-colors rounded-full"
+                                >
+                                  −
+                                </button>
+                                <span className="text-white font-bold text-sm flex items-center gap-1.5">
+                                  {cartItem.quantity} in cart
+                                  <Check size={13} strokeWidth={3} />
+                                </span>
+                                <button
+                                  onClick={(e) => { e.preventDefault(); updateQuantity(Number(cartItem.id), cartItem.quantity + 1); }}
+                                  className="w-10 h-10 flex items-center justify-center text-white font-bold text-xl hover:bg-white/20 transition-colors rounded-full"
+                                >
+                                  +
+                                </button>
+                              </motion.div>
+                            );
+                          }
+                          return (
+                            <button
+                              onClick={(e) => handleAddToCart(e, item)}
+                              className={`flex items-center justify-center gap-2 w-full py-2.5 rounded-full text-[12px] uppercase tracking-[0.1em] font-bold transition-all duration-300 z-20 ${addedItems[item.id]
+                                ? 'bg-emerald-500 text-white shadow-[0_4px_14px_rgba(16,185,129,0.4)] scale-95'
+                                : 'bg-[hsl(43_74%_48%)] text-[hsl(195_30%_8%)] shadow-[0_4px_14px_rgba(228,168,32,0.3)] hover:scale-105 hover:bg-[hsl(43_74%_48%)]/90'
+                                }`}
+                            >
+                              <AnimatePresence mode="wait">
+                                {addedItems[item.id] ? (
+                                  <motion.span key="added" initial={{ opacity: 0, scale: 0.7 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.7 }} className="flex items-center gap-1.5">
+                                    <Check size={15} strokeWidth={3} /> Added!
+                                  </motion.span>
+                                ) : (
+                                  <motion.span key="add" initial={{ opacity: 0, scale: 0.7 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.7 }} className="flex items-center gap-1.5">
+                                    <ShoppingCart size={15} /> Add to Cart
+                                  </motion.span>
+                                )}
+                              </AnimatePresence>
+                            </button>
+                          );
+                        })()}
                       </div>
                     </div>
                   </div>
-
-                  <div className="p-7 flex flex-col flex-1">
-                    <div className="flex items-start justify-between gap-5 mb-3">
-                      <h3 className="text-2xl font-serif font-bold text-card-foreground transition-colors duration-300 group-hover:text-accent group-hover:opacity-90">
-                        {item.title}
-                      </h3>
-                      <span className="font-serif font-bold text-2xl md:text-3xl italic text-accent">
-                        {item.price?.replace('$', '৳').replace('.00', '')}
-                      </span>
-                    </div>
-                    <p className="text-muted-foreground text-[15px] leading-[1.7] opacity-90 mb-6">
-                      {item.description}
-                    </p>
-                    <div className="mt-auto">
-                      {(() => {
-                        const cartItem = getCartItem(String(item.id));
-                        if (cartItem) {
-                          return (
-                            <motion.div
-                              initial={{ opacity: 0, scale: 0.8 }}
-                              animate={{ opacity: 1, scale: 1 }}
-                              className="flex items-center justify-between w-full bg-emerald-500 rounded-full overflow-hidden shadow-[0_4px_14px_rgba(16,185,129,0.35)]"
-                              onClick={(e) => e.preventDefault()}
-                            >
-                              <button
-                                onClick={(e) => { e.preventDefault(); updateQuantity(Number(cartItem.id), cartItem.quantity - 1); }}
-                                className="w-10 h-10 flex items-center justify-center text-white font-bold text-xl hover:bg-white/20 transition-colors rounded-full"
-                              >
-                                +
-                              </button>
-                              <span className="text-white font-bold text-sm flex items-center gap-1.5">
-                                <Check size={13} strokeWidth={3} />
-                                {cartItem.quantity} in cart
-                              </span>
-                              <button
-                                onClick={(e) => { e.preventDefault(); updateQuantity(Number(cartItem.id), cartItem.quantity + 1); }}
-                                className="w-10 h-10 flex items-center justify-center text-white font-bold text-xl hover:bg-white/20 transition-colors rounded-full"
-                              >
-                                +
-                              </button>
-                            </motion.div>
-                          );
-                        }
-                        return (
-                          <button
-                            onClick={(e) => handleAddToCart(e, item)}
-                            className={`flex items-center justify-center gap-2 w-full py-2.5 rounded-full text-[12px] uppercase tracking-[0.1em] font-bold transition-all duration-300 z-20 ${addedItems[item.id]
-                              ? 'bg-emerald-500 text-white shadow-[0_4px_14px_rgba(16,185,129,0.4)] scale-95'
-                              : 'bg-[hsl(43_74%_48%)] text-[hsl(195_30%_8%)] shadow-[0_4px_14px_rgba(228,168,32,0.3)] hover:scale-105 hover:bg-[hsl(43_74%_48%)]/90'
-                              }`}
-                          >
-                            <AnimatePresence mode="wait">
-                              {addedItems[item.id] ? (
-                                <motion.span key="added" initial={{ opacity: 0, scale: 0.7 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.7 }} className="flex items-center gap-1.5">
-                                  <Check size={15} strokeWidth={3} /> Added!
-                                </motion.span>
-                              ) : (
-                                <motion.span key="add" initial={{ opacity: 0, scale: 0.7 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.7 }} className="flex items-center gap-1.5">
-                                  <ShoppingCart size={15} /> Add to Cart
-                                </motion.span>
-                              )}
-                            </AnimatePresence>
-                          </button>
-                        );
-                      })()}
-                    </div>
-                  </div>
-                </div>
-              </Link>
-            </motion.div>
-          ))}
+                </Link>
+              </motion.div>
+            )))}
         </div>
 
         <motion.div

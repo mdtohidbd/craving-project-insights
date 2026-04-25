@@ -7,31 +7,8 @@ import Footer from "@/components/Footer";
 import { useCart } from "@/context/CartContext";
 import { MenuItem } from "@/types";
 import { applyCustomImages } from "@/utils/menuUtils";
-
-import menuMojito from "@/assets/menu-mojito.jpg";
-import menuCoconut from "@/assets/menu-coconut.jpg";
-import menuShrimp from "@/assets/menu-shrimp.jpg";
-import menuDessert from "@/assets/menu-dessert.jpg";
-import menuLatte from "@/assets/menu-latte.jpg";
-import heroFood from "@/assets/hero-food.jpg";
-
-import beetAvocadoToast from "@/assets/beet_avocado_toast.png";
-import guacamoleBowl from "@/assets/guacamole_bowl.png";
-import loadedCheeseNachos from "@/assets/loaded_cheese_nachos.png";
-import byoPitaWrap from "@/assets/byo_pita_wrap.png";
-import tabboulehBowl from "@/assets/tabbouleh_bowl.png";
-import originalFalafelWrap from "@/assets/original_falafel_wrap.png";
-import beyondKebab from "@/assets/beyond_kebab.png";
-import desiFalafelPlate from "@/assets/desi_falafel_plate.png";
-import beyondBurger from "@/assets/beyond_burger.png";
-import justEggScramble from "@/assets/just_egg_scramble.png";
-import gyroCarnitasTacos from "@/assets/gyro_carnitas_tacos.png";
-import dessertsCollection from "@/assets/desserts_collection.png";
-import mocktailsCollection from "@/assets/mocktails_collection.png";
-import coffeTeaCollection from "@/assets/coffee_tea_collection.png";
-import friesCollection from "@/assets/fries_collection.png";
-import soupsCollection from "@/assets/soups_collection.png";
 import { resolveImage } from "./Menu";
+import { generateSlug } from "@/utils/slugUtils";
 
 const DiamondStar = ({ className }: { className?: string }) => (
   <svg viewBox="0 0 24 24" className={className} fill="currentColor">
@@ -51,7 +28,7 @@ const getShapeClass = (index: number) => {
 };
 
 const MenuDetail = () => {
-  const { id } = useParams();
+  const { slug } = useParams();
   const { addToCart, cart, updateQuantity } = useCart();
   const [quantity, setQuantity] = useState(1);
   const [item, setItem] = useState<MenuItem | null>(null);
@@ -74,23 +51,22 @@ const MenuDetail = () => {
         return res.json();
       })
       .then(data => {
-        if (!data) return;
-        if (!Array.isArray(data)) {
-          console.error("Failed to load menu data: Expected array, got", typeof data);
+        if (!data || !Array.isArray(data)) {
+          console.error("Failed to load menu data: Expected array");
           setLoading(false);
           return;
         }
         const processedData = applyCustomImages(data);
-        const found = processedData.find((m: MenuItem) => m.id.toString() === id);
-        setItem(found);
-        setRelatedItems(processedData.filter((m: MenuItem) => m.id.toString() !== id).slice(0, 3));
+        const found = processedData.find((m: MenuItem) => generateSlug(m.title) === slug);
+        setItem(found || null);
+        setRelatedItems(processedData.filter((m: MenuItem) => generateSlug(m.title) !== slug).slice(0, 3));
         setLoading(false);
       })
       .catch(err => {
         console.error(err);
         setLoading(false);
       });
-  }, [id]);
+  }, [slug]);
 
   useEffect(() => {
     return () => {
@@ -100,22 +76,26 @@ const MenuDetail = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-primary">
-        <div className="text-white text-xl font-serif">Loading...</div>
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="animate-pulse flex flex-col items-center">
+          <div className="w-12 h-12 rounded-full border-4 border-primary border-t-transparent animate-spin"></div>
+          <p className="mt-4 text-primary font-serif font-medium">Preparing your table...</p>
+        </div>
       </div>
     );
   }
 
   if (!item) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-primary relative overflow-hidden">
+      <div className="min-h-screen flex flex-col items-center justify-center bg-background relative overflow-hidden">
         <Navbar />
-        <div className="pt-40 pb-20 text-center relative z-10">
-          <h1 className="text-8xl font-serif font-bold text-primary-foreground mb-8" style={{ letterSpacing: "-0.04em" }}>
-            Item Not Found
+        <div className="pt-40 pb-20 text-center relative z-10 flex flex-col items-center">
+          <h1 className="text-6xl md:text-8xl font-serif font-bold text-primary mb-6" style={{ letterSpacing: "-0.04em" }}>
+            Dish Not Found
           </h1>
-          <Link to="/menu" className="btn-gold inline-flex items-center gap-3">
-            <ArrowLeft className="w-5 h-5" /> Back to Menu
+          <p className="text-muted-foreground mb-8 text-lg">We couldn't find the culinary creation you're looking for.</p>
+          <Link to="/menu" className="btn-solid inline-flex items-center gap-3">
+            <ArrowLeft className="w-5 h-5" /> Return to Menu
           </Link>
         </div>
         <Footer />
@@ -123,214 +103,183 @@ const MenuDetail = () => {
     );
   }
 
-
-
   return (
-    <div className="min-h-screen bg-background">
-      <Navbar />
+    <div className="min-h-screen bg-background flex flex-col">
+      <Navbar theme="light" />
 
-      {/* Hero Section */}
-      <section className="bg-primary pt-20 pb-12 relative overflow-hidden">
-        <div className="absolute inset-0">
-          <div className="absolute top-[0%] right-[-10%] w-[600px] h-[600px] rounded-full pointer-events-none"
-            style={{ background: "radial-gradient(circle, hsl(43 60% 50% / 0.05), transparent 70%)" }} />
-        </div>
-        <div className="container mx-auto px-6 md:px-12 text-center relative z-10">
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="mb-3"
-          >
-            <span className="text-[11px] uppercase tracking-[0.2em] font-bold px-6 py-2.5 rounded-full"
-              style={{ background: "hsl(43 74% 48%)", color: "hsl(195 30% 8%)" }}>
-              {item.category}
-            </span>
-          </motion.div>
-          <motion.h1
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            className="text-6xl md:text-8xl lg:text-9xl font-serif font-bold text-primary-foreground leading-[0.9] mb-3"
-            style={{ letterSpacing: "-0.04em" }}
-          >
-            {item.title}
-          </motion.h1>
-        </div>
-      </section>
+      <main className="flex-grow pt-24 pb-20 relative">
+        {/* Floating Background Blooms */}
+        <div className="absolute top-0 right-0 w-[60vw] h-[60vw] max-w-[800px] max-h-[800px] rounded-full opacity-10 pointer-events-none blur-3xl transform translate-x-1/3 -translate-y-1/3 mix-blend-multiply" style={{ background: "radial-gradient(circle, hsl(43 74% 48%), transparent 70%)" }}></div>
+        <div className="absolute bottom-0 left-0 w-[40vw] h-[40vw] max-w-[600px] max-h-[600px] rounded-full opacity-5 pointer-events-none blur-3xl transform -translate-x-1/4 translate-y-1/4 mix-blend-multiply" style={{ background: "radial-gradient(circle, hsl(195 30% 8%), transparent 70%)" }}></div>
 
-      {/* Main Content Area */}
-      <section className="-mt-16 pb-24 relative z-20">
-        <div className="container mx-auto px-6 md:px-12">
+        <div className="container mx-auto px-6 md:px-12 relative z-10">
 
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
-            className="max-w-6xl mx-auto mb-12"
-          >
-            <div className="relative overflow-hidden shadow-2xl" style={{ borderRadius: "3rem" }}>
-              <img
-                src={resolveImage(item.image)}
-                alt={item.title}
-                className="w-full h-[500px] md:h-[650px] object-cover transition-transform [transition-duration:2s] hover:scale-105"
-              />
-            </div>
-          </motion.div>
+          <Link to="/menu" className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-primary transition-colors mb-8 md:mb-12 group select-none">
+            <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
+            Back to Menu
+          </Link>
 
-          <div className="max-w-4xl mx-auto">
+          <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-start">
+
+            {/* Image Column - Redesigned to be smaller and more elegant */}
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
+              initial={{ opacity: 0, x: -30 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+              className="relative w-full max-w-lg mx-auto lg:mx-0 sticky top-32"
             >
-              <div className="grid md:grid-cols-12 gap-12 lg:gap-20">
-                <div className="md:col-span-8 h-fit bg-white p-8 md:p-12 shadow-[0_20px_40px_rgba(0,0,0,0.06)] rounded-[2.5rem] border border-black/5">
-                  <h2 className="text-4xl md:text-5xl font-serif font-bold text-primary mb-4"
-                    style={{ letterSpacing: "-0.02em" }}>
-                    About This <span className="italic font-medium" style={{ color: "hsl(43 74% 48%)" }}>Dish</span>
-                  </h2>
-                  <div className="text-[#64748b] leading-[1.8] text-[15px] md:text-[16px] font-medium whitespace-pre-line">
-                    {item.description}
-                  </div>
+              {/* Premium geometric frame */}
+              <div className="relative aspect-[4/5] rounded-[2rem] overflow-hidden shadow-2xl bg-white border border-black/5 p-2 md:p-3">
+                <div className="w-full h-full rounded-[1.5rem] overflow-hidden relative">
+                  <img
+                    src={resolveImage(item.image)}
+                    alt={item.title}
+                    className="w-full h-full object-cover transition-transform duration-700 hover:scale-[1.03]"
+                  />
+                  {/* Inner subtle glow */}
+                  <div className="absolute inset-0 ring-1 ring-inset ring-black/5 rounded-[1.5rem] pointer-events-none"></div>
                 </div>
 
-                <div className="md:col-span-4 sticky top-32 flex flex-col gap-6 self-start">
-                  {/* Single Unified Sidebar Box */}
-                  <div className="bg-white p-5 md:p-6 shadow-[0_12px_30px_rgba(0,0,0,0.06)] rounded-2xl border border-black/5">
+                {/* Decorative Elements */}
+                <DiamondStar className="absolute top-0 left-8 w-4 h-4 text-accent -translate-y-1/2 drop-shadow-sm bg-white" />
+                <DiamondStar className="absolute bottom-12 right-0 w-5 h-5 text-primary translate-x-1/2 drop-shadow-sm bg-white" />
+              </div>
+            </motion.div>
 
-                    {/* Price Section */}
-                    <div className="flex items-center justify-between mb-4 pb-4 border-b border-black/5">
-                      <span className="text-[10px] uppercase tracking-[0.15em] font-bold text-muted-foreground">Price</span>
-                      <span className="text-3xl font-serif font-bold text-accent">
-                        {item.price?.replace('$', '৳').replace('.00', '')}
-                      </span>
-                    </div>
+            {/* Content Column - UX focused layout */}
+            <motion.div
+              initial={{ opacity: 0, x: 30 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
+              className="flex flex-col h-full justify-center lg:py-10"
+            >
+              <div className="mb-8">
+                <span className="inline-block text-[11px] uppercase tracking-[0.2em] font-bold px-4 py-1.5 rounded-full mb-4 border border-accent text-accent bg-accent/5">
+                  {item.category}
+                </span>
 
-                    {/* Quantity Section */}
-                    <div className="flex items-center justify-between mb-4">
-                      <span className="text-[10px] uppercase tracking-[0.15em] font-bold text-primary">Quantity</span>
-                      <div className="flex items-center gap-3 bg-[hsl(40_18%_96%)] rounded-lg p-1 border border-black/5">
-                        <button
-                          onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                          className="w-8 h-8 flex items-center justify-center rounded-md bg-white shadow-sm hover:bg-black/5 active:scale-95 transition-all text-primary"
-                        >
-                          <Minus className="w-3 h-3" />
-                        </button>
-                        <span className="font-bold text-base text-primary w-5 text-center">{quantity}</span>
-                        <button
-                          onClick={() => setQuantity(quantity + 1)}
-                          className="w-8 h-8 flex items-center justify-center rounded-md bg-[hsl(43_74%_48%)] shadow-sm hover:brightness-110 active:scale-95 transition-all text-[hsl(195_30%_8%)]"
-                        >
-                          <Plus className="w-3 h-3" />
-                        </button>
-                      </div>
-                    </div>
+                <h1 className="text-5xl md:text-7xl font-serif font-bold text-primary mb-4 leading-[0.95]" style={{ letterSpacing: "-0.03em" }}>
+                  {item.title}
+                </h1>
 
-                    {/* Buttons */}
-                    <div className="flex flex-col gap-2">
-                      <button
-                        onClick={() => {
-                          const numericPrice = parseFloat((item.price || '0').replace(/[^0-9.]/g, ''));
-                          addToCart({
-                            id: Number(item.id),
-                            title: item.title,
-                            price: isNaN(numericPrice) ? 0 : numericPrice,
-                            priceStr: item.price?.replace('$', '৳').replace('.00', ''),
-                            image: resolveImage(item.image),
-                            quantity: quantity
-                          });
-                          setQuantity(1); // Reset quantity after adding
-                        }}
-                        className="w-full bg-[hsl(43_74%_48%)] text-[hsl(195_30%_8%)] font-bold py-3 rounded-xl shadow-[0_6px_16px_rgba(228,168,32,0.3)] hover:shadow-[0_8px_20px_rgba(228,168,32,0.4)] hover:-translate-y-0.5 transition-all text-[11px] uppercase tracking-wider flex items-center justify-center gap-2"
-                      >
-                        <ShoppingCart className="w-3.5 h-3.5" />
-                        Add to Cart
-                      </button>
+                <div className="text-3xl md:text-4xl font-serif text-accent flex items-end gap-2 mb-8">
+                  {item.price?.replace('$', '৳').replace('.00', '')}
+                </div>
 
-                      <Link
-                        to="/checkout"
-                        className="w-full bg-[#1b2534] text-white font-bold py-3 rounded-xl shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all text-[11px] uppercase tracking-wider flex items-center justify-center gap-2 border border-white/5"
-                      >
-                        View Cart
-                      </Link>
-                    </div>
+                <div className="h-px w-16 bg-primary/10 mb-8"></div>
+
+                <p className="text-muted-foreground leading-[1.8] text-[16px] md:text-[17px] font-medium mb-12 max-w-xl">
+                  {item.description}
+                </p>
+              </div>
+
+              {/* Add to Cart Actions Block */}
+              <div className="bg-white p-6 md:p-8 rounded-[2rem] shadow-[0_20px_40px_rgba(0,0,0,0.04)] border border-primary/5 max-w-xl">
+
+                <div className="flex flex-col sm:flex-row items-center gap-4">
+                  {/* Quantity */}
+                  <div className="flex items-center justify-between w-full sm:w-auto gap-4 bg-[hsl(40_18%_96%)] p-2 rounded-xl border border-black/5">
+                    <button
+                      onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                      className="w-10 h-10 flex items-center justify-center rounded-lg bg-white shadow-sm hover:bg-black/5 active:scale-95 transition-all text-primary"
+                    >
+                      <Minus className="w-4 h-4" />
+                    </button>
+                    <span className="font-bold text-xl text-primary w-6 text-center">{quantity}</span>
+                    <button
+                      onClick={() => setQuantity(quantity + 1)}
+                      className="w-10 h-10 flex items-center justify-center rounded-lg bg-accent shadow-sm hover:brightness-105 active:scale-95 transition-all text-[hsl(195_30%_8%)]"
+                    >
+                      <Plus className="w-4 h-4" />
+                    </button>
                   </div>
+
+                  {/* Add Button */}
+                  <button
+                    onClick={() => {
+                      const numericPrice = parseFloat((item.price || '0').replace(/[^0-9.]/g, ''));
+                      addToCart({
+                        id: Number(item.id),
+                        title: item.title,
+                        price: isNaN(numericPrice) ? 0 : numericPrice,
+                        priceStr: item.price?.replace('$', '৳').replace('.00', ''),
+                        image: resolveImage(item.image),
+                        quantity: quantity
+                      });
+                      setQuantity(1);
+                    }}
+                    className="w-full bg-primary text-white font-bold py-4 rounded-xl shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all text-[12px] uppercase tracking-wider flex items-center justify-center gap-2 group"
+                  >
+                    <ShoppingCart className="w-4 h-4 transition-transform group-hover:scale-110" />
+                    Add to Cart
+                  </button>
                 </div>
               </div>
             </motion.div>
+
           </div>
         </div>
-      </section>
+      </main>
 
-      {/* Related Items */}
-      <section className="section-divide relative" style={{ background: "hsl(38 15% 92% / 0.3)" }}>
+      {/* Related Items Section - Matching the clean architectural grid */}
+      <section className="bg-[hsl(40_18%_96%)] border-t border-primary/10 py-24 relative overflow-hidden">
         <div className="container mx-auto px-6 md:px-12">
-          <div className="flex items-end justify-between mb-8">
-            <div>
-              <span className="text-[11px] uppercase tracking-[0.3em] font-medium mb-4 block"
-                style={{ color: "hsl(43 74% 48% / 0.8)" }}>
-                ✦ Related
+
+          <div className="flex flex-col md:flex-row items-center md:items-end justify-between mb-12 md:mb-16 gap-6">
+            <div className="text-center md:text-left">
+              <span className="text-[11px] uppercase tracking-[0.3em] font-medium block text-accent mb-3">
+                ✦ Perfect Pairings
               </span>
-              <h2 className="text-5xl md:text-6xl font-serif font-bold text-primary" style={{ letterSpacing: "-0.04em" }}>
-                More from our <span className="italic" style={{ color: "hsl(43 74% 48%)" }}>Menu</span>
+              <h2 className="text-4xl md:text-5xl font-serif font-bold text-primary" style={{ letterSpacing: "-0.03em" }}>
+                You Might Also <span className="italic text-accent">Like</span>
               </h2>
             </div>
+
             <Link
               to="/menu"
-              className="hidden md:inline-flex items-center gap-3 text-[12px] uppercase tracking-[0.2em] font-medium transition-colors duration-300 group"
-              style={{ color: "hsl(43 74% 48%)" }}
+              className="inline-flex items-center gap-2 text-[12px] uppercase tracking-[0.2em] font-medium text-primary hover:text-accent transition-colors duration-300 group"
             >
-              Full Menu
-              <ArrowUpRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1 group-hover:-translate-y-1" />
+              View Menu
+              <ArrowUpRight className="w-4 h-4 transition-transform group-hover:translate-x-1 group-hover:-translate-y-1" />
             </Link>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8 md:gap-10">
+          <div className="grid md:grid-cols-3 gap-8">
             {relatedItems.map((item, index) => {
               const shapeClass = getShapeClass(index);
 
               return (
                 <motion.div
                   key={item.id}
-                  initial={{ opacity: 0, y: 40 }}
+                  initial={{ opacity: 0, y: 30 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
-                  transition={{ duration: 0.7, delay: index * 0.1 }}
+                  transition={{ duration: 0.6, delay: index * 0.1 }}
                   className="group h-full"
                 >
-                  <Link to={`/menu/${item.id}`} className="block h-full">
-                    <div className="flex flex-col items-center bg-transparent group mb-12 cursor-pointer h-full hoverable">
-                      <div className={`relative overflow-hidden aspect-square w-full max-w-[260px] mx-auto mb-6 transition-transform duration-500 group-hover:scale-105 shadow-[0_10px_30px_rgba(0,0,0,0.08)] bg-white border border-black/5 ${shapeClass}`}>
-                        <img
-                          src={resolveImage(item.image)}
-                          alt={item.title}
-                          className="w-full h-full object-cover"
-                        />
-                        <div className="absolute inset-0 bg-primary/0 opacity-0 group-hover:opacity-10 transition-opacity duration-500" />
+                  <Link to={`/menu/${generateSlug(item.title)}`} className="block h-full">
+                    <div className="flex flex-col items-center h-full hoverable">
 
-                        {/* Custom geometric inner border imitating the client's reference images */}
-                        <div className={`absolute inset-[8px] pointer-events-none custom-card-border ${shapeClass} overflow-visible`}>
-                          <div className={`absolute inset-0 border-[1.5px] border-white/80 ${shapeClass}`} />
-
-                          {/* Diamond accent icons on corners */}
-                          <DiamondStar className="absolute -top-1.5 -left-1.5 w-3 h-3 text-zinc-800 drop-shadow-md bg-white border border-white" />
-                          <DiamondStar className="absolute -top-1.5 -right-1.5 w-3 h-3 text-zinc-400 drop-shadow-md bg-white border border-white" />
-                          <DiamondStar className="absolute -bottom-1.5 -left-1.5 w-3 h-3 text-zinc-800 drop-shadow-md bg-white border border-white" />
-                          <DiamondStar className="absolute -bottom-1.5 -right-1.5 w-3 h-3 text-[hsl(43_74%_48%)] drop-shadow-md bg-zinc-900 border border-zinc-900" />
+                      <div className={`relative overflow-hidden aspect-square w-full max-w-[240px] mx-auto mb-6 transition-transform duration-500 group-hover:scale-105 shadow-[0_10px_30px_rgba(0,0,0,0.06)] bg-white border border-black/5 p-1 ${shapeClass}`}>
+                        <div className={`w-full h-full overflow-hidden ${shapeClass}`}>
+                          <img
+                            src={resolveImage(item.image)}
+                            alt={item.title}
+                            className="w-full h-full object-cover"
+                          />
                         </div>
-
-
                       </div>
 
-                      <h3 className="text-xl md:text-2xl font-serif font-bold text-primary mb-3 text-center transition-colors group-hover:text-[hsl(43_74%_48%)] px-2">
-                        {item.title} <span className="font-serif font-bold tracking-tight text-xl md:text-2xl ml-1 text-accent">{item.price?.replace('$', '৳').replace('.00', '')}</span>
-                      </h3>
-                      <p className="text-[13px] md:text-[14px] text-center text-primary/80 leading-relaxed px-4 md:px-8 mb-4 font-medium line-clamp-2">
-                        {item.description}
-                      </p>
+                      <div className="text-center flex-grow flex flex-col mb-4">
+                        <h3 className="text-xl font-serif font-bold text-primary mb-2 transition-colors group-hover:text-accent">
+                          {item.title}
+                        </h3>
+                        <p className="text-[13px] text-muted-foreground leading-relaxed px-4 line-clamp-2">
+                          {item.description}
+                        </p>
+                      </div>
 
-                      <div className="mt-auto px-4 md:px-8 w-full flex flex-col gap-3 pb-2 z-10">
+                      <div className="w-full px-6 pb-2">
                         {(() => {
                           const cartItem = getCartItem(String(item.id));
                           if (cartItem) {
@@ -338,22 +287,21 @@ const MenuDetail = () => {
                               <motion.div
                                 initial={{ opacity: 0, scale: 0.8 }}
                                 animate={{ opacity: 1, scale: 1 }}
-                                className="flex items-center justify-between w-full bg-emerald-500 rounded-full overflow-hidden shadow-[0_4px_14px_rgba(16,185,129,0.35)]"
+                                className="flex items-center justify-between w-full bg-emerald-500 text-white rounded-full overflow-hidden shadow-md"
                                 onClick={(e) => e.preventDefault()}
                               >
                                 <button
                                   onClick={(e) => { e.preventDefault(); updateQuantity(Number(cartItem.id), cartItem.quantity - 1); }}
-                                  className="w-10 h-10 flex items-center justify-center text-white font-bold text-xl hover:bg-white/20 transition-colors rounded-full"
+                                  className="w-10 h-10 flex flex-1 items-center justify-center font-bold hover:bg-black/10 transition-colors"
                                 >
                                   −
                                 </button>
-                                <span className="text-white font-bold text-sm flex items-center gap-1.5">
-                                  <Check size={13} strokeWidth={3} />
-                                  {cartItem.quantity} in cart
+                                <span className="font-bold text-xs flex items-center gap-1">
+                                  <Check size={12} strokeWidth={3} /> {cartItem.quantity}
                                 </span>
                                 <button
                                   onClick={(e) => { e.preventDefault(); updateQuantity(Number(cartItem.id), cartItem.quantity + 1); }}
-                                  className="w-10 h-10 flex items-center justify-center text-white font-bold text-xl hover:bg-white/20 transition-colors rounded-full"
+                                  className="w-10 h-10 flex flex-1 items-center justify-center font-bold hover:bg-black/10 transition-colors"
                                 >
                                   +
                                 </button>
@@ -373,35 +321,32 @@ const MenuDetail = () => {
                                   image: resolveImage(item.image),
                                 });
                                 setAddedRelated(prev => ({ ...prev, [item.id]: true }));
-                                if (timeoutRef.current[item.id]) {
-                                  clearTimeout(timeoutRef.current[item.id]);
-                                }
+                                if (timeoutRef.current[item.id]) clearTimeout(timeoutRef.current[item.id]);
                                 timeoutRef.current[item.id] = setTimeout(() => { setAddedRelated(prev => ({ ...prev, [item.id]: false })); }, 1500);
                               }}
-                              className={`flex items-center justify-center gap-2 w-full py-2.5 rounded-full text-[11px] uppercase tracking-[0.1em] font-bold transition-all duration-300 z-20 ${addedRelated[item.id]
-                                ? 'bg-emerald-500 text-white shadow-[0_4px_14px_rgba(16,185,129,0.4)] scale-95'
-                                : 'bg-[hsl(43_74%_48%)] text-[hsl(195_30%_8%)] shadow-[0_4px_14px_rgba(228,168,32,0.3)] hover:scale-105 hover:bg-[hsl(43_74%_48%)]/90'
+                              className={`flex items-center justify-between w-full py-2.5 px-4 rounded-full text-[11px] uppercase tracking-[0.1em] font-bold transition-all duration-300 border ${addedRelated[item.id]
+                                ? 'bg-emerald-500 text-white border-emerald-500 shadow-md scale-95'
+                                : 'bg-transparent text-primary border-primary/20 hover:border-accent hover:bg-accent hover:text-primary-foreground group-hover:border-accent'
                                 }`}
                             >
                               <AnimatePresence mode="wait">
                                 {addedRelated[item.id] ? (
-                                  <motion.span key="added" initial={{ opacity: 0, scale: 0.7 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.7 }} className="flex items-center gap-1.5">
-                                    <Check size={15} strokeWidth={3} /> Added!
+                                  <motion.span key="added" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex items-center gap-1.5 mx-auto">
+                                    <Check size={14} strokeWidth={3} /> Added
                                   </motion.span>
                                 ) : (
-                                  <motion.span key="add" initial={{ opacity: 0, scale: 0.7 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.7 }} className="flex items-center gap-1.5">
-                                    <ShoppingCart size={15} /> Add to Cart
-                                  </motion.span>
+                                  <motion.div key="add" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex items-center justify-between w-full">
+                                    <span>{item.price?.replace('$', '৳').replace('.00', '')}</span>
+                                    <div className="flex items-center gap-2">
+                                      <span>Add</span>
+                                      <ShoppingCart size={13} className="opacity-70 group-hover:opacity-100" />
+                                    </div>
+                                  </motion.div>
                                 )}
                               </AnimatePresence>
                             </button>
                           );
                         })()}
-
-                        <div className="flex items-center justify-center gap-2 text-[10px] uppercase tracking-[0.2em] font-bold text-[hsl(43_74%_48%)] group-hover:text-primary transition-colors duration-300">
-                          View Details
-                          <ArrowUpRight size={14} className="transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-                        </div>
                       </div>
                     </div>
                   </Link>

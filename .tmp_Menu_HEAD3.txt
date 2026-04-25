@@ -7,9 +7,8 @@ import Footer from "@/components/Footer";
 import gsap from "gsap";
 import ScrollTrigger from "gsap/ScrollTrigger";
 import { useCart } from "@/context/CartContext";
-import { MenuItem } from "@/types";
-import { applyCustomImages } from "@/utils/menuUtils";
-import { generateSlug } from "@/utils/slugUtils";
+
+// ... existing imports
 
 import menuMojito from "@/assets/menu-mojito.jpg";
 import menuCoconut from "@/assets/menu-coconut.jpg";
@@ -55,6 +54,8 @@ const getShapeClass = (index: number) => {
   return shapes[index % shapes.length];
 };
 
+
+
 export const imageMap: Record<string, any> = {
   beetAvocadoToast, guacamoleBowl, loadedCheeseNachos, byoPitaWrap,
   tabboulehBowl, originalFalafelWrap, beyondKebab, desiFalafelPlate,
@@ -77,16 +78,15 @@ export const imageMap: Record<string, any> = {
 
 export const resolveImage = (img: string) => imageMap[img] || img;
 
+const toId = (str: string) => str.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+
 const Menu = () => {
   const { addToCart, cart, updateQuantity } = useCart();
   const [categories, setCategories] = useState<string[]>([]);
   const [activeCategory, setActiveCategory] = useState("");
-  const [allMenuItems, setAllMenuItems] = useState<MenuItem[]>([]);
+  const [allMenuItems, setAllMenuItems] = useState<any[]>([]);
   const [addedItems, setAddedItems] = useState<Record<string, boolean>>({});
-  const [isLoading, setIsLoading] = useState(true);
   const containerRef = useRef<HTMLDivElement>(null);
-  const timeoutRef = useRef<Record<string, NodeJS.Timeout>>({});
-  const scrollTriggersRef = useRef<ScrollTrigger[]>([]);
 
   const getCartItem = (itemId: string) => cart.find(c => String(c.id) === String(itemId));
 
@@ -95,36 +95,24 @@ const Menu = () => {
 
     Promise.all([
       fetch(`${apiUrl}/menu`),
-      fetch(`${apiUrl}/categories`),
-      new Promise(resolve => setTimeout(resolve, 800)) // artificial delay to show skeletons
+      fetch(`${apiUrl}/categories`)
     ])
       .then(async ([menuRes, catRes]) => {
-        if (!menuRes.ok) {
-          console.error("Failed to load menu data: Server returned", menuRes.status);
-          return;
-        }
-        
         const menuData = await menuRes.json();
-        const processedMenuData = applyCustomImages(menuData);
-        setAllMenuItems(processedMenuData);
+        const catData = await catRes.json();
+        menuData.forEach((m: any) => { 
+          if (m.title === "Guacamole") m.image = "guacamoleCustom";
+          if (m.title === "Original Falafel Wrap") m.image = "originalFalafelWrapCustom";
+          if (m.title === "Beyond Kebab") m.image = "beyondKebabCustom";
+          if (m.title === "Desi Falafel Plate") m.image = "desiFalafelPlateCustom";
+        });
+        setAllMenuItems(menuData);
 
-        let catData = [];
-        if (catRes.ok) {
-           try { catData = await catRes.json(); } catch(e) {}
-        }
-        
-        let catNames = catData.filter((c: any) => c.name !== "All").map((c: any) => c.name);
-        
-        // Fallback: If categories API is empty but menu has items, extract categories from menu items
-        if (catNames.length === 0 && processedMenuData.length > 0) {
-            catNames = Array.from(new Set(processedMenuData.map((m: any) => m.category))).filter(Boolean);
-        }
-        
-        setCategories(catNames as string[]);
-        if (catNames.length > 0) setActiveCategory(catNames[0] as string);
+        const catNames = catData.filter((c: any) => c.name !== "All").map((c: any) => c.name);
+        setCategories(catNames);
+        if (catNames.length > 0) setActiveCategory(catNames[0]);
       })
-      .catch((err) => console.error("Failed to load menu data", err))
-      .finally(() => setIsLoading(false));
+      .catch((err) => console.error("Failed to load menu data", err));
   }, []);
 
   useEffect(() => {
@@ -166,44 +154,36 @@ const Menu = () => {
   useEffect(() => {
     if (categories.length === 0) return;
 
-    let ticking = false;
     const handleScroll = () => {
-      if (!ticking) {
-        window.requestAnimationFrame(() => {
-          let currentCategory = categories[0];
-          for (const cat of categories) {
-            const id = generateSlug(cat);
-            const element = document.getElementById(id);
-            if (element) {
-              const rect = element.getBoundingClientRect();
-              if (rect.top <= 250) {
-                currentCategory = cat;
-              }
-            }
+      let currentCategory = categories[0];
+      for (const cat of categories) {
+        const id = toId(cat);
+        const element = document.getElementById(id);
+        if (element) {
+          const rect = element.getBoundingClientRect();
+          if (rect.top <= 250) {
+            currentCategory = cat;
           }
-          setActiveCategory(currentCategory);
-          ticking = false;
-        });
-        ticking = true;
+        }
       }
+      setActiveCategory(currentCategory);
     };
 
-    // passive: true improves scrolling performance significantly
-    window.addEventListener("scroll", handleScroll, { passive: true });
+    window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, [categories]);
 
   // Auto-scroll the category bar to keep the active item visible
   useEffect(() => {
     if (activeCategory) {
-      const activeBtn = document.getElementById(`cat-btn-${generateSlug(activeCategory)}`);
+      const activeBtn = document.getElementById(`cat-btn-${toId(activeCategory)}`);
       const navContainer = document.getElementById('category-nav');
-
+      
       if (activeBtn && navContainer) {
         const containerWidth = navContainer.offsetWidth;
         const btnLeft = activeBtn.offsetLeft;
         const btnWidth = activeBtn.offsetWidth;
-
+        
         // Center the active button in the scrollable container
         navContainer.scrollTo({
           left: btnLeft - (containerWidth / 2) + (btnWidth / 2),
@@ -214,7 +194,7 @@ const Menu = () => {
   }, [activeCategory]);
 
   const scrollToCategory = (category: string) => {
-    const element = document.getElementById(generateSlug(category));
+    const element = document.getElementById(toId(category));
     if (element) {
       const yOffset = -200;
       const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
@@ -255,14 +235,14 @@ const Menu = () => {
       {/* Sticky Category Nav */}
       <div className="sticky top-20 z-40 bg-[hsl(40_18%_96%)]/95 backdrop-blur-xl border-b border-primary/10 shadow-sm py-3 transition-all duration-300">
         <div className="container mx-auto px-4 md:px-12">
-          <div
+          <div 
             id="category-nav"
             className="flex overflow-x-auto gap-2 md:gap-4 hide-scrollbar justify-start md:justify-center items-center py-1"
           >
             {categories.map((category) => (
               <button
                 key={category}
-                id={`cat-btn-${generateSlug(category)}`}
+                id={`cat-btn-${toId(category)}`}
                 onClick={() => scrollToCategory(category)}
                 className={`flex-shrink-0 px-5 py-2 rounded-full text-[11px] md:text-[12px] uppercase tracking-[0.15em] font-bold transition-all duration-500 whitespace-nowrap hoverable ${activeCategory === category
                   ? "shadow-[0_4px_12px_rgba(228,168,32,0.25)] scale-105"
@@ -297,7 +277,7 @@ const Menu = () => {
           if (categoryItems.length === 0) return null;
 
           return (
-            <div key={category} id={generateSlug(category)} className="pt-10 pb-6 border-b border-primary/10 last:border-0 scroll-mt-32">
+            <div key={category} id={toId(category)} className="pt-10 pb-6 border-b border-primary/10 last:border-0 scroll-mt-32">
               <motion.h2
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
@@ -308,128 +288,120 @@ const Menu = () => {
               </motion.h2>
 
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-10">
-                {isLoading ? (
-                  Array.from({ length: 6 }).map((_, index) => {
-                    const shapeClass = getShapeClass(index);
-                    return (
-                      <div key={`skeleton-${index}`} className="flex flex-col items-center bg-transparent mb-6 h-full animate-pulse p-4">
-                        <div className={`relative overflow-hidden aspect-square w-full max-w-[240px] mx-auto mb-6 bg-zinc-200 border border-black/5 p-1 ${shapeClass}`}>
-                          <div className={`w-full h-full overflow-hidden ${shapeClass} bg-zinc-300`}></div>
-                        </div>
-                        <div className="text-center flex-grow flex flex-col mb-4 items-center w-full">
-                          <div className="w-2/3 h-5 bg-zinc-200 mb-3 rounded"></div>
-                          <div className="w-full h-3 bg-zinc-200 mb-2 rounded"></div>
-                          <div className="w-5/6 h-3 bg-zinc-200 mb-4 rounded"></div>
-                        </div>
-                        <div className="w-full px-6 pb-2">
-                          <div className="w-full h-10 rounded-full bg-zinc-200"></div>
-                        </div>
-                      </div>
-                    );
-                  })
-                ) : (
-                  categoryItems.map((item, index) => {
-                    const shapeClass = getShapeClass(index);
+                {categoryItems.map((item, index) => {
+                  const shapeClass = getShapeClass(index);
 
-                    return (
-                      <Link
-                        key={item.id}
-                        to={`/menu/${generateSlug(item.title)}`}
-                        className="group gsap-menu-card opacity-0 block h-full"
-                      >
-                        <div className="flex flex-col items-center h-full hoverable mb-6">
+                  return (
+                    <Link
+                      key={item.id}
+                      to={`/menu/${item.id}`}
+                      className="group gsap-menu-card opacity-0 block h-full"
+                    >
+                      <div className="flex flex-col items-center bg-transparent group mb-6 cursor-pointer h-full hoverable">
+                        <div className={`relative overflow-hidden aspect-square w-full max-w-[260px] mx-auto mb-4 transition-transform duration-500 group-hover:scale-105 shadow-[0_10px_30px_rgba(0,0,0,0.08)] bg-white border border-black/5 ${shapeClass}`}>
+                          <img
+                            src={resolveImage(item.image)}
+                            alt={item.title}
+                            className="w-full h-full object-cover"
+                          />
+                          <div className="absolute inset-0 bg-primary/0 opacity-0 group-hover:opacity-10 transition-opacity duration-500" />
 
-                          <div className={`relative overflow-hidden aspect-square w-full max-w-[240px] mx-auto mb-6 transition-transform duration-500 group-hover:scale-[1.03] shadow-[0_4px_20px_rgba(0,0,0,0.04)] bg-white border border-black/5 p-1.5 ${shapeClass}`}>
-                            <div className={`w-full h-full overflow-hidden ${shapeClass}`}>
-                              <img
-                                src={resolveImage(item.image)}
-                                alt={item.title}
-                                className="w-full h-full object-cover transition-transform duration-700 hover:scale-[1.05]"
-                              />
-                            </div>
+                          {/* Custom geometric inner border imitating the client's reference images */}
+                          <div className={`absolute inset-[8px] pointer-events-none custom-card-border ${shapeClass} overflow-visible`}>
+                            <div className={`absolute inset-0 border-[1.5px] border-white/80 ${shapeClass}`} />
+
+                            {/* Diamond accent icons on corners */}
+                            <DiamondStar className="absolute -top-1.5 -left-1.5 w-3 h-3 text-zinc-800 drop-shadow-md bg-white border border-white" />
+                            <DiamondStar className="absolute -top-1.5 -right-1.5 w-3 h-3 text-zinc-400 drop-shadow-md bg-white border border-white" />
+                            <DiamondStar className="absolute -bottom-1.5 -left-1.5 w-3 h-3 text-zinc-800 drop-shadow-md bg-white border border-white" />
+                            <DiamondStar className="absolute -bottom-1.5 -right-1.5 w-3 h-3 text-[hsl(43_74%_48%)] drop-shadow-md bg-zinc-900 border border-zinc-900" />
                           </div>
+                        </div>
 
-                          <div className="text-center flex-grow flex flex-col mb-4">
-                            <h3 className="text-xl md:text-[22px] font-serif font-bold text-primary mb-2.5 transition-colors group-hover:text-accent" style={{ letterSpacing: "-0.01em" }}>
-                              {item.title}
-                            </h3>
-                            <p className="text-[13px] text-muted-foreground leading-[1.6] px-2 md:px-4 line-clamp-2">
-                              {item.description}
-                            </p>
-                          </div>
+                        <h3 className="text-xl md:text-2xl font-serif font-bold text-primary mb-3 text-center transition-colors group-hover:text-[hsl(43_74%_48%)] px-2">
+                          {item.title} <span className="font-serif font-bold tracking-tight text-xl md:text-2xl ml-1 text-accent">{item.price?.replace('$', '৳').replace('.00', '')}</span>
+                        </h3>
+                        <p className="text-[13px] md:text-[14px] text-center text-primary/80 leading-relaxed px-4 md:px-8 mb-3 font-medium line-clamp-2">
+                          {item.description}
+                        </p>
 
-                          <div className="w-full px-4 md:px-6 pb-2 relative z-20">
-                            {(() => {
-                              const cartItem = getCartItem(String(item.id));
-                              if (cartItem) {
-                                return (
-                                  <motion.div
-                                    initial={{ opacity: 0, scale: 0.95 }}
-                                    animate={{ opacity: 1, scale: 1 }}
-                                    className="flex items-center justify-between w-full bg-emerald-500 text-white rounded-full overflow-hidden shadow-sm border border-emerald-600/50"
-                                    onClick={(e) => e.preventDefault()}
-                                  >
-                                    <button
-                                      onClick={(e) => { e.preventDefault(); updateQuantity(Number(cartItem.id), cartItem.quantity - 1); }}
-                                      className="w-10 h-10 flex flex-1 items-center justify-center font-bold hover:bg-black/10 transition-colors"
-                                    >
-                                      −
-                                    </button>
-                                    <span className="font-bold text-xs flex items-center gap-1.5">
-                                      {cartItem.quantity} <Check size={12} strokeWidth={4} />
-                                    </span>
-                                    <button
-                                      onClick={(e) => { e.preventDefault(); updateQuantity(Number(cartItem.id), cartItem.quantity + 1); }}
-                                      className="w-10 h-10 flex flex-1 items-center justify-center font-bold hover:bg-black/10 transition-colors"
-                                    >
-                                      +
-                                    </button>
-                                  </motion.div>
-                                );
-                              }
+                        <div className="mt-auto px-4 md:px-8 w-full flex flex-col gap-3 pb-2 z-10">
+                          {(() => {
+                            const cartItem = getCartItem(item.id);
+                            if (cartItem) {
                               return (
-                                <button
-                                  onClick={(e) => {
-                                    e.preventDefault();
-                                    const numericPrice = parseFloat((item.price || '0').replace(/[^0-9.]/g, ''));
-                                    addToCart({
-                                      id: Number(item.id),
-                                      title: item.title,
-                                      price: isNaN(numericPrice) ? 0 : numericPrice,
-                                      priceStr: item.price?.replace('$', '৳').replace('.00', ''),
-                                      image: resolveImage(item.image),
-                                    });
-                                    setAddedItems(prev => ({ ...prev, [item.id]: true }));
-                                    setTimeout(() => { setAddedItems(prev => ({ ...prev, [item.id]: false })); }, 1500);
-                                  }}
-                                  className={`flex items-center justify-between w-full py-2.5 px-5 rounded-full text-[11px] uppercase tracking-[0.1em] font-bold transition-all duration-300 border ${addedItems[item.id]
-                                      ? 'bg-emerald-500 text-white border-emerald-500 shadow-md scale-95'
-                                      : 'bg-transparent text-primary/80 border-primary/10 hover:border-accent hover:bg-accent hover:text-[hsl(195_30%_8%)] shadow-[0_2px_10px_rgba(0,0,0,0.02)] hover:shadow-[0_4px_14px_rgba(228,168,32,0.2)]'
-                                    }`}
+                                <motion.div
+                                  initial={{ opacity: 0, scale: 0.8 }}
+                                  animate={{ opacity: 1, scale: 1 }}
+                                  className="flex items-center justify-between w-full bg-emerald-500 rounded-full overflow-hidden shadow-[0_4px_14px_rgba(16,185,129,0.35)]"
+                                  onClick={(e) => e.preventDefault()}
                                 >
-                                  <AnimatePresence mode="wait">
-                                    {addedItems[item.id] ? (
-                                      <motion.span key="added" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex items-center gap-1.5 mx-auto">
-                                        Added <Check size={14} strokeWidth={3} />
-                                      </motion.span>
-                                    ) : (
-                                      <motion.div key="add" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex items-center justify-between w-full">
-                                        <span className="text-[12px]">{item.price?.replace('$', '৳').replace('.00', '')}</span>
-                                        <div className="flex items-center gap-2 border-l pl-3 border-current/20">
-                                          <span>Add</span>
-                                          <ShoppingCart size={13} className="opacity-70 group-hover:opacity-100" />
-                                        </div>
-                                      </motion.div>
-                                    )}
-                                  </AnimatePresence>
-                                </button>
+                                  <button
+                                    onClick={(e) => { e.preventDefault(); updateQuantity(cartItem.id, cartItem.quantity - 1); }}
+                                    className="w-10 h-10 flex items-center justify-center text-white font-bold text-xl hover:bg-white/20 transition-colors rounded-full"
+                                  >
+                                    −
+                                  </button>
+                                  <span className="text-white font-bold text-sm flex items-center gap-1.5">
+                                    <Check size={13} strokeWidth={3} />
+                                    {cartItem.quantity} in cart
+                                  </span>
+                                  <button
+                                    onClick={(e) => { e.preventDefault(); updateQuantity(cartItem.id, cartItem.quantity + 1); }}
+                                    className="w-10 h-10 flex items-center justify-center text-white font-bold text-xl hover:bg-white/20 transition-colors rounded-full"
+                                  >
+                                    +
+                                  </button>
+                                </motion.div>
                               );
-                            })()}
+                            }
+                            return (
+                              <button
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  const numericPrice = parseFloat(item.price.replace(/[^0-9.]/g, ''));
+                                  addToCart({
+                                    id: item.id,
+                                    title: item.title,
+                                    price: isNaN(numericPrice) ? 0 : numericPrice,
+                                    priceStr: item.price?.replace('$', '৳').replace('.00', ''),
+                                    image: resolveImage(item.image),
+                                  });
+                                  setAddedItems(prev => ({ ...prev, [item.id]: true }));
+                                  setTimeout(() => { setAddedItems(prev => ({ ...prev, [item.id]: false })); }, 1500);
+                                }}
+                                className={`flex items-center justify-center gap-2 w-full py-2.5 rounded-full text-[11px] uppercase tracking-[0.1em] font-bold transition-all duration-300 z-20 ${
+                                  addedItems[item.id]
+                                    ? 'bg-emerald-500 text-white shadow-[0_4px_14px_rgba(16,185,129,0.4)] scale-95'
+                                    : 'bg-[hsl(43_74%_48%)] text-[hsl(195_30%_8%)] shadow-[0_4px_14px_rgba(228,168,32,0.3)] hover:scale-105'
+                                }`}
+                              >
+                                <AnimatePresence mode="wait">
+                                  {addedItems[item.id] ? (
+                                    <motion.span key="added" initial={{ opacity: 0, scale: 0.7 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.7 }} className="flex items-center gap-1.5">
+                                      <Check size={15} strokeWidth={3} /> Added!
+                                    </motion.span>
+                                  ) : (
+                                    <motion.span key="add" initial={{ opacity: 0, scale: 0.7 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.7 }} className="flex items-center gap-1.5">
+                                      <ShoppingCart size={15} /> Add to Cart
+                                    </motion.span>
+                                  )}
+                                </AnimatePresence>
+                              </button>
+                            );
+                          })()}
+
+                          <div className="flex items-center justify-center gap-2 text-[10px] uppercase tracking-[0.2em] font-bold text-[hsl(43_74%_48%)] group-hover:text-primary transition-colors duration-300">
+                            View Details
+                            <ArrowUpRight size={14} className="transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
                           </div>
                         </div>
-                      </Link>
-                    );
-                  }))}
+
+
+                      </div>
+                    </Link>
+                  )
+                })}
               </div>
             </div>
           );
