@@ -110,7 +110,7 @@ const AdminReports = () => {
                             className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                                 reportType === "overview"
                                     ? "bg-primary text-primary-foreground"
-                                    : "bg-neutral-900 border border-neutral-800 text-neutral-400 hover:text-white"
+                                    : "bg-white border border-neutral-200 text-neutral-600 hover:text-neutral-900"
                             }`}
                         >
                             Overview
@@ -120,7 +120,7 @@ const AdminReports = () => {
                             className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                                 reportType === "sales"
                                     ? "bg-primary text-primary-foreground"
-                                    : "bg-neutral-900 border border-neutral-800 text-neutral-400 hover:text-white"
+                                    : "bg-white border border-neutral-200 text-neutral-600 hover:text-neutral-900"
                             }`}
                         >
                             Sales
@@ -130,7 +130,7 @@ const AdminReports = () => {
                             className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                                 reportType === "items"
                                     ? "bg-primary text-primary-foreground"
-                                    : "bg-neutral-900 border border-neutral-800 text-neutral-400 hover:text-white"
+                                    : "bg-white border border-neutral-200 text-neutral-600 hover:text-neutral-900"
                             }`}
                         >
                             Items
@@ -141,14 +141,14 @@ const AdminReports = () => {
                         <select
                             value={dateRange}
                             onChange={(e) => setDateRange(e.target.value)}
-                            className="bg-neutral-900 border border-neutral-800 text-neutral-100 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary"
+                            className="bg-white border border-neutral-200 text-neutral-900 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary"
                         >
                             <option value="7days">Last 7 Days</option>
                             <option value="30days">Last 30 Days</option>
                             <option value="90days">Last 90 Days</option>
                             <option value="1year">Last Year</option>
                         </select>
-                        <button className="p-2 bg-neutral-900 border border-neutral-800 text-neutral-400 rounded-lg hover:text-white transition-colors">
+                        <button className="p-2 bg-white border border-neutral-200 text-neutral-600 rounded-lg hover:text-neutral-900 transition-colors">
                             <Download className="w-4 h-4" />
                         </button>
                     </div>
@@ -189,10 +189,10 @@ const AdminReports = () => {
                 {reportType === "overview" && (
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         {/* Sales Chart */}
-                        <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-6">
+                        <div className="bg-white border border-neutral-200 rounded-xl p-6">
                             <div className="flex items-center justify-between mb-6">
-                                <h2 className="text-lg font-semibold text-white">Daily Sales Trend</h2>
-                                <BarChart3 className="w-5 h-5 text-neutral-400" />
+                                <h2 className="text-lg font-semibold text-neutral-900">Daily Sales Trend</h2>
+                                <BarChart3 className="w-5 h-5 text-neutral-500" />
                             </div>
                             <div className="h-[300px]">
                                 <ResponsiveContainer width="100%" height="100%">
@@ -230,9 +230,9 @@ const AdminReports = () => {
                         </div>
 
                         {/* Category Sales Pie Chart */}
-                        <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-6">
+                        <div className="bg-white border border-neutral-200 rounded-xl p-6">
                             <div className="flex items-center justify-between mb-6">
-                                <h2 className="text-lg font-semibold text-white">Sales by Category</h2>
+                                <h2 className="text-lg font-semibold text-neutral-900">Sales by Category</h2>
                                 <PieChart className="w-5 h-5 text-neutral-400" />
                             </div>
                             <div className="h-[300px]">
@@ -266,22 +266,22 @@ const AdminReports = () => {
                 {reportType === "sales" && (
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         {/* Sales by Category Table */}
-                        <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-6">
-                            <h2 className="text-lg font-semibold text-white mb-6">Sales by Category</h2>
+                        <div className="bg-white border border-neutral-200 rounded-xl p-6">
+                            <h2 className="text-lg font-semibold text-neutral-900 mb-6">Sales by Category</h2>
                             <div className="overflow-x-auto">
                                 <table className="w-full text-sm">
                                     <thead>
-                                        <tr className="border-b border-neutral-800">
-                                            <th className="text-left py-3 text-neutral-400">Category</th>
-                                            <th className="text-right py-3 text-neutral-400">Revenue</th>
-                                            <th className="text-right py-3 text-neutral-400">Percentage</th>
+                                        <tr className="border-b border-neutral-200">
+                                            <th className="text-left py-3 text-neutral-600">Category</th>
+                                            <th className="text-right py-3 text-neutral-600">Revenue</th>
+                                            <th className="text-right py-3 text-neutral-600">Percentage</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         {reportData.categorySales.map((category, index) => (
-                                            <tr key={category.category} className="border-b border-neutral-800/50">
-                                                <td className="py-3 text-neutral-300">{category.category}</td>
-                                                <td className="text-right py-3 text-neutral-300">৳{category.sales.toLocaleString()}</td>
+                                            <tr key={category.category} className="border-b border-neutral-100">
+                                                <td className="py-3 text-neutral-700">{category.category}</td>
+                                                <td className="text-right py-3 text-neutral-700">৳{category.sales.toLocaleString()}</td>
                                                 <td className="text-right py-3">
                                                     <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary">
                                                         {category.percentage.toFixed(1)}%
@@ -295,22 +295,22 @@ const AdminReports = () => {
                         </div>
 
                         {/* Payment Methods */}
-                        <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-6">
-                            <h2 className="text-lg font-semibold text-white mb-6">Payment Methods</h2>
+                        <div className="bg-white border border-neutral-200 rounded-xl p-6">
+                            <h2 className="text-lg font-semibold text-neutral-900 mb-6">Payment Methods</h2>
                             <div className="space-y-4">
                                 {reportData.paymentMethods.map((method) => (
                                     <div key={method.method} className="flex items-center justify-between">
                                         <div className="flex items-center gap-3">
-                                            <div className="w-10 h-10 bg-neutral-800 rounded-lg flex items-center justify-center">
-                                                <DollarSign className="w-5 h-5 text-neutral-400" />
+                                            <div className="w-10 h-10 bg-neutral-100 rounded-lg flex items-center justify-center">
+                                                <DollarSign className="w-5 h-5 text-neutral-600" />
                                             </div>
                                             <div>
-                                                <p className="text-white font-medium">{method.method}</p>
-                                                <p className="text-sm text-neutral-400">{method.count} transactions</p>
+                                                <p className="text-neutral-900 font-medium">{method.method}</p>
+                                                <p className="text-sm text-neutral-500">{method.count} transactions</p>
                                             </div>
                                         </div>
                                         <div className="text-right">
-                                            <p className="text-white font-medium">{method.percentage.toFixed(1)}%</p>
+                                            <p className="text-neutral-900 font-medium">{method.percentage.toFixed(1)}%</p>
                                         </div>
                                     </div>
                                 ))}
@@ -320,21 +320,21 @@ const AdminReports = () => {
                 )}
 
                 {reportType === "items" && (
-                    <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-6">
-                        <h2 className="text-lg font-semibold text-white mb-6">Top Selling Items</h2>
+                    <div className="bg-white border border-neutral-200 rounded-xl p-6">
+                        <h2 className="text-lg font-semibold text-neutral-900 mb-6">Top Selling Items</h2>
                         <div className="overflow-x-auto">
                             <table className="w-full text-sm">
                                 <thead>
-                                    <tr className="border-b border-neutral-800">
-                                        <th className="text-left py-3 text-neutral-400">Item Name</th>
-                                        <th className="text-right py-3 text-neutral-400">Quantity Sold</th>
-                                        <th className="text-right py-3 text-neutral-400">Revenue</th>
+                                    <tr className="border-b border-neutral-200">
+                                        <th className="text-left py-3 text-neutral-600">Item Name</th>
+                                        <th className="text-right py-3 text-neutral-600">Quantity Sold</th>
+                                        <th className="text-right py-3 text-neutral-600">Revenue</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {reportData.topItems.map((item, index) => (
-                                        <tr key={item.name} className="border-b border-neutral-800/50">
-                                            <td className="py-3 text-neutral-300">
+                                        <tr key={item.name} className="border-b border-neutral-100">
+                                            <td className="py-3 text-neutral-700">
                                                 <div className="flex items-center gap-2">
                                                     <span className="w-6 h-6 bg-primary/10 text-primary rounded-full flex items-center justify-center text-xs font-medium">
                                                         {index + 1}
@@ -342,8 +342,8 @@ const AdminReports = () => {
                                                     {item.name}
                                                 </div>
                                             </td>
-                                            <td className="text-right py-3 text-neutral-300">{item.quantity}</td>
-                                            <td className="text-right py-3 text-neutral-300">৳{item.revenue.toLocaleString()}</td>
+                                            <td className="text-right py-3 text-neutral-700">{item.quantity}</td>
+                                            <td className="text-right py-3 text-neutral-700">৳{item.revenue.toLocaleString()}</td>
                                         </tr>
                                     ))}
                                 </tbody>
@@ -370,18 +370,18 @@ const MetricCard = ({
     isPositive: boolean; 
     icon: React.ReactNode;
 }) => (
-    <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-6">
+    <div className="bg-white border border-neutral-200 rounded-xl p-6">
         <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-medium text-neutral-400">{title}</h3>
-            <div className="p-2 bg-neutral-800 rounded-lg">
+            <h3 className="text-sm font-medium text-neutral-600">{title}</h3>
+            <div className="p-2 bg-neutral-100 rounded-lg">
                 {icon}
             </div>
         </div>
         <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-bold text-white">{value}</span>
+            <span className="text-2xl font-bold text-neutral-900">{value}</span>
             {change !== 0 && (
                 <span className={`text-sm font-medium flex items-center gap-1 ${
-                    isPositive ? 'text-emerald-400' : 'text-rose-400'
+                    isPositive ? 'text-emerald-600' : 'text-rose-600'
                 }`}>
                     {isPositive ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
                     {Math.abs(change)}%
