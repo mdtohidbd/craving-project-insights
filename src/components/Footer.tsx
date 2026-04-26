@@ -13,53 +13,7 @@ const quickLinks = [
 const Footer = () => {
   return (
     <footer className="relative overflow-hidden">
-      {/* CTA Section */}
-      <div className="relative py-10 md:py-12 overflow-hidden">
-        <div
-          className="absolute inset-0 bg-cover bg-center"
-          style={{
-            backgroundImage:
-              "url('https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=1920')",
-          }}
-        />
-        <div className="absolute inset-0 bg-gradient-to-b from-primary/95 via-primary/90 to-primary" />
-        
-        {/* Decorative Elements */}
-        <div className="absolute top-1/2 right-[-15%] w-[600px] h-[600px] rounded-full pointer-events-none"
-             style={{ background: "radial-gradient(circle, hsl(43 60% 50% / 0.05), transparent 70%)" }} />
-        
-        <div className="container mx-auto px-6 text-center relative z-10">
-          <motion.div
-            initial={{ opacity: 0, y: 40 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-          >
-            <span className="text-[11px] uppercase tracking-[0.3em] font-medium mb-4 block"
-                  style={{ color: "hsl(43 74% 48% / 0.8)" }}>
-              ✦ Don't Wait Any Longer
-            </span>
-            <h2 className="text-4xl md:text-6xl font-serif font-bold text-primary-foreground mb-3 leading-[0.9]"
-                style={{ letterSpacing: "-0.04em" }}>
-              Your Table
-              <br />
-              <span className="italic" style={{ color: "hsl(43 74% 48%)" }}>Awaits</span>
-            </h2>
-            <p className="max-w-lg mx-auto mb-5 text-[15px] leading-[1.7]"
-               style={{ color: "hsl(40 20% 96% / 0.6)" }}>
-              From classic comfort food to exotic international flavors — every dish
-              tells a story worth tasting. Let us serve you perfection.
-            </p>
-            <Link
-              to="/menu"
-              className="btn-gold inline-flex items-center gap-4 group px-10 py-4"
-            >
-              Order Now
-              <ArrowRight className="w-5 h-5 transition-transform duration-500 group-hover:translate-x-1" />
-            </Link>
-          </motion.div>
-        </div>
-      </div>
+
 
       {/* Footer Content */}
       <div className="bg-primary pt-8 pb-5">

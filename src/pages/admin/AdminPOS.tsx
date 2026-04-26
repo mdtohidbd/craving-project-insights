@@ -1098,106 +1098,63 @@ const AdminPOS = () => {
                     </div>
 
                     {/* Order Summary */}
-                    <div className="p-3 border-t border-neutral-200 bg-neutral-50 space-y-2 text-xs shrink-0">
-                        <div className="flex justify-between text-neutral-700 font-medium">
+                    <div className="px-3 py-2 border-t border-neutral-100 bg-neutral-50/50 space-y-1 shrink-0">
+                        <div className="flex justify-between text-neutral-400 text-[10px] tracking-wide">
                             <span>Subtotal</span>
-                            <span>BDT {subtotal.toFixed(2)}</span>
+                            <span className="text-neutral-700 font-semibold">BDT {subtotal.toFixed(2)}</span>
                         </div>
-                        <div className="flex justify-between text-neutral-700 font-medium items-center">
+                        <div className="flex justify-between text-neutral-400 text-[10px] tracking-wide items-center">
                             <span>VAT ({vatRate}%)</span>
-                            <span>BDT {vatAmount.toFixed(2)}</span>
+                            <span className="text-neutral-700 font-semibold">BDT {vatAmount.toFixed(2)}</span>
                         </div>
-                        <div className="flex justify-between text-neutral-700 font-medium items-center">
+                        <div className="flex justify-between text-neutral-400 text-[10px] tracking-wide items-center">
                             <span>Discount</span>
-                            <div className="flex items-center gap-2">
-                                <input
-                                    type="number"
-                                    value={discount}
-                                    onChange={(e) => setDiscount(parseFloat(e.target.value) || 0)}
-                                    className="w-20 bg-white border border-neutral-300 rounded px-2 py-1 text-right text-xs focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
-                                    min="0"
-                                    max={subtotal}
-                                    step="0.01"
-                                />
-                            </div>
+                            <input
+                                type="number"
+                                value={discount}
+                                onChange={(e) => setDiscount(parseFloat(e.target.value) || 0)}
+                                className="w-16 bg-white border border-neutral-200 rounded px-1.5 py-0.5 text-right text-[10px] font-semibold text-neutral-700 focus:outline-none focus:border-primary"
+                                min="0"
+                                max={subtotal}
+                                step="0.01"
+                            />
                         </div>
-                        <div className="flex justify-between text-sm font-bold text-neutral-900 pt-2 border-t border-neutral-300">
-                            <span>Total</span>
-                            <span className="text-primary">BDT {total.toFixed(2)}</span>
+                        <div className="flex justify-between items-center pt-1.5 border-t border-neutral-200 mt-1">
+                            <span className="text-xs font-bold text-neutral-900">Total</span>
+                            <span className="text-primary text-sm font-black">BDT {total.toFixed(2)}</span>
                         </div>
                     </div>
 
-                    {/* Payment Buttons */}
-                    <div className="p-3 border-t border-neutral-200 grid grid-cols-3 gap-2 shrink-0">
-                        <button
-                            onClick={() => handlePayment('Cash')}
-                            disabled={cart.length === 0 || isProcessing}
-                            className="py-2.5 bg-green-500 hover:bg-green-600 disabled:bg-neutral-200 disabled:text-neutral-400 text-white font-semibold rounded-lg transition-colors shadow-sm hover:shadow text-xs"
-                        >
-                            Cash
-                        </button>
-                        <button
-                            onClick={() => handlePayment('Card')}
-                            disabled={cart.length === 0 || isProcessing}
-                            className="py-2.5 bg-blue-400 hover:bg-blue-500 disabled:bg-neutral-200 disabled:text-neutral-400 text-white font-semibold rounded-lg transition-colors shadow-sm hover:shadow text-xs"
-                        >
-                            Card
-                        </button>
-                        <button
-                            onClick={() => handlePayment('MFS')}
-                            disabled={cart.length === 0 || isProcessing}
-                            className="py-2.5 bg-purple-500 hover:bg-purple-600 disabled:bg-neutral-200 disabled:text-neutral-400 text-white font-semibold rounded-lg transition-colors shadow-sm hover:shadow text-xs"
-                        >
-                            MFS
-                        </button>
-                    </div>
-
-                    {/* Action Buttons */}
-                    <div className="p-3 border-t border-neutral-200 grid grid-cols-3 gap-2 shrink-0">
-                        <button
-                            onClick={handlePrintKOT}
-                            disabled={cart.length === 0}
-                            className="group relative py-2 bg-orange-500 hover:bg-orange-600 disabled:bg-neutral-200 disabled:text-neutral-400 text-white font-semibold rounded-lg transition-colors flex items-center justify-center gap-1 shadow-sm hover:shadow text-xs"
-                            title="Save order & print KOT"
-                        >
-                            <Printer className="w-3.5 h-3.5" />
-                            Print KOT
-                            <span className="absolute -top-10 left-1/2 -translate-x-1/2 bg-neutral-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
-                                Save order & print KOT
-                            </span>
-                        </button>
-                        <button
-                            onClick={handlePrintBill}
-                            disabled={cart.length === 0}
-                            className="py-2 bg-blue-700 hover:bg-blue-800 disabled:bg-neutral-200 disabled:text-neutral-400 text-white font-semibold rounded-lg transition-colors flex items-center justify-center gap-1 shadow-sm hover:shadow text-xs"
-                        >
-                            <Printer className="w-3.5 h-3.5" />
-                            Print Bill
-                        </button>
-                        <button
-                            onClick={handleSplit}
-                            disabled={cart.length === 0}
-                            className="py-2 bg-neutral-400 hover:bg-neutral-500 disabled:bg-neutral-200 disabled:text-neutral-400 text-white font-semibold rounded-lg transition-colors flex items-center justify-center gap-1 shadow-sm hover:shadow text-xs"
-                        >
-                            <Divide className="w-3.5 h-3.5" />
-                            Split
-                        </button>
-                        <button
-                            onClick={handleHold}
-                            disabled={cart.length === 0}
-                            className="py-2 bg-yellow-500 hover:bg-yellow-600 disabled:bg-neutral-200 disabled:text-neutral-400 text-white font-semibold rounded-lg transition-colors flex items-center justify-center gap-1 shadow-sm hover:shadow text-xs"
-                        >
-                            <Clock className="w-3.5 h-3.5" />
-                            Hold
-                        </button>
-                        <button
-                            onClick={clearCart}
-                            disabled={cart.length === 0}
-                            className="py-2 col-span-2 bg-red-500 hover:bg-red-600 disabled:bg-neutral-200 disabled:text-neutral-400 text-white font-semibold rounded-lg transition-colors flex items-center justify-center gap-1 shadow-sm hover:shadow text-xs"
-                        >
-                            <Trash2 className="w-3.5 h-3.5" />
-                            Clear
-                        </button>
+                    {/* Actions */}
+                    <div className="px-2 py-2 bg-white border-t border-neutral-100 shrink-0 space-y-1.5">
+                        <div className="grid grid-cols-3 gap-1.5">
+                            <button onClick={() => handlePayment('Cash')} disabled={cart.length === 0 || isProcessing} className="h-8 bg-[hsl(150,84%,39%)] hover:bg-[hsl(150,84%,34%)] disabled:bg-neutral-100 disabled:text-neutral-300 text-white font-bold rounded-lg active:scale-95 transition-all flex items-center justify-center gap-1 text-[10px]">
+                                <Banknote className="w-3 h-3" /> Cash
+                            </button>
+                            <button onClick={() => handlePayment('Card')} disabled={cart.length === 0 || isProcessing} className="h-8 bg-[hsl(217,91%,60%)] hover:bg-[hsl(217,91%,55%)] disabled:bg-neutral-100 disabled:text-neutral-300 text-white font-bold rounded-lg active:scale-95 transition-all flex items-center justify-center gap-1 text-[10px]">
+                                <CreditCard className="w-3 h-3" /> Card
+                            </button>
+                            <button onClick={() => handlePayment('MFS')} disabled={cart.length === 0 || isProcessing} className="h-8 bg-[hsl(271,76%,59%)] hover:bg-[hsl(271,76%,54%)] disabled:bg-neutral-100 disabled:text-neutral-300 text-white font-bold rounded-lg active:scale-95 transition-all flex items-center justify-center gap-1 text-[10px]">
+                                <Smartphone className="w-3 h-3" /> MFS
+                            </button>
+                        </div>
+                        <div className="grid grid-cols-5 gap-1.5">
+                            <button onClick={handlePrintKOT} disabled={cart.length === 0} className="h-7 bg-[hsl(24,95%,53%)] hover:bg-[hsl(24,95%,48%)] disabled:bg-neutral-100 disabled:text-neutral-300 text-white font-bold rounded-lg transition-all flex items-center justify-center gap-1 text-[9px]">
+                                <Printer className="w-2.5 h-2.5" /> KOT
+                            </button>
+                            <button onClick={handlePrintBill} disabled={cart.length === 0} className="h-7 bg-[hsl(221,83%,41%)] hover:bg-[hsl(221,83%,36%)] disabled:bg-neutral-100 disabled:text-neutral-300 text-white font-bold rounded-lg transition-all flex items-center justify-center gap-1 text-[9px]">
+                                <Printer className="w-2.5 h-2.5" /> Bill
+                            </button>
+                            <button onClick={handleSplit} disabled={cart.length === 0} className="h-7 bg-neutral-400 hover:bg-neutral-500 disabled:bg-neutral-100 disabled:text-neutral-300 text-white font-bold rounded-lg transition-all flex items-center justify-center gap-1 text-[9px]">
+                                <Divide className="w-2.5 h-2.5" /> Split
+                            </button>
+                            <button onClick={handleHold} disabled={cart.length === 0} className="h-7 bg-[hsl(43,96%,56%)] hover:bg-[hsl(43,96%,51%)] disabled:bg-neutral-100 disabled:text-neutral-300 text-white font-bold rounded-lg transition-all flex items-center justify-center gap-1 text-[9px]">
+                                <Clock className="w-2.5 h-2.5" /> Hold
+                            </button>
+                            <button onClick={clearCart} disabled={cart.length === 0} className="h-7 bg-[hsl(0,84%,60%)] hover:bg-[hsl(0,84%,55%)] disabled:bg-neutral-100 disabled:text-neutral-300 text-white font-bold rounded-lg transition-all flex items-center justify-center gap-1 text-[9px]">
+                                <Trash2 className="w-2.5 h-2.5" /> Clear
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>

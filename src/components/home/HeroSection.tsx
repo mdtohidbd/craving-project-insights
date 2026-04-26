@@ -82,8 +82,8 @@ const HeroSection = () => {
           </p>
 
           <div className="flex flex-col sm:flex-row items-center gap-6">
-            <Link to="/menu" className="bg-[hsl(43_74%_48%)] text-[hsl(195_30%_8%)] font-bold px-10 py-4 rounded-full text-[12px] uppercase tracking-wider shadow-[0_8px_30px_rgba(228,168,32,0.25)] hover:-translate-y-1 transition-all inline-flex items-center gap-2 group">
-              Reserve Your Table
+            <Link to="/book-table" className="bg-[hsl(43_74%_48%)] text-[hsl(195_30%_8%)] font-bold px-10 py-4 rounded-full text-[12px] uppercase tracking-wider shadow-[0_8px_30px_rgba(228,168,32,0.25)] hover:-translate-y-1 transition-all inline-flex items-center gap-2 group">
+              Book a Table
               <ArrowRight className="w-4 h-4 transition-transform duration-500 group-hover:translate-x-1.5" />
             </Link>
             <Link

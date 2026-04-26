@@ -75,7 +75,7 @@ const Navbar = ({ theme = "dark" }: { theme?: "light" | "dark" }) => {
             <div className="hidden md:flex items-center gap-6">
               <Cart className={scrolled || theme === "dark" ? "text-primary-foreground" : "text-primary"} />
               <Link
-                to="/menu"
+                to="/book-table"
                 className="inline-flex items-center px-7 py-3 text-[11px] uppercase tracking-[0.15em] font-bold rounded-full transition-all duration-500 hover:-translate-y-0.5"
                 style={{
                   background: "hsl(43 74% 48%)",
@@ -83,7 +83,7 @@ const Navbar = ({ theme = "dark" }: { theme?: "light" | "dark" }) => {
                   boxShadow: "0 8px 18px rgba(228, 168, 32, 0.25)"
                 }}
               >
-                Order Now
+                Book a Table
               </Link>
             </div>
 
@@ -140,7 +140,7 @@ const Navbar = ({ theme = "dark" }: { theme?: "light" | "dark" }) => {
                 className="mt-8"
               >
                 <Link
-                  to="/menu"
+                  to="/book-table"
                   onClick={() => setIsOpen(false)}
                   className="btn-gold block shadow-xl transition-all duration-300 transform hover:scale-105 px-12"
                   style={{
@@ -151,7 +151,7 @@ const Navbar = ({ theme = "dark" }: { theme?: "light" | "dark" }) => {
                     padding: "12px 0"
                   }}
                 >
-                  Order Now
+                  Book a Table
                 </Link>
               </motion.div>
             </div>
