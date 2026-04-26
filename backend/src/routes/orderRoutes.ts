@@ -1,4 +1,5 @@
-import express from 'express';
+import express, { Request, Response } from 'express';
+import mongoose from 'mongoose';
 import axios from 'axios';
 import { Order } from '../models/Order';
 import { Customer } from '../models/Customer';
@@ -108,6 +109,37 @@ router.get('/', async (req, res) => {
         res.json(orders);
     } catch (error) {
         res.status(500).json({ message: 'Failed to fetch orders' });
+    }
+});
+
+router.get("/:id", async (req: Request, res: Response) => {
+    try {
+        const id = req.params.id;
+        if (typeof id !== 'string') {
+            return res.status(400).json({ message: "Invalid order ID" });
+        }
+        let order;
+
+        // If ID is 6 characters, search by the end of the ObjectId
+        if (id.length === 6) {
+            order = await Order.findOne({
+                $expr: {
+                    $eq: [{ $substr: [{ $toString: "$_id" }, 18, 6] }, id.toLowerCase()]
+                }
+            });
+        } else {
+            // Otherwise try searching by full ID (standard MongoDB behavior)
+            if (mongoose.Types.ObjectId.isValid(id)) {
+                order = await Order.findById(id);
+            }
+        }
+
+        if (!order) {
+            return res.status(404).json({ message: "Order not found" });
+        }
+        res.json(order);
+    } catch (error) {
+        res.status(500).json({ message: "Error fetching order" });
     }
 });
 
