@@ -149,13 +149,14 @@ const AdminPOS = () => {
                     fetch(`${apiUrl}/tables`),
                     fetch(`${apiUrl}/customers`)
                 ]);
-                
+                let parsedMenuData: any[] = [];
                 if (menuRes.ok) {
-                    setMenuItems(await menuRes.json());
+                    parsedMenuData = await menuRes.json();
+                    setMenuItems(parsedMenuData);
                 }
                 if (catRes.ok) {
                     const fetchedCats = await catRes.json();
-                    const menuData = await menuRes.json();
+                    const menuData = parsedMenuData;
                     
                     // Extract categories from menu items
                     const itemCats = Array.from(new Set(menuData.map((m: any) => m.category))).filter(Boolean) as string[];

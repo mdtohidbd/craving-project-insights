@@ -50,6 +50,7 @@ const KDSOrderCard = ({ order, onUpdateStatus, onSelect }: { order: Order, onUpd
                     </div>
                     <div>
                         <h4 className="font-bold text-neutral-900 leading-none">#{order._id.slice(-6).toUpperCase()}</h4>
+                        <p className="text-xs font-semibold text-neutral-700 mt-1 line-clamp-1">{order.customerInfo?.name || "Walk-in Customer"}</p>
                         <div className="flex items-center gap-1 mt-1">
                             <Clock className={`w-3 h-3 ${isUrgent(order.createdAt) && order.status !== 'ready' ? 'text-red-500' : 'text-neutral-400'}`} />
                             <span className={`text-[10px] font-medium ${isUrgent(order.createdAt) && order.status !== 'ready' ? 'text-red-600' : 'text-neutral-500'}`}>

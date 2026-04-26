@@ -63,7 +63,6 @@ const AdminLayout = ({ children, title }: AdminLayoutProps) => {
         { label: "Orders", path: "/admin/orders", icon: <ShoppingCart className="w-5 h-5" /> },
         { label: "Customers", path: "/admin/customers", icon: <Users className="w-5 h-5" /> },
         { label: "Menu Items", path: "/admin/menu", icon: <List className="w-5 h-5" /> },
-        { label: "Categories", path: "/admin/categories", icon: <Tag className="w-5 h-5" /> },
         { label: "Inventory", path: "/admin/inventory", icon: <Package className="w-5 h-5" /> },
         { label: "Reservations", path: "/admin/reservations", icon: <Calendar className="w-5 h-5" /> },
         { label: "Reports", path: "/admin/reports", icon: <BarChart3 className="w-5 h-5" /> },
