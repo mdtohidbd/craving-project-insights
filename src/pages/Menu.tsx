@@ -113,15 +113,19 @@ const Menu = () => {
            try { catData = await catRes.json(); } catch(e) {}
         }
         
-        let catNames = catData.filter((c: any) => c.name !== "All").map((c: any) => c.name);
+        const apiCatNames = catData.filter((c: any) => c.name !== "All").map((c: any) => c.name);
+        const itemCatNames = Array.from(new Set(processedMenuData.map((m: any) => m.category))).filter(Boolean);
         
-        // Fallback: If categories API is empty but menu has items, extract categories from menu items
-        if (catNames.length === 0 && processedMenuData.length > 0) {
-            catNames = Array.from(new Set(processedMenuData.map((m: any) => m.category))).filter(Boolean);
-        }
+        // Merge and unique
+        const allCatNames = Array.from(new Set([...apiCatNames, ...itemCatNames]));
         
-        setCategories(catNames as string[]);
-        if (catNames.length > 0) setActiveCategory(catNames[0] as string);
+        // Only keep categories that actually have items
+        const validCatNames = allCatNames.filter(cat => 
+          processedMenuData.some(item => item.category === cat)
+        );
+        
+        setCategories(validCatNames as string[]);
+        if (validCatNames.length > 0) setActiveCategory(validCatNames[0] as string);
       })
       .catch((err) => console.error("Failed to load menu data", err))
       .finally(() => setIsLoading(false));
@@ -170,18 +174,23 @@ const Menu = () => {
     const handleScroll = () => {
       if (!ticking) {
         window.requestAnimationFrame(() => {
-          let currentCategory = categories[0];
+          let currentCategory = activeCategory;
+          const scrollPos = window.scrollY + 250;
+          
           for (const cat of categories) {
             const id = generateSlug(cat);
             const element = document.getElementById(id);
             if (element) {
               const rect = element.getBoundingClientRect();
-              if (rect.top <= 250) {
+              const absoluteTop = rect.top + window.scrollY;
+              if (absoluteTop <= scrollPos) {
                 currentCategory = cat;
               }
             }
           }
-          setActiveCategory(currentCategory);
+          if (currentCategory !== activeCategory) {
+            setActiveCategory(currentCategory);
+          }
           ticking = false;
         });
         ticking = true;

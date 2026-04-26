@@ -155,10 +155,23 @@ const AdminPOS = () => {
                 }
                 if (catRes.ok) {
                     const fetchedCats = await catRes.json();
-                    if (!fetchedCats.some((c: any) => c.name === "All")) {
-                        fetchedCats.unshift({ name: "All", order: 0 });
+                    const menuData = await menuRes.json();
+                    
+                    // Extract categories from menu items
+                    const itemCats = Array.from(new Set(menuData.map((m: any) => m.category))).filter(Boolean) as string[];
+                    const existingNames = fetchedCats.map((c: any) => c.name);
+                    
+                    const mergedCats = [...fetchedCats];
+                    itemCats.forEach(catName => {
+                        if (!existingNames.includes(catName)) {
+                            mergedCats.push({ name: catName, order: mergedCats.length + 1 });
+                        }
+                    });
+
+                    if (!mergedCats.some((c: any) => c.name === "All")) {
+                        mergedCats.unshift({ name: "All", order: 0 });
                     }
-                    setCategories(fetchedCats);
+                    setCategories(mergedCats);
                 }
                 if (tableRes.ok) {
                     const fetchedTables = await tableRes.json();

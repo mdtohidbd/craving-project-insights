@@ -240,38 +240,53 @@
 }
 
 @media print {
-  /* Hide unnecessary elements during print */
-  body > div > aside,
-  body > div > main > header,
-  .print-hide {
+  /* Hide all unnecessary UI elements during print */
+  .print-hidden,
+  [data-html2canvas-ignore],
+  header:not(.print-show),
+  footer,
+  aside,
+  nav,
+  button:not(.print-show) {
     display: none !important;
   }
 
-  /* Reset layout constraints to let the slip take up the full page */
-  body > div,
-  body > div > main,
-  body > div > main > div {
-    display: block !important;
+  /* Reset layout constraints for print */
+  html, body {
+    height: auto !important;
+    overflow: visible !important;
+    background: white !important;
+  }
+
+  /* Target any container that might be limiting height or hiding overflow */
+  div, main, section {
     height: auto !important;
     overflow: visible !important;
     position: static !important;
   }
 
-  /* Hide the main scroll view content except the modal overlay */
-  .max-w-7xl {
-    display: none !important;
+  /* Specific fix for the flex h-screen containers commonly used in layouts */
+  .h-screen, .min-h-screen {
+    height: auto !important;
+    min-height: 0 !important;
   }
 
-  /* The modal container overlay */
-  .fixed.inset-0.z-\[100\] {
+  /* Ensure the printable slip modal is visible and takes full width */
+  .fixed.inset-0.z-\[100\], 
+  .fixed.inset-0.z-50 {
     position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: auto !important;
     background: white !important;
     padding: 0 !important;
     display: block !important;
+    z-index: 9999 !important;
   }
 
-  /* The modal itself */
-  .fixed.inset-0.z-\[100\] > div {
+  /* The modal content itself */
+  .fixed.inset-0 > div {
     max-width: 100% !important;
     max-height: none !important;
     box-shadow: none !important;
@@ -280,11 +295,19 @@
     margin: 0 !important;
     overflow: visible !important;
     height: auto !important;
+    width: 100% !important;
   }
 
   /* Force background colors and text colors for print */
   * {
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
+    color-adjust: exact !important;
+  }
+
+  /* Image visibility */
+  img {
+    max-width: 100%;
+    display: block !important;
   }
 }

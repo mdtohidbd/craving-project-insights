@@ -1,10 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
     LayoutDashboard, Package, MessageSquare,
     Settings, Bell, Menu, ArrowUpRight, Tag, List, ShoppingCart, Users, Calendar,
-    Table, CreditCard
+    Table, CreditCard, BarChart3
 } from "lucide-react";
+import { toast } from "sonner";
 
 interface AdminLayoutProps {
     children: React.ReactNode;
@@ -14,17 +15,58 @@ interface AdminLayoutProps {
 const AdminLayout = ({ children, title }: AdminLayoutProps) => {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const location = useLocation();
+    
+    // Global Order Notification Polling
+    const lastOrderTimeRef = useRef<number | null>(null);
+
+    useEffect(() => {
+        const checkForNewOrders = async () => {
+            try {
+                const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+                const res = await fetch(`${apiUrl}/orders`);
+                if (res.ok) {
+                    const data = await res.json();
+                    if (!Array.isArray(data) || data.length === 0) return;
+                    
+                    const maxTime = Math.max(...data.map((o: any) => new Date(o.createdAt).getTime()));
+                    
+                    if (lastOrderTimeRef.current === null) {
+                        // First load, just set the max time
+                        lastOrderTimeRef.current = maxTime;
+                    } else if (maxTime > lastOrderTimeRef.current) {
+                        // New orders found!
+                        const newOrdersCount = data.filter((o: any) => new Date(o.createdAt).getTime() > lastOrderTimeRef.current!).length;
+                        
+                        toast.success(`New Order Received! 🛎️`, {
+                            description: `You have ${newOrdersCount} new order(s). Please check the Orders panel.`,
+                            duration: 10000,
+                        });
+                        
+                        lastOrderTimeRef.current = maxTime;
+                    }
+                }
+            } catch (err) {
+                // Silently fail if API is down
+            }
+        };
+
+        checkForNewOrders();
+        const interval = setInterval(checkForNewOrders, 10000); // Check every 10 seconds
+        
+        return () => clearInterval(interval);
+    }, []);
 
     const navItems = [
         { label: "Dashboard", path: "/admin", icon: <LayoutDashboard className="w-5 h-5" /> },
-        { label: "POS System", path: "/admin/pos", icon: <CreditCard className="w-5 h-5" /> },
         { label: "Tables", path: "/admin/tables", icon: <Table className="w-5 h-5" /> },
+        { label: "POS System", path: "/admin/pos", icon: <CreditCard className="w-5 h-5" /> },
         { label: "Orders", path: "/admin/orders", icon: <ShoppingCart className="w-5 h-5" /> },
         { label: "Customers", path: "/admin/customers", icon: <Users className="w-5 h-5" /> },
         { label: "Menu Items", path: "/admin/menu", icon: <List className="w-5 h-5" /> },
         { label: "Categories", path: "/admin/categories", icon: <Tag className="w-5 h-5" /> },
         { label: "Inventory", path: "/admin/inventory", icon: <Package className="w-5 h-5" /> },
         { label: "Reservations", path: "/admin/reservations", icon: <Calendar className="w-5 h-5" /> },
+        { label: "Reports", path: "/admin/reports", icon: <BarChart3 className="w-5 h-5" /> },
         { label: "Messages", path: "/admin/messages", icon: <MessageSquare className="w-5 h-5" /> },
         { label: "Settings", path: "/admin/settings", icon: <Settings className="w-5 h-5" /> },
     ];

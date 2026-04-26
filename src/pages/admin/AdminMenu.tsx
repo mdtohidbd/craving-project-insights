@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import AdminLayout from "../../components/admin/AdminLayout";
 import { Search, Plus, Edit, Trash2, List, X, Upload, Image as ImageIcon, FolderOpen } from "lucide-react";
+import { toast } from "sonner";
 
 interface MenuItem {
     _id: string;
@@ -56,8 +57,23 @@ const AdminMenu = () => {
                 fetch(`${apiUrl}/categories`)
             ]);
 
-            setMenuItems(await menuRes.json());
-            setCategories(await catRes.json());
+            const menuItemsData = await menuRes.json();
+            const categoriesData = await catRes.json();
+            
+            setMenuItems(menuItemsData);
+            
+            // Get categories from items that are not in the categories collection
+            const itemCategories = Array.from(new Set(menuItemsData.map((m: any) => m.category))).filter(Boolean) as string[];
+            const existingCategoryNames = categoriesData.map((c: any) => c.name);
+            
+            const mergedCategories = [...categoriesData];
+            itemCategories.forEach(catName => {
+                if (!existingCategoryNames.includes(catName)) {
+                    mergedCategories.push({ name: catName, order: mergedCategories.length + 1 });
+                }
+            });
+            
+            setCategories(mergedCategories);
         } catch (err) {
             console.error("Failed to fetch menu or categories:", err);
         } finally {
@@ -177,8 +193,8 @@ const AdminMenu = () => {
             data.append("description", formData.description);
             data.append("sku", formData.sku);
             data.append("discountPrice", formData.discountPrice);
-            data.append("taxIncluded", formData.taxIncluded.toString());
-            data.append("available", formData.available.toString());
+            data.append("taxIncluded", String(formData.taxIncluded));
+            data.append("available", String(formData.available));
             if (imageFile) {
                 data.append("image", imageFile);
             }
