@@ -27,6 +27,7 @@ import AdminReservations from "./pages/admin/AdminReservations";
 import AdminPOS from "./pages/admin/AdminPOS";
 import AdminTables from "./pages/admin/AdminTables";
 import AdminReports from "./pages/admin/AdminReports";
+import OrderTracking from "@/pages/OrderTracking";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -50,6 +51,7 @@ const App = () => (
             <Route path="/contact" element={<Contact />} />
             <Route path="/checkout" element={<Checkout />} />
             <Route path="/book-table" element={<BookTable />} />
+            <Route path="/track-order" element={<OrderTracking />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="/admin" element={<AdminDashboard />} />
             <Route path="/admin/tables" element={<AdminTables />} />

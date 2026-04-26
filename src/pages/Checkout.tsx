@@ -77,9 +77,9 @@ const Checkout = () => {
       if (!res.ok) throw new Error("Order failed");
 
       const resData = await res.json().catch(() => ({}));
-      
-      setOrderDetails({
-        orderId: resData._id || `ORD-${Math.floor(100000 + Math.random() * 900000)}`,
+
+      const newOrderDetails = {
+        orderId: resData.orderId || resData._id || `ORD-${Math.floor(100000 + Math.random() * 900000)}`,
         items: cart,
         subtotal: totalAmount,
         deliveryFee: deliveryFee,
@@ -87,7 +87,25 @@ const Checkout = () => {
         customerInfo: orderData.customerInfo,
         paymentMethod: paymentMethod === "cod" ? "Cash on Delivery" : paymentMethod === "bkash" ? "bKash" : "Nagad",
         date: new Date().toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
-      });
+      };
+
+      setOrderDetails(newOrderDetails);
+
+      // Save to localStorage for order tracking
+      try {
+        const history = JSON.parse(localStorage.getItem("orderHistory") || "[]");
+        const orderSummary = {
+          id: newOrderDetails.orderId,
+          date: newOrderDetails.date,
+          total: newOrderDetails.total,
+          itemCount: cart.reduce((sum, item) => sum + item.quantity, 0)
+        };
+        // Keep only last 10 orders
+        const updatedHistory = [orderSummary, ...history].slice(0, 10);
+        localStorage.setItem("orderHistory", JSON.stringify(updatedHistory));
+      } catch (err) {
+        console.error("Failed to save order history:", err);
+      }
 
       setIsSubmitting(false);
       setIsSuccess(true);
@@ -108,9 +126,9 @@ const Checkout = () => {
     return (
       <div className="min-h-screen bg-[hsl(40_18%_96%)] flex flex-col relative overflow-hidden">
         <div className="print-hidden">
-          <Navbar />
+          <Navbar theme="light" />
         </div>
-        
+
         {/* Decorative elements */}
         <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-accent/5 rounded-full blur-[120px] -z-10 pointer-events-none" />
         <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[100px] -z-10 pointer-events-none" />
@@ -124,7 +142,7 @@ const Checkout = () => {
           >
             {/* Header Success Section */}
             <div className="text-center mb-12 print-hidden">
-              <motion.div 
+              <motion.div
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={{ type: "spring", damping: 12, stiffness: 200, delay: 0.2 }}
@@ -136,7 +154,7 @@ const Checkout = () => {
                 Thank you, {orderDetails?.customerInfo?.name?.split(' ')[0]}!
               </h1>
               <p className="text-lg text-muted-foreground max-w-xl mx-auto font-medium">
-                Your order has been received and is now being processed by our kitchen. 
+                Your order has been received and is now being processed by our kitchen.
                 Get ready for some deliciousness!
               </p>
             </div>
@@ -161,32 +179,32 @@ const Checkout = () => {
                     <div className="absolute top-5 left-6 right-6 h-1 bg-gray-100 rounded-full">
                       <div className="h-full bg-accent rounded-full" style={{ width: '25%' }}></div>
                     </div>
-                    
+
                     {/* Status Steps */}
                     <div className="relative flex justify-between">
                       <div className="flex flex-col items-center gap-3 text-center">
                         <div className="w-10 h-10 rounded-full bg-accent text-primary flex items-center justify-center relative z-10 shadow-lg">
                           <Package className="w-5 h-5" />
                         </div>
-                        <span className="text-[11px] font-bold text-primary uppercase tracking-tighter">Order<br/>Placed</span>
+                        <span className="text-[11px] font-bold text-primary uppercase tracking-tighter">Order<br />Placed</span>
                       </div>
                       <div className="flex flex-col items-center gap-3 text-center">
                         <div className="w-10 h-10 rounded-full bg-white border-2 border-gray-100 text-gray-300 flex items-center justify-center relative z-10">
                           <ChefHat className="w-5 h-5" />
                         </div>
-                        <span className="text-[11px] font-bold text-gray-400 uppercase tracking-tighter">In the<br/>Kitchen</span>
+                        <span className="text-[11px] font-bold text-gray-400 uppercase tracking-tighter">In the<br />Kitchen</span>
                       </div>
                       <div className="flex flex-col items-center gap-3 text-center">
                         <div className="w-10 h-10 rounded-full bg-white border-2 border-gray-100 text-gray-300 flex items-center justify-center relative z-10">
                           <Truck className="w-5 h-5" />
                         </div>
-                        <span className="text-[11px] font-bold text-gray-400 uppercase tracking-tighter">Out for<br/>Delivery</span>
+                        <span className="text-[11px] font-bold text-gray-400 uppercase tracking-tighter">Out for<br />Delivery</span>
                       </div>
                       <div className="flex flex-col items-center gap-3 text-center">
                         <div className="w-10 h-10 rounded-full bg-white border-2 border-gray-100 text-gray-300 flex items-center justify-center relative z-10">
                           <ThumbsUp className="w-5 h-5" />
                         </div>
-                        <span className="text-[11px] font-bold text-gray-400 uppercase tracking-tighter">Enjoy your<br/>Meal</span>
+                        <span className="text-[11px] font-bold text-gray-400 uppercase tracking-tighter">Enjoy your<br />Meal</span>
                       </div>
                     </div>
                   </div>
@@ -198,7 +216,7 @@ const Checkout = () => {
                     <MapPin className="w-5 h-5 text-accent" />
                     Delivery Details
                   </h3>
-                  
+
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <div className="space-y-4">
                       <div className="flex items-start gap-4">
@@ -235,7 +253,14 @@ const Checkout = () => {
                   )}
                 </div>
 
-                <div className="flex gap-4">
+                <div className="flex flex-col md:flex-row gap-4">
+                  <button
+                    onClick={() => navigate(`/track-order?id=${orderDetails.orderId}`)}
+                    className="flex-1 bg-accent text-primary font-bold py-5 rounded-2xl hover:bg-accent/90 transition-all flex items-center justify-center gap-3 shadow-xl"
+                  >
+                    <Clock className="w-5 h-5" />
+                    Track Your Order
+                  </button>
                   <button
                     onClick={() => navigate("/menu")}
                     className="flex-1 bg-primary text-white font-bold py-5 rounded-2xl hover:bg-primary/90 transition-all flex items-center justify-center gap-3 shadow-xl"
@@ -247,7 +272,7 @@ const Checkout = () => {
                     className="px-8 bg-white border border-black/5 text-primary font-bold py-5 rounded-2xl hover:bg-gray-50 transition-all flex items-center justify-center gap-3 shadow-xl"
                   >
                     <Printer className="w-5 h-5" />
-                    Print Receipt
+                    Print
                   </button>
                 </div>
               </div>
@@ -277,7 +302,7 @@ const Checkout = () => {
                     <div className="space-y-6 mb-8">
                       <div className="flex justify-between items-center text-sm">
                         <span className="text-muted-foreground font-medium uppercase tracking-widest text-[10px]">Order ID</span>
-                        <span className="font-bold font-mono text-primary">{orderDetails.orderId.substring(0, 10).toUpperCase()}</span>
+                        <span className="font-bold font-mono text-primary">#{orderDetails.orderId.slice(-6).toUpperCase()}</span>
                       </div>
                       <div className="flex justify-between items-center text-sm">
                         <span className="text-muted-foreground font-medium uppercase tracking-widest text-[10px]">Payment</span>
@@ -317,23 +342,9 @@ const Checkout = () => {
                       </div>
                     </div>
 
-                    {/* Footer / QR Area */}
-                    <div className="mt-12 pt-8 border-t border-gray-50 text-center">
-                      <div className="w-32 h-32 bg-gray-50 rounded-2xl mx-auto mb-6 flex items-center justify-center border border-gray-100 group hover:border-accent transition-colors duration-500">
-                        {/* Placeholder for QR Code */}
-                        <div className="w-24 h-24 bg-primary/10 rounded-xl flex items-center justify-center p-2">
-                          <div className="w-full h-full bg-white relative overflow-hidden rounded-md opacity-80">
-                            {/* Fake QR pattern */}
-                            <div className="absolute inset-0 bg-primary opacity-5" style={{ backgroundImage: 'radial-gradient(black 1px, transparent 0)', backgroundSize: '10px 10px' }} />
-                            <div className="w-full h-full p-2 flex flex-wrap gap-1">
-                                {[...Array(64)].map((_, i) => (
-                                    <div key={i} className={`w-1.5 h-1.5 rounded-sm ${Math.random() > 0.5 ? 'bg-primary' : 'bg-transparent'}`} />
-                                ))}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                      <p className="text-[10px] text-muted-foreground uppercase tracking-[0.2em] font-bold">Scan to Track Order</p>
+                    {/* Simple Message */}
+                    <div className="mt-8 pt-6 border-t border-gray-50 text-center">
+                      <p className="text-[10px] text-muted-foreground uppercase tracking-[0.2em] font-bold">Thank you for Choosing Craving</p>
                     </div>
                   </div>
 
@@ -344,10 +355,11 @@ const Checkout = () => {
                     ))}
                   </div>
                 </div>
-                
-                {/* Print Hint */}
-                <p className="text-center mt-6 text-xs text-muted-foreground print-hidden">
-                  A copy of your receipt has been sent to your email.
+
+                {/* Notification Hint */}
+                <p className="text-center mt-6 text-xs text-muted-foreground print-hidden flex items-center justify-center gap-2">
+                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                  Your order status will be updated via SMS.
                 </p>
               </div>
             </div>
@@ -358,7 +370,8 @@ const Checkout = () => {
         </div>
 
         {/* Global Print Styling - Dynamic */}
-        <style dangerouslySetInnerHTML={{ __html: `
+        <style dangerouslySetInnerHTML={{
+          __html: `
           @media print {
             body { background: white !important; }
             .receipt-container { 
