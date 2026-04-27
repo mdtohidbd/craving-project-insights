@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import AdminLayout from "../../components/admin/AdminLayout";
-import { Check, X, Info, Search, FileText, Printer, Clock, ArrowRight, CheckCircle, CheckCheck, LayoutGrid, List as ListIcon, Users } from "lucide-react";
+import { Check, X, Info, Search, FileText, Printer, Clock, ArrowRight, CheckCircle, CheckCheck, LayoutGrid, List as ListIcon, Users, Banknote, CreditCard, Smartphone, Bike, MapPin, Phone } from "lucide-react";
 import { toast } from "sonner";
 
 interface OrderItem {
@@ -31,7 +31,7 @@ interface Order {
     deliveryStatus?: 'pending' | 'assigned' | 'out_for_delivery' | 'delivered';
 }
 
-const KDSOrderCard = ({ order, onUpdateStatus, onSelect }: { order: Order, onUpdateStatus: any, onSelect: any }) => {
+const KDSOrderCard = ({ order, onUpdateStatus, onSelect, onCollectPayment }: { order: Order, onUpdateStatus: any, onSelect: any, onCollectPayment: (order: Order) => void }) => {
     const getElapsedTime = (createdAt: string) => {
         const diff = new Date().getTime() - new Date(createdAt).getTime();
         const minutes = Math.floor(diff / 60000);
@@ -124,13 +124,7 @@ const KDSOrderCard = ({ order, onUpdateStatus, onSelect }: { order: Order, onUpd
                     )}
                     {order.status === 'ready' && (
                         <button
-                            onClick={() => {
-                                if (order.orderType === 'dine-in') {
-                                    onUpdateStatus(order._id, 'completed');
-                                } else {
-                                    onSelect(order, true); // Open assignment modal
-                                }
-                            }}
+                            onClick={() => onCollectPayment(order)}
                             className="flex-1 py-3 bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold uppercase tracking-widest rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-emerald-200 active:scale-95"
                         >
                             <CheckCheck className="w-3.5 h-3.5" />
@@ -152,6 +146,26 @@ const AdminOrders = () => {
     const [viewMode, setViewMode] = useState<'list' | 'kds'>('kds');
     const [processingId, setProcessingId] = useState<string | null>(null);
     const [searchTerm, setSearchTerm] = useState("");
+
+    // Payment states
+    const [showPaymentModal, setShowPaymentModal] = useState(false);
+    const [paymentOrder, setPaymentOrder] = useState<Order | null>(null);
+    const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<'Cash' | 'Card' | 'MFS'>('Cash');
+    const [amountReceived, setAmountReceived] = useState<string>('');
+    const [changeAmount, setChangeAmount] = useState(0);
+
+    const [showBillPreview, setShowBillPreview] = useState(false);
+    const [lastOrderDetails, setLastOrderDetails] = useState<{
+        items: OrderItem[];
+        subtotal: number;
+        tax: number;
+        total: number;
+        paymentMethods: { method: string; amount: number }[];
+        orderId: string;
+        date: string;
+        table: string;
+        customer: string;
+    } | null>(null);
 
     const fetchOrders = async () => {
         try {
@@ -223,6 +237,12 @@ const AdminOrders = () => {
         try {
             setProcessingId(selectedOrder._id);
             const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+            
+            // For delivery orders, we also want to collect payment if it's not paid yet
+            // But usually delivery is paid on delivery or online. 
+            // The user specifically asked for "Serve & Complete" which is dine-in.
+            // Let's stick to dine-in for now or ask for payment for all.
+            
             updateOrderStatus(selectedOrder._id, 'out_for_delivery', `Order assigned to courier. Status updated to Out for Delivery.`);
 
             // Also update deliveryManId
@@ -239,6 +259,158 @@ const AdminOrders = () => {
             setSelectedOrder(null);
         } catch (error) {
             toast.error("Failed to assign delivery man");
+        } finally {
+            setProcessingId(null);
+        }
+    };
+
+    const printBillReceipt = (details: any) => {
+        if (!details) return;
+        const itemsHtml = details.items.map((item: any) => {
+            return `<div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span>${item.title} x${item.quantity}</span><span>BDT ${(item.price * item.quantity).toFixed(2)}</span></div>`;
+        }).join('');
+        
+        const paymentMethodsHtml = details.paymentMethods.map((pm: any) =>
+            `<div style="display:flex;justify-content:space-between;"><span>${pm.method.toUpperCase()}</span><span>BDT ${pm.amount.toFixed(2)}</span></div>`
+        ).join('');
+        
+        const orderNum = `#${details.orderId.slice(-6).toUpperCase()}`;
+
+        const html = `<!DOCTYPE html><html><head><title>Bill Receipt</title><style>
+            * { margin:0; padding:0; box-sizing:border-box; }
+            body { font-family: 'Courier New', monospace; width: 80mm; padding: 10px; color: #000; font-size: 14px; }
+            .center { text-align: center; }
+            .bold { font-weight: bold; }
+            .row { display: flex; justify-content: space-between; margin-bottom: 4px; }
+            .dashed { border-bottom: 2px dashed #000; margin: 10px 0; }
+            .solid { border-bottom: 2px solid #000; margin: 10px 0; }
+            .total-row { display: flex; justify-content: space-between; font-weight: bold; font-size: 16px; margin: 10px 0; }
+            img { display: block; margin: 10px auto; }
+            @media print { @page { margin: 0; size: 80mm auto; } }
+        </style></head><body>
+            <div class="center bold" style="font-size:20px;margin-bottom:15px;">CRAVINGS</div>
+            <div class="dashed"></div>
+            <div class="row"><span>Order #</span><span>${orderNum}</span></div>
+            <div class="row"><span>Date</span><span>${details.date}</span></div>
+            <div class="dashed"></div>
+            <div class="row bold" style="margin-bottom:8px;"><span>Item</span><span>Amount</span></div>
+            <div class="solid"></div>
+            ${itemsHtml}
+            <div class="solid"></div>
+            <div class="row"><span>Subtotal</span><span>BDT ${details.subtotal.toFixed(2)}</span></div>
+            <div class="row"><span>Tax</span><span>BDT ${details.tax.toFixed(2)}</span></div>
+            ${paymentMethodsHtml}
+            <div class="solid"></div>
+            <div class="total-row"><span>TOTAL</span><span>BDT ${details.total.toFixed(2)}</span></div>
+            <div class="dashed"></div>
+            <div class="center" style="margin-top:10px;">
+                <p style="margin-bottom:10px;">Thank you for your visit!</p>
+                <img src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${details.orderId}" alt="QR" width="100" height="100" />
+            </div>
+        </body></html>`;
+
+        const printWindow = window.open('', '_blank', 'width=400,height=600');
+        if (printWindow) {
+            printWindow.document.write(html);
+            printWindow.document.close();
+            setTimeout(() => {
+                if (!printWindow.closed) {
+                    printWindow.focus();
+                    printWindow.print();
+                }
+            }, 500);
+        } else {
+            toast.error("Please allow pop-ups to print the receipt");
+        }
+    };
+
+    const handleCollectPayment = (order: Order) => {
+        setPaymentOrder(order);
+        setAmountReceived(order.total.toFixed(2));
+        setChangeAmount(0);
+        setSelectedPaymentMethod('Cash');
+        setShowPaymentModal(true);
+    };
+
+    const processPayment = async () => {
+        if (!paymentOrder) return;
+        
+        try {
+            setProcessingId(paymentOrder._id);
+            const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+            
+            const res = await fetch(`${apiUrl}/orders/${paymentOrder._id}`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ 
+                    status: 'completed',
+                    paymentMethod: selectedPaymentMethod,
+                    amountReceived: parseFloat(amountReceived) || paymentOrder.total,
+                    changeAmount: changeAmount || 0
+                }),
+            });
+
+            if (res.ok) {
+                // Update table status to Free if it's a dine-in order
+                if (paymentOrder.orderType === 'dine-in' && paymentOrder.tableNumber) {
+                    try {
+                        // We need the table ID. Since we only have tableNumber, 
+                        // we might need to find the table first or use a different endpoint.
+                        // Looking at AdminPOS, it uses tableId. 
+                        // Let's try to find the table by number if tableId is missing.
+                        const tableRes = await fetch(`${apiUrl}/tables`);
+                        if (tableRes.ok) {
+                            const tables = await tableRes.json();
+                            const table = tables.find((t: any) => t.tableNumber === paymentOrder.tableNumber);
+                            if (table) {
+                                await fetch(`${apiUrl}/tables/${table._id}/status`, {
+                                    method: 'PATCH',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ 
+                                        status: 'Free',
+                                        currentOrder: undefined,
+                                        occupiedTime: undefined
+                                    })
+                                });
+                            }
+                        }
+                    } catch (tableErr) {
+                        console.error("Failed to update table status:", tableErr);
+                    }
+                }
+
+                toast.success(`Payment collected and Order #${paymentOrder._id.slice(-6).toUpperCase()} completed!`);
+                setShowPaymentModal(false);
+                
+                // Set order details for printing
+                setLastOrderDetails({
+                    items: paymentOrder.items,
+                    subtotal: paymentOrder.subtotal,
+                    tax: paymentOrder.tax,
+                    total: paymentOrder.total,
+                    paymentMethods: [{ method: selectedPaymentMethod, amount: paymentOrder.total }],
+                    orderId: paymentOrder._id,
+                    date: new Date().toLocaleString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }).replace(',', ''),
+                    table: paymentOrder.tableNumber || "N/A",
+                    customer: paymentOrder.customerInfo.name || "Walk-in"
+                });
+                setShowBillPreview(true);
+                
+                // If it's a takeaway or online order, open the assignment modal
+                if (paymentOrder.orderType !== 'dine-in') {
+                    setSelectedOrder(paymentOrder);
+                    setShowAssignmentModal(true);
+                } else {
+                    setPaymentOrder(null);
+                }
+                
+                await fetchOrders();
+            } else {
+                toast.error("Failed to process payment");
+            }
+        } catch (error) {
+            console.error(error);
+            toast.error("An error occurred during payment");
         } finally {
             setProcessingId(null);
         }
@@ -380,7 +552,7 @@ const AdminOrders = () => {
                                     </div>
                                     <div className="flex-1 overflow-y-auto p-5 space-y-5 custom-scrollbar">
                                         {pendingOrders.map(order => (
-                                            <KDSOrderCard key={order._id} order={order} onUpdateStatus={updateOrderStatus} onSelect={(order: any, isAssignment: boolean) => {
+                                            <KDSOrderCard key={order._id} order={order} onUpdateStatus={updateOrderStatus} onCollectPayment={handleCollectPayment} onSelect={(order: any, isAssignment: boolean) => {
                                                 setSelectedOrder(order);
                                                 setShowAssignmentModal(isAssignment || false);
                                             }} />
@@ -409,7 +581,7 @@ const AdminOrders = () => {
                                     </div>
                                     <div className="flex-1 overflow-y-auto p-5 space-y-5 custom-scrollbar">
                                         {preparingOrders.map(order => (
-                                            <KDSOrderCard key={order._id} order={order} onUpdateStatus={updateOrderStatus} onSelect={(order: any, isAssignment: boolean) => {
+                                            <KDSOrderCard key={order._id} order={order} onUpdateStatus={updateOrderStatus} onCollectPayment={handleCollectPayment} onSelect={(order: any, isAssignment: boolean) => {
                                                 setSelectedOrder(order);
                                                 setShowAssignmentModal(isAssignment || false);
                                             }} />
@@ -438,7 +610,7 @@ const AdminOrders = () => {
                                     </div>
                                     <div className="flex-1 overflow-y-auto p-5 space-y-5 custom-scrollbar">
                                         {readyOrders.map(order => (
-                                            <KDSOrderCard key={order._id} order={order} onUpdateStatus={updateOrderStatus} onSelect={(order: any, isAssignment: boolean) => {
+                                            <KDSOrderCard key={order._id} order={order} onUpdateStatus={updateOrderStatus} onCollectPayment={handleCollectPayment} onSelect={(order: any, isAssignment: boolean) => {
                                                 setSelectedOrder(order);
                                                 setShowAssignmentModal(isAssignment || false);
                                             }} />
@@ -461,163 +633,384 @@ const AdminOrders = () => {
 
             {/* Delivery Assignment Modal */}
             {showAssignmentModal && selectedOrder && (
-                <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-                    <div className="bg-white rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden flex flex-col max-h-[80vh]">
-                        <div className="p-6 border-b border-neutral-100 flex justify-between items-center bg-neutral-50/50">
-                            <div>
-                                <h3 className="font-serif font-bold text-xl text-neutral-900 tracking-tight">Assign Delivery Man</h3>
-                                <p className="text-xs text-neutral-500 mt-1">Select a courier for Order #{selectedOrder._id.slice(-6).toUpperCase()}</p>
+                <div className="fixed inset-0 z-[140] flex items-center justify-center p-4 bg-neutral-900/40 backdrop-blur-md animate-in fade-in duration-300">
+                    <div className="bg-white rounded-[2.5rem] w-full max-w-lg shadow-[0_32px_64px_-16px_rgba(0,0,0,0.2)] overflow-hidden flex flex-col max-h-[85vh] animate-in zoom-in-95 slide-in-from-bottom-8 duration-500">
+                        
+                        {/* Header with Gradient */}
+                        <div className="relative p-8 bg-gradient-to-br from-indigo-600 via-indigo-700 to-blue-800 text-white overflow-hidden">
+                            {/* Decorative background pattern */}
+                            <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-20 -mt-20 blur-3xl" />
+                            <div className="absolute bottom-0 left-0 w-48 h-48 bg-indigo-400/20 rounded-full -ml-10 -mb-10 blur-2xl" />
+                            
+                            <div className="relative flex justify-between items-start">
+                                <div className="space-y-1">
+                                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/10 text-[10px] font-black uppercase tracking-widest mb-2">
+                                        <Bike className="w-3 h-3" /> Logistics Portal
+                                    </div>
+                                    <h3 className="font-serif font-black text-3xl tracking-tight leading-none">Assign Courier</h3>
+                                    <p className="text-indigo-100 text-sm font-medium opacity-90 mt-2">Selecting partner for Order <span className="text-white font-bold">#{selectedOrder._id.slice(-6).toUpperCase()}</span></p>
+                                </div>
+                                <button 
+                                    onClick={() => { setShowAssignmentModal(false); setSelectedOrder(null); }} 
+                                    className="p-3 bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-2xl transition-all hover:scale-110 active:scale-95 border border-white/10 group"
+                                >
+                                    <X className="w-5 h-5 text-white group-hover:rotate-90 transition-transform duration-300" />
+                                </button>
                             </div>
-                            <button onClick={() => { setShowAssignmentModal(false); setSelectedOrder(null); }} className="p-2 hover:bg-neutral-100 rounded-full transition-colors text-neutral-400 hover:text-neutral-900">
-                                <X className="w-5 h-5" />
-                            </button>
+
+                            {/* Order Quick Stats */}
+                            <div className="relative mt-8 flex gap-4">
+                                <div className="px-4 py-2 bg-black/20 rounded-xl backdrop-blur-md border border-white/5">
+                                    <p className="text-[9px] font-bold text-indigo-200 uppercase tracking-widest mb-0.5">Order Type</p>
+                                    <p className="text-xs font-black uppercase">{selectedOrder.orderType}</p>
+                                </div>
+                                <div className="px-4 py-2 bg-black/20 rounded-xl backdrop-blur-md border border-white/5">
+                                    <p className="text-[9px] font-bold text-indigo-200 uppercase tracking-widest mb-0.5">Address</p>
+                                    <p className="text-xs font-black truncate max-w-[150px]">{selectedOrder.customerInfo?.address || "N/A"}</p>
+                                </div>
+                            </div>
                         </div>
 
-                        <div className="p-6 overflow-y-auto custom-scrollbar flex-1">
+                        <div className="p-8 overflow-y-auto custom-scrollbar flex-1 bg-neutral-50/50">
                             {deliveryMen.length === 0 ? (
-                                <div className="text-center py-12">
-                                    <Users className="w-12 h-12 text-neutral-200 mx-auto mb-4" />
-                                    <p className="text-sm text-neutral-500">No delivery men found. Please create one in the Delivery tab.</p>
+                                <div className="text-center py-16 px-4">
+                                    <div className="w-20 h-20 bg-neutral-100 rounded-3xl flex items-center justify-center mx-auto mb-6 text-neutral-300">
+                                        <Users className="w-10 h-10" />
+                                    </div>
+                                    <h4 className="text-xl font-bold text-neutral-900 mb-2">No Couriers Available</h4>
+                                    <p className="text-sm text-neutral-500 max-w-[280px] mx-auto">Please ensure you have active delivery personnel registered in your system.</p>
                                 </div>
                             ) : (
-                                <div className="grid grid-cols-1 gap-3">
+                                <div className="grid grid-cols-1 gap-4">
+                                    <p className="text-[10px] font-black text-neutral-400 uppercase tracking-[0.2em] mb-1 px-1">Available Delivery Personnel</p>
                                     {deliveryMen.filter(dm => dm.status === 'active').map(dm => (
                                         <button
                                             key={dm._id}
                                             onClick={() => assignDeliveryMan(dm._id)}
-                                            className="flex items-center justify-between p-4 rounded-2xl border border-neutral-100 bg-neutral-50 hover:border-amber-500 hover:bg-amber-50 group transition-all text-left"
+                                            className="group relative flex items-center justify-between p-5 rounded-[2rem] border-2 border-transparent bg-white shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] hover:shadow-[0_20px_40px_-12px_rgba(79,70,229,0.15)] hover:border-indigo-500/20 hover:-translate-y-1 transition-all duration-300 text-left"
                                         >
-                                            <div className="flex items-center gap-4">
-                                                <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center text-amber-600 font-bold border border-neutral-100 group-hover:border-amber-200 shadow-sm">
-                                                    {dm.name.charAt(0).toUpperCase()}
+                                            <div className="flex items-center gap-5">
+                                                <div className="relative">
+                                                    <div className="w-16 h-16 bg-gradient-to-br from-indigo-50 to-blue-50 rounded-[1.5rem] flex items-center justify-center text-indigo-600 font-black text-2xl border border-indigo-100 group-hover:from-indigo-600 group-hover:to-indigo-700 group-hover:text-white group-hover:border-transparent transition-all duration-500 shadow-inner">
+                                                        {dm.name.charAt(0).toUpperCase()}
+                                                    </div>
+                                                    <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-emerald-500 border-4 border-white rounded-full shadow-sm" />
                                                 </div>
                                                 <div>
-                                                    <p className="font-bold text-neutral-900 group-hover:text-amber-900 transition-colors">{dm.name}</p>
-                                                    <p className="text-xs text-neutral-500">{dm.phone}</p>
+                                                    <p className="font-black text-neutral-900 text-lg group-hover:text-indigo-900 transition-colors leading-tight mb-1">{dm.name}</p>
+                                                    <div className="flex flex-col gap-1">
+                                                        <div className="flex items-center gap-1.5 text-neutral-500 group-hover:text-indigo-600 transition-colors">
+                                                            <Phone className="w-3 h-3" />
+                                                            <span className="text-[11px] font-bold tracking-wider">{dm.phone}</span>
+                                                        </div>
+                                                        <div className="flex items-center gap-1.5 text-neutral-400">
+                                                            <MapPin className="w-3 h-3" />
+                                                            <span className="text-[10px] font-medium italic">Active & Ready</span>
+                                                        </div>
+                                                    </div>
                                                 </div>
                                             </div>
-                                            <div className="bg-white p-2 rounded-lg border border-neutral-100 group-hover:border-amber-200 opacity-100 transition-all">
-                                                <ArrowRight className="w-4 h-4 text-neutral-300 group-hover:text-amber-500 group-hover:translate-x-1 transition-all" />
+                                            
+                                            <div className="flex flex-col items-end gap-3">
+                                                <div className="w-12 h-12 rounded-2xl bg-neutral-50 flex items-center justify-center border border-neutral-100 group-hover:bg-indigo-600 group-hover:border-indigo-500 group-hover:shadow-[0_8px_20px_-4px_rgba(79,70,229,0.4)] transition-all duration-300">
+                                                    <ArrowRight className="w-5 h-5 text-neutral-300 group-hover:text-white group-hover:translate-x-1 transition-all" />
+                                                </div>
                                             </div>
                                         </button>
                                     ))}
                                 </div>
                             )}
                         </div>
+                        
+                        {/* Footer Help */}
+                        <div className="p-6 bg-neutral-50 border-t border-neutral-100 text-center">
+                            <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">
+                                Selecting a courier will notify them immediately via SMS
+                            </p>
+                        </div>
                     </div>
                 </div>
             )}
 
-            {/* Order Slip Modal */}
+            {/* KOT (Kitchen Order Ticket) Modal - Triggered by 'Details' */}
             {selectedOrder && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm print:static print:bg-white print:p-0 print:block">
-                    <div className="bg-white text-[hsl(195_30%_8%)] rounded-3xl w-full max-w-md max-h-[90vh] overflow-y-auto relative shadow-2xl flex flex-col print:shadow-none print:max-w-none print:rounded-none print:max-h-none print:overflow-visible">
-
-                        {/* Non-printable header controls */}
-                        <div className="flex justify-between items-center p-4 border-b border-gray-100 sticky top-0 bg-white/95 backdrop-blur-md z-10" data-html2canvas-ignore>
-                            <h3 className="font-semibold text-gray-800">Order Slip</h3>
+                    <div className="bg-white rounded-[2rem] w-full max-w-md shadow-2xl overflow-hidden flex flex-col max-h-[90vh] print:shadow-none print:max-w-none print:rounded-none print:max-h-none print:overflow-visible">
+                        
+                        {/* Header - Non-printable controls */}
+                        <div className="flex justify-between items-center p-6 border-b-4 border-orange-500 bg-orange-50/50 print:hidden">
+                            <div>
+                                <h3 className="text-xl font-black text-neutral-900 uppercase tracking-tighter">Kitchen Ticket</h3>
+                                <p className="text-[10px] font-bold text-orange-600 uppercase tracking-widest mt-0.5">Cooking Details</p>
+                            </div>
                             <div className="flex gap-2">
-                                <button
-                                    onClick={() => window.print()}
-                                    className="p-2 bg-indigo-50 text-indigo-600 hover:bg-indigo-100 rounded-lg transition-colors"
-                                    title="Print Order Slip"
+                                <button 
+                                    onClick={() => window.print()} 
+                                    className="w-12 h-12 flex items-center justify-center bg-white text-neutral-900 rounded-2xl shadow-sm hover:shadow-md hover:bg-neutral-50 transition-all active:scale-95 border border-neutral-100"
                                 >
                                     <Printer className="w-5 h-5" />
                                 </button>
-                                <button
-                                    onClick={() => setSelectedOrder(null)}
-                                    className="p-2 bg-red-50 text-red-600 hover:bg-red-100 rounded-lg transition-colors"
+                                <button 
+                                    onClick={() => setSelectedOrder(null)} 
+                                    className="w-12 h-12 flex items-center justify-center bg-white text-rose-500 rounded-2xl shadow-sm hover:shadow-md hover:bg-rose-50 transition-all active:scale-95 border border-neutral-100"
                                 >
                                     <X className="w-5 h-5" />
                                 </button>
                             </div>
                         </div>
 
-                        {/* Printable Area - Based on Checkout.tsx receipt */}
-                        <div id="printable-slip" className="p-6 md:p-8 bg-white text-left relative overflow-hidden print:p-0 print:m-0">
-                            <div className="absolute top-0 left-0 right-0 h-2 opacity-80 print:hidden" style={{ backgroundColor: '#eab308', backgroundImage: 'repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(0,0,0,0.1) 10px, rgba(0,0,0,0.1) 20px)' }}></div>
-
-                            <div className="text-center mb-6 border-b border-gray-200 pb-6 pt-2">
-                                <div className="flex justify-center mb-4">
-                                    <div className="w-16 h-16 bg-neutral-900 rounded-full flex items-center justify-center text-white font-serif text-2xl font-bold border-4 border-amber-500">C</div>
+                        {/* Printable Area - KOT Style */}
+                        <div id="printable-kot" className="p-10 overflow-y-auto custom-scrollbar text-center bg-white print:p-0 print:m-0">
+                            <div className="mb-8 print:mb-4">
+                                <div className="text-[11px] font-black uppercase tracking-[0.3em] text-neutral-400 mb-2">Order Reference</div>
+                                <h2 className="text-4xl font-black text-neutral-900 leading-none">#{selectedOrder._id.slice(-6).toUpperCase()}</h2>
+                            </div>
+                            
+                            <div className="flex justify-between items-center py-5 border-y border-dashed border-neutral-200 mb-8 px-2 print:mb-4">
+                                <div className="text-left">
+                                    <div className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">Table / Area</div>
+                                    <div className="text-xl font-black text-neutral-900">{selectedOrder.tableNumber || selectedOrder.customerInfo?.address || "N/A"}</div>
                                 </div>
-                                <h3 className="font-serif font-bold text-2xl text-[hsl(195_30%_14%)] mb-1">Cravings...</h3>
-                                <p className="text-sm text-gray-500 uppercase tracking-widest font-medium">Fine Dining Restaurant</p>
-                                <p className="text-[10px] text-gray-400 mt-1">123 Culinary Ave, Foodie City</p>
-                            </div>
-
-                            <div className="flex justify-between items-center text-sm mb-2">
-                                <span className="text-gray-500">Order ID</span>
-                                <span className="font-bold">#{selectedOrder._id.slice(-6).toUpperCase()}</span>
-                            </div>
-                            <div className="flex justify-between items-center text-sm mb-2">
-                                <span className="text-gray-500">Date</span>
-                                <span className="font-medium text-xs">{new Date(selectedOrder.createdAt).toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
-                            </div>
-                            <div className="flex justify-between items-center text-sm mb-6">
-                                <span className="text-gray-500">Status</span>
-                                <span className="font-bold text-[13px] capitalize text-amber-600">{selectedOrder.status}</span>
-                            </div>
-
-                            <div className="border-t border-b border-dashed border-gray-300 py-4 mb-6 space-y-3">
-                                <div className="flex justify-between text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">
-                                    <span>Description</span>
-                                    <span>Amount</span>
+                                <div className="text-right">
+                                    <div className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">Order Time</div>
+                                    <div className="text-sm font-bold text-neutral-900">{new Date(selectedOrder.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
                                 </div>
+                            </div>
+
+                            <div className="space-y-5 mb-8 text-left print:mb-4">
+                                <p className="text-[10px] font-black text-neutral-400 uppercase tracking-widest mb-2">Items to Prepare:</p>
                                 {selectedOrder.items.map((item: any, idx: number) => (
-                                    <div key={idx} className="flex justify-between items-start text-sm">
-                                        <div className="flex-1 pr-4">
-                                            <span className="font-bold block text-gray-800">{item.quantity}x {item.title}</span>
-                                            <span className="text-[10px] text-gray-400">৳{item.price} each</span>
+                                    <div key={idx} className="flex items-start gap-4 group">
+                                        <div className="bg-neutral-900 text-white w-9 h-9 rounded-xl flex items-center justify-center font-black text-lg shrink-0 shadow-lg shadow-neutral-200">
+                                            {item.quantity}
                                         </div>
-                                        <span className="font-bold text-gray-800">৳{Math.round(item.price * item.quantity)}</span>
+                                        <div className="flex-1 pt-0.5">
+                                            <span className="font-black text-2xl text-neutral-900 uppercase tracking-tight leading-tight block">{item.title}</span>
+                                            {item.notes && <span className="text-xs font-bold text-rose-500 italic block mt-1">Note: {item.notes}</span>}
+                                        </div>
                                     </div>
                                 ))}
                             </div>
 
-                            <div className="space-y-2 text-sm mb-6">
-                                <div className="flex justify-between">
-                                    <span className="text-gray-500">Subtotal</span>
-                                    <span className="font-medium text-gray-800">৳{Math.round(selectedOrder.subtotal || 0)}</span>
+                            {selectedOrder.customerInfo?.notes && (
+                                <div className="mb-8 p-4 bg-amber-50 rounded-2xl border border-amber-100 text-left print:mb-4">
+                                    <p className="text-[9px] font-black text-amber-600 uppercase tracking-widest mb-1">Kitchen Notes:</p>
+                                    <p className="text-sm font-bold text-neutral-800 italic">"{selectedOrder.customerInfo.notes}"</p>
                                 </div>
-                                <div className="flex justify-between">
-                                    <span className="text-gray-500">Tax & Fees</span>
-                                    <span className="font-medium text-gray-800">৳{Math.round((selectedOrder.total || 0) - (selectedOrder.subtotal || 0))}</span>
+                            )}
+
+                            <div className="py-6 bg-neutral-50 rounded-2xl border border-neutral-100 border-dashed print:border-solid">
+                                <p className="text-[10px] font-black text-neutral-400 uppercase tracking-[0.2em] mb-1">Customer</p>
+                                <p className="text-xs font-bold text-neutral-700 uppercase">{selectedOrder.customerInfo?.name || "Walk-in Guest"}</p>
+                            </div>
+                            
+                            <div className="mt-8 text-[10px] font-black text-neutral-300 uppercase tracking-[0.4em] print:hidden">
+                                *** End of Kitchen Ticket ***
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Payment Collection Modal */}
+            {showPaymentModal && paymentOrder && (
+                <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+                    <div className="bg-white rounded-3xl w-full max-w-md shadow-2xl overflow-hidden flex flex-col animate-in fade-in zoom-in duration-200">
+                        {/* Header */}
+                        <div className="bg-emerald-600 p-6 text-white relative">
+                            <button
+                                onClick={() => setShowPaymentModal(false)}
+                                className="absolute right-4 top-4 text-white/80 hover:text-white transition-colors"
+                            >
+                                <X className="w-5 h-5" />
+                            </button>
+                            <h3 className="text-xl font-bold mb-1">Collect Payment</h3>
+                            <p className="text-emerald-100 text-xs">Order #{paymentOrder._id.slice(-6).toUpperCase()}</p>
+                            
+                            <div className="mt-6">
+                                <p className="text-emerald-100 text-[10px] font-bold uppercase tracking-widest mb-1">Total Payable Amount</p>
+                                <div className="flex items-baseline gap-2">
+                                    <span className="text-emerald-200 text-lg font-medium uppercase">BDT</span>
+                                    <span className="text-4xl font-black">{paymentOrder.total.toFixed(2)}</span>
                                 </div>
-                                <div className="flex justify-between pt-2 border-t border-gray-100">
-                                    <span className="font-bold text-base text-gray-800 uppercase tracking-tight">Total Amount</span>
-                                    <span className="font-bold text-xl text-neutral-900">৳{Math.round(selectedOrder.total || 0)}</span>
+                            </div>
+                        </div>
+
+                        <div className="p-6 space-y-6">
+                            {/* Payment Method Selection */}
+                            <div>
+                                <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest mb-3">Choose Payment Method</p>
+                                <div className="grid grid-cols-3 gap-3">
+                                    {[
+                                        { id: 'Cash', icon: Banknote, color: 'emerald' },
+                                        { id: 'Card', icon: CreditCard, color: 'blue' },
+                                        { id: 'MFS', icon: Smartphone, color: 'purple' }
+                                    ].map((method) => (
+                                        <button
+                                            key={method.id}
+                                            onClick={() => setSelectedPaymentMethod(method.id as any)}
+                                            className={`flex flex-col items-center justify-center p-4 rounded-2xl border-2 transition-all gap-2 ${
+                                                selectedPaymentMethod === method.id 
+                                                ? `bg-${method.color}-50 border-${method.color}-500 text-${method.color}-600` 
+                                                : 'bg-white border-neutral-100 text-neutral-400 hover:border-neutral-200'
+                                            }`}
+                                        >
+                                            <method.icon className="w-6 h-6" />
+                                            <span className="text-[10px] font-black uppercase tracking-tighter">{method.id}</span>
+                                        </button>
+                                    ))}
                                 </div>
                             </div>
 
-                            <div className="bg-neutral-50 rounded-2xl p-5 text-xs text-neutral-500 border border-neutral-100 mb-8">
-                                <span className="font-bold text-neutral-800 block mb-2 uppercase tracking-widest text-[9px]">Customer Information</span>
-                                <div className="space-y-1">
-                                    <p className="flex justify-between"><span className="text-neutral-400">Name:</span> <span className="font-semibold text-neutral-700">{selectedOrder.customerInfo?.name || "Walk-in Customer"}</span></p>
-                                    <p className="flex justify-between"><span className="text-neutral-400">Phone:</span> <span className="font-semibold text-neutral-700">{selectedOrder.customerInfo?.phone || "N/A"}</span></p>
-                                    <p className="flex flex-col gap-1 mt-2">
-                                        <span className="text-neutral-400">Address:</span>
-                                        <span className="font-medium text-neutral-700 whitespace-pre-line leading-relaxed">{selectedOrder.customerInfo?.address}</span>
-                                    </p>
-                                </div>
-                                {selectedOrder.customerInfo?.notes && (
-                                    <div className="mt-4 pt-4 border-t border-neutral-200/50">
-                                        <span className="font-bold text-neutral-800 block mb-1">Notes:</span>
-                                        <p className="italic text-neutral-600">{selectedOrder.customerInfo.notes}</p>
+                            {/* Amount Received Input (only for Cash) */}
+                            {selectedPaymentMethod === 'Cash' && (
+                                <div className="space-y-3">
+                                    <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest px-1">Amount Received</p>
+                                    <div className="relative group">
+                                        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-400 font-bold text-sm group-focus-within:text-emerald-500 transition-colors">BDT</div>
+                                        <input
+                                            type="number"
+                                            value={amountReceived}
+                                            onChange={(e) => {
+                                                const val = e.target.value;
+                                                setAmountReceived(val);
+                                                const received = parseFloat(val) || 0;
+                                                setChangeAmount(Math.max(0, received - paymentOrder.total));
+                                            }}
+                                            className="w-full bg-neutral-50 border border-neutral-200 text-neutral-900 rounded-2xl pl-14 pr-4 py-4 text-xl font-black focus:outline-none focus:bg-white focus:border-emerald-500 transition-all"
+                                        />
                                     </div>
-                                )}
+                                    
+                                    <div className="grid grid-cols-3 gap-2">
+                                        {[500, 1000, 2000].map(val => (
+                                            <button
+                                                key={val}
+                                                onClick={() => {
+                                                    setAmountReceived(val.toString());
+                                                    setChangeAmount(Math.max(0, val - paymentOrder.total));
+                                                }}
+                                                className="py-2 bg-neutral-100 hover:bg-neutral-200 rounded-xl text-xs font-bold text-neutral-600 transition-colors"
+                                            >
+                                                BDT {val}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Change to Return */}
+                            {selectedPaymentMethod === 'Cash' && parseFloat(amountReceived) > paymentOrder.total && (
+                                <div className="flex justify-between items-center p-4 bg-amber-50 border border-amber-100 rounded-2xl animate-in slide-in-from-top-2">
+                                    <span className="text-amber-700 font-bold text-xs uppercase tracking-wider">Change to Return</span>
+                                    <span className="text-xl font-black text-amber-800">BDT {changeAmount.toFixed(2)}</span>
+                                </div>
+                            )}
+
+                            {/* Footer Actions */}
+                            <div className="flex gap-3 pt-2">
+                                <button
+                                    onClick={() => setShowPaymentModal(false)}
+                                    className="flex-1 py-4 bg-neutral-100 hover:bg-neutral-200 text-neutral-600 font-bold rounded-2xl transition-all"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={processPayment}
+                                    disabled={processingId === paymentOrder._id || (selectedPaymentMethod === 'Cash' && (parseFloat(amountReceived) < paymentOrder.total))}
+                                    className="flex-[2] py-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-2xl transition-all shadow-lg shadow-emerald-100 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                                >
+                                    {processingId === paymentOrder._id ? (
+                                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                    ) : (
+                                        <>
+                                            <CheckCircle className="w-4 h-4" />
+                                            {selectedPaymentMethod === 'Cash' ? `Exact Amount (BDT${paymentOrder.total.toFixed(2)})` : 'Confirm Payment'}
+                                        </>
+                                    )}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Bill Preview Modal */}
+            {showBillPreview && lastOrderDetails && (
+                <div className="fixed inset-0 z-[130] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+                    <div className="bg-white rounded-3xl w-full max-w-md shadow-2xl overflow-hidden flex flex-col max-h-[90vh] animate-in fade-in zoom-in duration-200">
+                        {/* Header */}
+                        <div className="flex justify-between items-center p-4 border-b border-yellow-400 border-b-4">
+                            <h3 className="text-xl font-medium text-neutral-800">Order Slip</h3>
+                            <div className="flex gap-2">
+                                <button onClick={() => printBillReceipt(lastOrderDetails)} className="w-10 h-10 flex items-center justify-center bg-blue-50 text-blue-600 rounded-full hover:bg-blue-100 transition-colors">
+                                    <Printer className="w-5 h-5" />
+                                </button>
+                                <button onClick={() => setShowBillPreview(false)} className="w-10 h-10 flex items-center justify-center bg-red-50 text-red-500 rounded-full hover:bg-red-100 transition-colors">
+                                    <X className="w-5 h-5" />
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Scrollable Content */}
+                        <div className="p-8 overflow-y-auto custom-scrollbar">
+                            <div className="text-center mb-8">
+                                <h2 className="text-3xl font-serif font-bold text-[#0f172a] mb-2">Cravings...</h2>
+                                <p className="text-sm font-medium text-neutral-500 tracking-[0.2em] uppercase">Order Receipt</p>
                             </div>
 
-                            <div className="text-center pt-4">
-                                <img
-                                    src={`https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${selectedOrder._id}`}
-                                    alt="QR Code"
-                                    className="mx-auto mb-4 border-4 border-white shadow-md rounded-xl"
-                                    width="100"
-                                    height="100"
-                                />
-                                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] mb-1">Thank you for your visit!</p>
-                                <p className="text-[9px] text-gray-300">Visit us again at www.craving-restaurant.com</p>
+                            <div className="space-y-4 mb-6">
+                                <div className="flex justify-between text-[15px]">
+                                    <span className="text-neutral-500">Order ID</span>
+                                    <span className="font-bold text-neutral-900">#{lastOrderDetails.orderId.slice(-6).toUpperCase()}</span>
+                                </div>
+                                <div className="flex justify-between text-[15px]">
+                                    <span className="text-neutral-500">Date</span>
+                                    <span className="font-medium text-neutral-900">{lastOrderDetails.date}</span>
+                                </div>
+                                <div className="flex justify-between text-[15px]">
+                                    <span className="text-neutral-500">Payment Status</span>
+                                    <span className="font-medium text-neutral-900">Paid</span>
+                                </div>
+                            </div>
+
+                            <div className="border-t border-dashed border-neutral-300 py-6">
+                                {lastOrderDetails.items.map((item, idx) => (
+                                    <div key={idx} className="flex justify-between items-start mb-4 last:mb-0">
+                                        <span className="font-bold text-neutral-900 text-[15px]">{item.quantity}x {item.title}</span>
+                                        <span className="font-medium text-neutral-900">৳{(item.price * item.quantity).toFixed(0)}</span>
+                                    </div>
+                                ))}
+                            </div>
+
+                            <div className="border-t border-dashed border-neutral-300 py-6 space-y-4">
+                                <div className="flex justify-between text-[15px]">
+                                    <span className="text-neutral-500">Subtotal</span>
+                                    <span className="font-medium text-neutral-900">৳{lastOrderDetails.subtotal.toFixed(0)}</span>
+                                </div>
+                                <div className="flex justify-between text-[15px]">
+                                    <span className="text-neutral-500">Tax</span>
+                                    <span className="font-medium text-neutral-900">৳{lastOrderDetails.tax.toFixed(0)}</span>
+                                </div>
+                                <div className="space-y-1">
+                                    {lastOrderDetails.paymentMethods.map((pm, idx) => (
+                                        <div key={idx} className="flex justify-between text-[15px] italic text-neutral-600">
+                                            <span>{pm.method}</span>
+                                            <span>৳{pm.amount.toFixed(0)}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                                <div className="flex justify-between text-xl font-black mt-2">
+                                    <span className="text-neutral-900">Total</span>
+                                    <span className="text-yellow-500">৳{lastOrderDetails.total.toFixed(0)}</span>
+                                </div>
+                            </div>
+
+                            <div className="bg-neutral-50 rounded-2xl p-6 mt-2">
+                                <h4 className="font-bold text-neutral-900 mb-2">Details:</h4>
+                                <div className="text-neutral-600 text-[15px] space-y-1">
+                                    <p>Customer: {lastOrderDetails.customer}</p>
+                                    <p>Table/Area: {lastOrderDetails.table}</p>
+                                </div>
                             </div>
                         </div>
                     </div>

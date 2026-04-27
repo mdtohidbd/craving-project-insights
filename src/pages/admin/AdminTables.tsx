@@ -145,6 +145,10 @@ const AdminTables = () => {
 
             switch (action) {
                 case 'newOrder':
+                    if (selectedTable.status !== 'Free') {
+                        toast.error(`Table ${selectedTable.tableNumber} is currently ${selectedTable.status}. It must be Free before creating a new order.`);
+                        return;
+                    }
                     window.location.href = `/admin/pos?table=${selectedTable._id}`;
                     return;
                 case 'reserve':

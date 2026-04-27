@@ -39,16 +39,34 @@ router.post('/', async (req, res) => {
             await customer.save();
         }
 
-        // Handle table status update
+        // Handle table status update and availability check
         const tableId = req.body.tableId || savedOrder.tableId;
-        console.log('Order saved:', savedOrder._id, 'Type:', savedOrder.orderType, 'TableId:', tableId);
-        
         if (tableId && savedOrder.orderType === 'dine-in') {
-            console.log('Updating table', tableId, 'to Occupied');
-            await Table.findByIdAndUpdate(tableId, {
-                status: 'Occupied',
-                currentOrder: savedOrder._id
-            });
+            console.log('Attempting to book table', tableId);
+            // Atomically check if table is Free and mark it as Occupied
+            const table = await Table.findOneAndUpdate(
+                { _id: tableId, status: 'Free' },
+                { 
+                    status: 'Occupied',
+                    currentOrder: savedOrder._id,
+                    occupiedTime: new Date().toISOString()
+                },
+                { new: true }
+            );
+
+            if (!table) {
+                // If update failed, check if table exists and why it failed
+                const existingTable = await Table.findById(tableId);
+                // Rollback order creation if table is not available
+                await Order.findByIdAndDelete(savedOrder._id);
+                
+                if (!existingTable) {
+                    return res.status(404).json({ message: 'Table not found' });
+                }
+                return res.status(400).json({ 
+                    message: `Table ${existingTable.tableNumber} is already ${existingTable.status}. Please choose another table.` 
+                });
+            }
         }
 
         // Prepare SMS to admin (or customer depending on preference)
