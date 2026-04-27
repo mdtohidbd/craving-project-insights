@@ -187,8 +187,14 @@ const AdminPOS = () => {
                     if (tableId) {
                         const table = fetchedTables.find((t: any) => t._id === tableId || t.tableNumber === tableId);
                         if (table) {
-                            setSelectedTable(table.tableNumber);
-                            setSelectedTableId(table._id);
+                            if (table.status !== 'Free') {
+                                toast.warning(`Table ${table.tableNumber} is currently ${table.status}. Defaulting to Quick Sale.`);
+                                setSelectedTable("Quick Sale (No Table)");
+                                setSelectedTableId(null);
+                            } else {
+                                setSelectedTable(table.tableNumber);
+                                setSelectedTableId(table._id);
+                            }
                         }
                     }
                 }
@@ -431,8 +437,9 @@ const AdminPOS = () => {
                 tax: vatAmount || 0,
                 discount: discount || 0,
                 total: total || 0,
-                status: "preparing",
+                status: "pending",
                 tableNumber: selectedTable,
+                tableId: selectedTableId || undefined,
                 orderType: orderType
             };
 
@@ -446,6 +453,23 @@ const AdminPOS = () => {
                 const data = await res.json();
                 const orderId = data.orderId || data._id;
                 setCurrentOrderId(orderId);
+
+                // Update table status to Occupied if a table was selected
+                if (selectedTableId && selectedTable !== "Quick Sale (No Table)") {
+                    try {
+                        await fetch(`${apiUrl}/tables/${selectedTableId}/status`, {
+                            method: 'PATCH',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ 
+                                status: 'Occupied',
+                                currentOrder: orderId,
+                                occupiedTime: new Date().toISOString()
+                            })
+                        });
+                    } catch (tableErr) {
+                        console.error("Failed to update table status:", tableErr);
+                    }
+                }
 
                 setLastOrderDetails({
                     items: [...cart],
@@ -463,6 +487,7 @@ const AdminPOS = () => {
                 toast.success("KOT saved successfully!");
                 setCart([]);
                 setSelectedTable("Quick Sale (No Table)");
+                setSelectedTableId(null);
                 setSelectedCustomer("Walk-in");
                 setDiscount(0);
             } else {
@@ -485,6 +510,19 @@ const AdminPOS = () => {
 
         try {
             setIsProcessing(true);
+
+            // Double check table status before proceeding
+            if (selectedTableId && selectedTable !== "Quick Sale (No Table)") {
+                const tableRes = await fetch(`${apiUrl}/tables/${selectedTableId}`);
+                if (tableRes.ok) {
+                    const tableData = await tableRes.json();
+                    if (tableData.status !== 'Free') {
+                        toast.error(`Table ${selectedTable} was just booked by someone else! Please select another table.`);
+                        setIsProcessing(false);
+                        return;
+                    }
+                }
+            }
 
             const orderData = {
                 customerInfo: {
@@ -523,6 +561,23 @@ const AdminPOS = () => {
                 const orderId = data.orderId || data._id;
                 setCurrentOrderId(orderId);
 
+                // Update table status to Occupied if a table was selected
+                if (selectedTableId && selectedTable !== "Quick Sale (No Table)") {
+                    try {
+                        await fetch(`${apiUrl}/tables/${selectedTableId}/status`, {
+                            method: 'PATCH',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ 
+                                status: 'Occupied',
+                                currentOrder: orderId,
+                                occupiedTime: new Date().toISOString()
+                            })
+                        });
+                    } catch (tableErr) {
+                        console.error("Failed to update table status:", tableErr);
+                    }
+                }
+
                 setLastOrderDetails({
                     items: [...cart],
                     subtotal,
@@ -539,6 +594,7 @@ const AdminPOS = () => {
                 toast.success("Bill saved successfully!");
                 setCart([]);
                 setSelectedTable("Quick Sale (No Table)");
+                setSelectedTableId(null);
                 setSelectedCustomer("Walk-in");
                 setDiscount(0);
             } else {
@@ -607,9 +663,30 @@ const AdminPOS = () => {
             });
 
             if (res.ok) {
+                const data = await res.json();
+                const orderId = data.orderId || data._id;
+
+                // Update table status to Occupied if a table was selected
+                if (selectedTableId && selectedTable !== "Quick Sale (No Table)") {
+                    try {
+                        await fetch(`${apiUrl}/tables/${selectedTableId}/status`, {
+                            method: 'PATCH',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ 
+                                status: 'Occupied',
+                                currentOrder: orderId,
+                                occupiedTime: new Date().toISOString()
+                            })
+                        });
+                    } catch (tableErr) {
+                        console.error("Failed to update table status:", tableErr);
+                    }
+                }
+
                 toast.success("Order held successfully!");
                 setCart([]);
                 setSelectedTable("Quick Sale (No Table)");
+                setSelectedTableId(null);
                 setSelectedCustomer("Walk-in");
                 setDiscount(0);
 
@@ -618,9 +695,6 @@ const AdminPOS = () => {
                 if (heldRes.ok) {
                     setHeldOrders(await heldRes.json());
                 }
-
-                // Combined order creation and table status via backend automation
-                // Redundant manual PATCH calls removed
             } else {
                 const errData = await res.json().catch(() => ({}));
                 toast.error(errData.message || "Failed to hold order");
@@ -673,6 +747,24 @@ const AdminPOS = () => {
                 const data = await res.json();
                 const orderId = data.orderId || data._id;
                 setCurrentOrderId(orderId);
+
+                // Update table status to Free after payment is completed
+                if (selectedTableId && selectedTable !== "Quick Sale (No Table)") {
+                    try {
+                        await fetch(`${apiUrl}/tables/${selectedTableId}/status`, {
+                            method: 'PATCH',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ 
+                                status: 'Free',
+                                currentOrder: undefined,
+                                occupiedTime: undefined,
+                                server: undefined
+                            })
+                        });
+                    } catch (tableErr) {
+                        console.error("Failed to update table status:", tableErr);
+                    }
+                }
 
                 setLastOrderDetails({
                     items: [...cart],
@@ -779,6 +871,24 @@ const AdminPOS = () => {
                 const data = await res.json();
                 const orderId = data.orderId || data._id;
                 setCurrentOrderId(orderId);
+
+                // Update table status to Free after payment is completed
+                if (selectedTableId && selectedTable !== "Quick Sale (No Table)") {
+                    try {
+                        await fetch(`${apiUrl}/tables/${selectedTableId}/status`, {
+                            method: 'PATCH',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ 
+                                status: 'Free',
+                                currentOrder: undefined,
+                                occupiedTime: undefined,
+                                server: undefined
+                            })
+                        });
+                    } catch (tableErr) {
+                        console.error("Failed to update table status:", tableErr);
+                    }
+                }
 
                 setLastOrderDetails({
                     items: [...cart],
@@ -994,11 +1104,20 @@ const AdminPOS = () => {
                                 className="w-full bg-white border border-neutral-200 text-neutral-900 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-primary appearance-none cursor-pointer font-medium"
                             >
                                 <option value="Quick Sale (No Table)">Quick Sale (No Table)</option>
-                                {tables.map(table => (
-                                    <option key={table._id} value={table.tableNumber}>
-                                        Table {table.tableNumber} {table.name ? `(${table.name})` : ''}
-                                    </option>
-                                ))}
+                                {tables.map(table => {
+                                    const isOccupied = table.status !== 'Free';
+                                    return (
+                                        <option 
+                                            key={table._id} 
+                                            value={table.tableNumber} 
+                                            disabled={isOccupied}
+                                            className={isOccupied ? 'text-neutral-400 italic bg-neutral-50' : ''}
+                                        >
+                                            Table {table.tableNumber} {table.name ? `(${table.name})` : ''} 
+                                            {isOccupied ? ` - [${table.status.toUpperCase()}]` : ''}
+                                        </option>
+                                    );
+                                })}
                             </select>
                             <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400 pointer-events-none" />
                         </div>
@@ -1117,55 +1236,83 @@ const AdminPOS = () => {
                         </div>
                     </div>
 
-                    {/* Actions */}
-                    <div className="px-2 py-2 bg-white border-t border-neutral-100 shrink-0 space-y-1.5">
-                        <div className="grid grid-cols-3 gap-1.5">
-                            <button onClick={() => handlePayment('Cash')} disabled={cart.length === 0 || isProcessing} className="h-8 bg-[hsl(150,84%,39%)] hover:bg-[hsl(150,84%,34%)] disabled:bg-neutral-100 disabled:text-neutral-300 text-white font-bold rounded-lg active:scale-95 transition-all flex items-center justify-center gap-1 text-[10px]">
-                                <Banknote className="w-3 h-3" /> Cash
+                    {/* Premium Actions Footer */}
+                    <div className="px-4 py-4 bg-white border-t border-neutral-100 shrink-0 shadow-[0_-4px_20px_rgba(0,0,0,0.03)]">
+                        <div className="grid grid-cols-2 gap-3 mb-3">
+                            <button 
+                                onClick={handlePrintKOT} 
+                                disabled={cart.length === 0} 
+                                className="h-14 bg-gradient-to-br from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 disabled:from-neutral-100 disabled:to-neutral-100 disabled:text-neutral-300 text-white font-black rounded-2xl shadow-lg shadow-orange-200/50 hover:shadow-orange-300/50 active:scale-[0.97] transition-all flex flex-col items-center justify-center gap-0.5 group overflow-hidden relative"
+                            >
+                                <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                <div className="flex items-center gap-2 z-10">
+                                    <Utensils className="w-4 h-4 group-hover:rotate-12 transition-transform" /> 
+                                    <span className="text-[11px] uppercase tracking-[0.1em]">Kitchen (KOT)</span>
+                                </div>
+                                <span className="text-[9px] font-bold opacity-70 italic z-10 uppercase tracking-tighter">Send to cooking</span>
                             </button>
-                            <button onClick={() => handlePayment('Card')} disabled={cart.length === 0 || isProcessing} className="h-8 bg-[hsl(217,91%,60%)] hover:bg-[hsl(217,91%,55%)] disabled:bg-neutral-100 disabled:text-neutral-300 text-white font-bold rounded-lg active:scale-95 transition-all flex items-center justify-center gap-1 text-[10px]">
-                                <CreditCard className="w-3 h-3" /> Card
-                            </button>
-                            <button onClick={() => handlePayment('MFS')} disabled={cart.length === 0 || isProcessing} className="h-8 bg-[hsl(271,76%,59%)] hover:bg-[hsl(271,76%,54%)] disabled:bg-neutral-100 disabled:text-neutral-300 text-white font-bold rounded-lg active:scale-95 transition-all flex items-center justify-center gap-1 text-[10px]">
-                                <Smartphone className="w-3 h-3" /> MFS
+                            <button 
+                                onClick={() => handlePayment('Cash')} 
+                                disabled={cart.length === 0} 
+                                className="h-14 bg-gradient-to-br from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 disabled:from-neutral-100 disabled:to-neutral-100 disabled:text-neutral-300 text-white font-black rounded-2xl shadow-lg shadow-blue-200/50 hover:shadow-blue-300/50 active:scale-[0.97] transition-all flex flex-col items-center justify-center gap-0.5 group overflow-hidden relative"
+                            >
+                                <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                <div className="flex items-center gap-2 z-10">
+                                    <DollarSign className="w-4 h-4 group-hover:scale-110 transition-transform" /> 
+                                    <span className="text-[11px] uppercase tracking-[0.1em]">Checkout (Bill)</span>
+                                </div>
+                                <span className="text-[9px] font-bold opacity-70 italic z-10 uppercase tracking-tighter">Process payment</span>
                             </button>
                         </div>
-                        <div className="grid grid-cols-5 gap-1.5">
-                            <button onClick={handlePrintKOT} disabled={cart.length === 0} className="h-7 bg-[hsl(24,95%,53%)] hover:bg-[hsl(24,95%,48%)] disabled:bg-neutral-100 disabled:text-neutral-300 text-white font-bold rounded-lg transition-all flex items-center justify-center gap-1 text-[9px]">
-                                <Printer className="w-2.5 h-2.5" /> KOT
+                        <div className="grid grid-cols-3 gap-2.5">
+                            <button 
+                                onClick={handleSplit} 
+                                disabled={cart.length === 0} 
+                                className="h-11 bg-neutral-50 hover:bg-neutral-100 border border-neutral-200 disabled:opacity-40 text-neutral-600 font-bold rounded-xl active:scale-[0.97] transition-all flex items-center justify-center gap-2 text-[10px] uppercase tracking-wider"
+                            >
+                                <Divide className="w-3.5 h-3.5" /> Split
                             </button>
-                            <button onClick={handlePrintBill} disabled={cart.length === 0} className="h-7 bg-[hsl(221,83%,41%)] hover:bg-[hsl(221,83%,36%)] disabled:bg-neutral-100 disabled:text-neutral-300 text-white font-bold rounded-lg transition-all flex items-center justify-center gap-1 text-[9px]">
-                                <Printer className="w-2.5 h-2.5" /> Bill
+                            <button 
+                                onClick={handleHold} 
+                                disabled={cart.length === 0} 
+                                className="h-11 bg-amber-50 hover:bg-amber-100 border border-amber-200 disabled:opacity-40 text-amber-700 font-bold rounded-xl active:scale-[0.97] transition-all flex items-center justify-center gap-2 text-[10px] uppercase tracking-wider"
+                            >
+                                <Clock className="w-3.5 h-3.5" /> Hold
                             </button>
-                            <button onClick={handleSplit} disabled={cart.length === 0} className="h-7 bg-neutral-400 hover:bg-neutral-500 disabled:bg-neutral-100 disabled:text-neutral-300 text-white font-bold rounded-lg transition-all flex items-center justify-center gap-1 text-[9px]">
-                                <Divide className="w-2.5 h-2.5" /> Split
-                            </button>
-                            <button onClick={handleHold} disabled={cart.length === 0} className="h-7 bg-[hsl(43,96%,56%)] hover:bg-[hsl(43,96%,51%)] disabled:bg-neutral-100 disabled:text-neutral-300 text-white font-bold rounded-lg transition-all flex items-center justify-center gap-1 text-[9px]">
-                                <Clock className="w-2.5 h-2.5" /> Hold
-                            </button>
-                            <button onClick={clearCart} disabled={cart.length === 0} className="h-7 bg-[hsl(0,84%,60%)] hover:bg-[hsl(0,84%,55%)] disabled:bg-neutral-100 disabled:text-neutral-300 text-white font-bold rounded-lg transition-all flex items-center justify-center gap-1 text-[9px]">
-                                <Trash2 className="w-2.5 h-2.5" /> Clear
+                            <button 
+                                onClick={clearCart} 
+                                disabled={cart.length === 0} 
+                                className="h-11 bg-rose-50 hover:bg-rose-100 border border-rose-200 disabled:opacity-40 text-rose-600 font-bold rounded-xl active:scale-[0.97] transition-all flex items-center justify-center gap-2 text-[10px] uppercase tracking-wider"
+                            >
+                                <Trash2 className="w-3.5 h-3.5" /> Clear
                             </button>
                         </div>
                     </div>
                 </div>
             </div>
 
+
             {/* Payment Modal */}
             {showPaymentModal && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
                     <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
-                        {/* Header */}
-                        <div className="bg-[#10b981] p-6 text-center text-white relative shrink-0">
+                        {/* Premium Header */}
+                        <div className="bg-gradient-to-br from-emerald-500 to-teal-600 p-8 text-white relative shrink-0 overflow-hidden">
+                            <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 blur-2xl" />
                             <button
                                 onClick={() => setShowPaymentModal(false)}
-                                className="absolute right-4 top-4 text-white hover:text-gray-200"
+                                className="absolute right-4 top-4 text-white/80 hover:text-white transition-colors z-20"
                             >
-                                <X className="w-5 h-5" />
+                                <X className="w-6 h-6" />
                             </button>
-                            <h3 className="text-xl font-bold text-left mb-2">Collect Payment</h3>
-                            <div className="text-sm font-medium opacity-90 mt-4">Total Amount</div>
-                            <div className="text-3xl font-bold mt-1">BDT{total.toFixed(2)}</div>
+                            <div className="relative z-10">
+                                <h3 className="text-xl font-black uppercase tracking-widest mb-4 opacity-80">Collect Payment</h3>
+                                <div className="text-sm font-bold opacity-60 uppercase tracking-tighter">Total Payable Amount</div>
+                                <div className="text-5xl font-black mt-1 flex items-baseline gap-2">
+                                    <span className="text-2xl opacity-60">BDT</span>
+                                    {total.toFixed(2)}
+                                </div>
+                            </div>
                         </div>
 
                         <div className="p-6 overflow-y-auto custom-scrollbar">
@@ -1260,9 +1407,9 @@ const AdminPOS = () => {
                                 )}
                             </div>
 
-                            {/* Payment Method */}
-                            <div className="mb-4">
-                                <label className="block text-sm text-neutral-600 mb-2">Payment Method</label>
+                            {/* Payment Method Selection */}
+                            <div className="mb-6">
+                                <label className="block text-[11px] font-black uppercase tracking-widest text-neutral-400 mb-3">Choose Payment Method</label>
                                 <div className="grid grid-cols-3 gap-3">
                                     <button
                                         onClick={() => {
@@ -1270,13 +1417,15 @@ const AdminPOS = () => {
                                             setAmountReceived('');
                                             setChangeAmount(-total);
                                         }}
-                                        className={`rounded-xl py-3 flex flex-col items-center gap-1 transition-colors ${selectedPaymentMethod === 'Cash'
-                                            ? 'border-2 border-[#10b981] bg-[#10b981]/5 text-[#10b981]'
-                                            : 'border border-neutral-200 text-neutral-500 hover:bg-neutral-50'
+                                        className={`rounded-2xl py-4 flex flex-col items-center gap-2 transition-all duration-300 ${selectedPaymentMethod === 'Cash'
+                                            ? 'bg-emerald-50 border-2 border-emerald-500 text-emerald-700 shadow-lg shadow-emerald-100 scale-[1.02]'
+                                            : 'bg-white border border-neutral-200 text-neutral-500 hover:border-emerald-200 hover:bg-neutral-50'
                                             }`}
                                     >
-                                        <Banknote className="w-6 h-6" />
-                                        <span className="font-medium text-sm">Cash</span>
+                                        <div className={`p-2 rounded-xl ${selectedPaymentMethod === 'Cash' ? 'bg-emerald-500 text-white' : 'bg-neutral-100 text-neutral-400'}`}>
+                                            <Banknote className="w-6 h-6" />
+                                        </div>
+                                        <span className="font-black text-xs uppercase tracking-wider">Cash</span>
                                     </button>
                                     <button
                                         onClick={() => {
@@ -1284,13 +1433,15 @@ const AdminPOS = () => {
                                             setAmountReceived(total.toFixed(2));
                                             setChangeAmount(0);
                                         }}
-                                        className={`rounded-xl py-3 flex flex-col items-center gap-1 transition-colors ${selectedPaymentMethod === 'Card'
-                                            ? 'border-2 border-[#10b981] bg-[#10b981]/5 text-[#10b981]'
-                                            : 'border border-neutral-200 text-neutral-500 hover:bg-neutral-50'
+                                        className={`rounded-2xl py-4 flex flex-col items-center gap-2 transition-all duration-300 ${selectedPaymentMethod === 'Card'
+                                            ? 'bg-blue-50 border-2 border-blue-500 text-blue-700 shadow-lg shadow-blue-100 scale-[1.02]'
+                                            : 'bg-white border border-neutral-200 text-neutral-500 hover:border-blue-200 hover:bg-neutral-50'
                                             }`}
                                     >
-                                        <CreditCard className="w-6 h-6" />
-                                        <span className="font-medium text-sm">Card</span>
+                                        <div className={`p-2 rounded-xl ${selectedPaymentMethod === 'Card' ? 'bg-blue-500 text-white' : 'bg-neutral-100 text-neutral-400'}`}>
+                                            <CreditCard className="w-6 h-6" />
+                                        </div>
+                                        <span className="font-black text-xs uppercase tracking-wider">Card</span>
                                     </button>
                                     <button
                                         onClick={() => {
@@ -1298,13 +1449,15 @@ const AdminPOS = () => {
                                             setAmountReceived(total.toFixed(2));
                                             setChangeAmount(0);
                                         }}
-                                        className={`rounded-xl py-3 flex flex-col items-center gap-1 transition-colors ${selectedPaymentMethod === 'MFS'
-                                            ? 'border-2 border-[#10b981] bg-[#10b981]/5 text-[#10b981]'
-                                            : 'border border-neutral-200 text-neutral-500 hover:bg-neutral-50'
+                                        className={`rounded-2xl py-4 flex flex-col items-center gap-2 transition-all duration-300 ${selectedPaymentMethod === 'MFS'
+                                            ? 'bg-purple-50 border-2 border-purple-500 text-purple-700 shadow-lg shadow-purple-100 scale-[1.02]'
+                                            : 'bg-white border border-neutral-200 text-neutral-500 hover:border-purple-200 hover:bg-neutral-50'
                                             }`}
                                     >
-                                        <Smartphone className="w-6 h-6" />
-                                        <span className="font-medium text-sm">Mobile</span>
+                                        <div className={`p-2 rounded-xl ${selectedPaymentMethod === 'MFS' ? 'bg-purple-500 text-white' : 'bg-neutral-100 text-neutral-400'}`}>
+                                            <Smartphone className="w-6 h-6" />
+                                        </div>
+                                        <span className="font-black text-xs uppercase tracking-wider">MFS</span>
                                     </button>
                                 </div>
                             </div>
@@ -1675,32 +1828,57 @@ const AdminPOS = () => {
             {/* KOT Preview Modal */}
             {showKOTPreview && lastOrderDetails && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-                    <div className="bg-white rounded-3xl w-full max-w-md shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+                    <div className="bg-white rounded-[2rem] w-full max-w-md shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
                         {/* Header */}
-                        <div className="flex justify-between items-center p-4 border-b border-orange-400 border-b-4">
-                            <h3 className="text-xl font-medium text-neutral-800">Kitchen Order Ticket</h3>
+                        <div className="flex justify-between items-center p-6 border-b-4 border-orange-500 bg-orange-50/50">
+                            <div>
+                                <h3 className="text-xl font-black text-neutral-900 uppercase tracking-tighter">Kitchen Ticket</h3>
+                                <p className="text-[10px] font-bold text-orange-600 uppercase tracking-widest mt-0.5">Cooking Order</p>
+                            </div>
                             <div className="flex gap-2">
-                                <button onClick={() => printKOTReceipt(lastOrderDetails)} className="w-10 h-10 flex items-center justify-center bg-blue-50 text-blue-600 rounded-full hover:bg-blue-100 transition-colors">
+                                <button onClick={() => printKOTReceipt(lastOrderDetails)} className="w-12 h-12 flex items-center justify-center bg-white text-neutral-900 rounded-2xl shadow-sm hover:shadow-md hover:bg-neutral-50 transition-all active:scale-95 border border-neutral-100">
                                     <Printer className="w-5 h-5" />
                                 </button>
-                                <button onClick={() => setShowKOTPreview(false)} className="w-10 h-10 flex items-center justify-center bg-red-50 text-red-500 rounded-full hover:bg-red-100 transition-colors">
+                                <button onClick={() => setShowKOTPreview(false)} className="w-12 h-12 flex items-center justify-center bg-white text-rose-500 rounded-2xl shadow-sm hover:shadow-md hover:bg-rose-50 transition-all active:scale-95 border border-neutral-100">
                                     <X className="w-5 h-5" />
                                 </button>
                             </div>
                         </div>
                         {/* Content */}
-                        <div className="p-8 overflow-y-auto custom-scrollbar text-center">
-                            <h2 className="text-2xl font-bold text-neutral-900 mb-2">KITCHEN ORDER</h2>
-                            <p className="text-sm text-neutral-500 mb-4">#{lastOrderDetails.orderId.slice(-6).toUpperCase()}</p>
-                            <p className="text-sm text-neutral-600 mb-6">{lastOrderDetails.date}</p>
-                            <div className="border-t border-b border-dashed border-neutral-300 py-4 mb-4 text-left">
+                        <div className="p-10 overflow-y-auto custom-scrollbar text-center bg-white">
+                            <div className="mb-8">
+                                <div className="text-[11px] font-black uppercase tracking-[0.3em] text-neutral-400 mb-2">Order Reference</div>
+                                <h2 className="text-4xl font-black text-neutral-900 leading-none">#{lastOrderDetails.orderId.slice(-6).toUpperCase()}</h2>
+                            </div>
+                            
+                            <div className="flex justify-between items-center py-4 border-y border-dashed border-neutral-200 mb-8 px-2">
+                                <div className="text-left">
+                                    <div className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">Table</div>
+                                    <div className="text-lg font-black text-neutral-900">{lastOrderDetails.table}</div>
+                                </div>
+                                <div className="text-right">
+                                    <div className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">Time</div>
+                                    <div className="text-sm font-bold text-neutral-900">{lastOrderDetails.date.split(' ')[1]}</div>
+                                </div>
+                            </div>
+
+                            <div className="space-y-4 mb-8 text-left">
                                 {lastOrderDetails.items.map((c, idx) => (
-                                    <div key={idx} className="flex justify-between mb-2">
-                                        <span className="font-bold text-lg">{c.quantity}x {c.menuItem.title}</span>
+                                    <div key={idx} className="flex items-start gap-4 group">
+                                        <div className="bg-neutral-900 text-white w-8 h-8 rounded-lg flex items-center justify-center font-black text-sm shrink-0 shadow-lg shadow-neutral-200 group-hover:scale-110 transition-transform">
+                                            {c.quantity}
+                                        </div>
+                                        <div className="flex-1 pt-0.5">
+                                            <span className="font-black text-xl text-neutral-900 uppercase tracking-tight leading-none block">{c.menuItem.title}</span>
+                                        </div>
                                     </div>
                                 ))}
                             </div>
-                            <p className="text-sm font-bold text-neutral-900">*** END OF ORDER ***</p>
+
+                            <div className="py-6 bg-neutral-50 rounded-2xl border border-neutral-100 border-dashed">
+                                <p className="text-[10px] font-black text-neutral-400 uppercase tracking-[0.2em] mb-1">Status</p>
+                                <p className="text-xs font-bold text-orange-600 uppercase italic">SENT TO KITCHEN DISPLAY</p>
+                            </div>
                         </div>
                     </div>
                 </div>
