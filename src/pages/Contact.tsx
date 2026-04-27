@@ -42,10 +42,10 @@ const Contact = () => {
       {/* Hero Section */}
       <section className="bg-primary pt-20 pb-12 relative overflow-hidden">
         <div className="absolute inset-0">
-          <div className="absolute top-[0%] left-[-10%] w-[600px] h-[600px] rounded-full pointer-events-none" 
-               style={{ background: "radial-gradient(circle, hsl(43 60% 50% / 0.05), transparent 70%)" }} />
-          <div className="absolute bottom-[-20%] right-[-10%] w-[600px] h-[600px] rounded-full pointer-events-none" 
-               style={{ background: "radial-gradient(circle, hsl(38 50% 40% / 0.04), transparent 70%)" }} />
+          <div className="absolute top-[0%] left-[-10%] w-[600px] h-[600px] rounded-full pointer-events-none"
+            style={{ background: "radial-gradient(circle, hsl(43 60% 50% / 0.05), transparent 70%)" }} />
+          <div className="absolute bottom-[-20%] right-[-10%] w-[600px] h-[600px] rounded-full pointer-events-none"
+            style={{ background: "radial-gradient(circle, hsl(38 50% 40% / 0.04), transparent 70%)" }} />
         </div>
         <div className="container mx-auto px-6 md:px-12 text-center relative z-10">
           <motion.span
@@ -73,7 +73,7 @@ const Contact = () => {
             className="max-w-xl mx-auto text-[18px] leading-[1.8]"
             style={{ color: "hsl(40 20% 96% / 0.85)" }}
           >
-            We'd love to hear from you — whether it's a reservation for tonight, important feedback,
+            We'd love to hear from you — whether it's important feedback,
             or just to say hello to our incredible staff.
           </motion.p>
         </div>
@@ -93,7 +93,7 @@ const Contact = () => {
               <div className="grid md:grid-cols-2 gap-8">
                 <div>
                   <label className="block text-[11px] uppercase tracking-[0.2em] font-bold mb-4"
-                         style={{ color: "hsl(195 30% 12% / 0.6)" }}>
+                    style={{ color: "hsl(195 30% 12% / 0.6)" }}>
                     Name
                   </label>
                   <input
@@ -108,7 +108,7 @@ const Contact = () => {
                 </div>
                 <div>
                   <label className="block text-[11px] uppercase tracking-[0.2em] font-bold mb-4"
-                         style={{ color: "hsl(195 30% 12% / 0.6)" }}>
+                    style={{ color: "hsl(195 30% 12% / 0.6)" }}>
                     Phone
                   </label>
                   <input
@@ -126,7 +126,7 @@ const Contact = () => {
               <div className="grid md:grid-cols-2 gap-8">
                 <div>
                   <label className="block text-[11px] uppercase tracking-[0.2em] font-bold mb-4"
-                         style={{ color: "hsl(195 30% 12% / 0.6)" }}>
+                    style={{ color: "hsl(195 30% 12% / 0.6)" }}>
                     Email
                   </label>
                   <input
@@ -141,7 +141,7 @@ const Contact = () => {
                 </div>
                 <div>
                   <label className="block text-[11px] uppercase tracking-[0.2em] font-bold mb-4"
-                         style={{ color: "hsl(195 30% 12% / 0.6)" }}>
+                    style={{ color: "hsl(195 30% 12% / 0.6)" }}>
                     Subject
                   </label>
                   <select
@@ -158,7 +158,7 @@ const Contact = () => {
                     }}
                   >
                     <option value="" disabled hidden>Choose a topic</option>
-                    <option value="reservation">Table Reservation</option>
+
                     <option value="catering">Catering Services</option>
                     <option value="feedback">Feedback</option>
                     <option value="other">Other</option>
@@ -168,7 +168,7 @@ const Contact = () => {
 
               <div>
                 <label className="block text-[11px] uppercase tracking-[0.2em] font-bold mb-4"
-                       style={{ color: "hsl(195 30% 12% / 0.6)" }}>
+                  style={{ color: "hsl(195 30% 12% / 0.6)" }}>
                   Message
                 </label>
                 <textarea
@@ -196,12 +196,12 @@ const Contact = () => {
 
       {/* Get in Touch & Info */}
       <section className="section-divide relative overflow-hidden" style={{ background: "hsl(38 15% 92% / 0.3)" }}>
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full pointer-events-none" 
-             style={{ background: "radial-gradient(circle, hsl(43 60% 50% / 0.04), transparent 70%)" }} />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full pointer-events-none"
+          style={{ background: "radial-gradient(circle, hsl(43 60% 50% / 0.04), transparent 70%)" }} />
 
         <div className="container mx-auto px-6 md:px-12 relative z-10">
           <div className="grid lg:grid-cols-2 gap-16 lg:gap-24 items-center">
-            
+
             <motion.div
               initial={{ opacity: 0, x: -40 }}
               whileInView={{ opacity: 1, x: 0 }}
@@ -209,11 +209,11 @@ const Contact = () => {
               transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
             >
               <span className="text-[11px] uppercase tracking-[0.3em] font-medium mb-3 block"
-                    style={{ color: "hsl(43 74% 48% / 0.8)" }}>
+                style={{ color: "hsl(43 74% 48% / 0.8)" }}>
                 ✦ Contact Information
               </span>
               <h2 className="text-6xl md:text-7xl lg:text-8xl font-serif font-bold text-primary mb-6 leading-[0.9]"
-                  style={{ letterSpacing: "-0.04em" }}>
+                style={{ letterSpacing: "-0.04em" }}>
                 Visit Us
                 <br />
                 <span className="italic" style={{ color: "hsl(43 74% 48%)" }}>Today</span>
@@ -246,12 +246,12 @@ const Contact = () => {
                     className="flex items-start gap-6 group cursor-pointer"
                   >
                     <div className="w-14 h-14 flex items-center justify-center flex-shrink-0 transition-transform duration-500 group-hover:scale-105 shadow-sm"
-                         style={{ background: "hsl(40 18% 96%)", borderRadius: "1.5rem", border: "1px solid hsl(38 12% 88%)" }}>
+                      style={{ background: "hsl(40 18% 96%)", borderRadius: "1.5rem", border: "1px solid hsl(38 12% 88%)" }}>
                       <contact.icon className="w-6 h-6" style={{ color: "hsl(43 74% 48%)" }} />
                     </div>
                     <div className="pt-1.5">
                       <div className="text-[11px] uppercase tracking-[0.2em] font-medium mb-1.5"
-                           style={{ color: "hsl(195 30% 12% / 0.6)" }}>
+                        style={{ color: "hsl(195 30% 12% / 0.6)" }}>
                         {contact.label}
                       </div>
                       <div className="font-serif font-bold text-primary text-[22px] group-hover:text-accent transition-colors duration-300">
