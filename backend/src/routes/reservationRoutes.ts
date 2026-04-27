@@ -1,5 +1,6 @@
 import express from 'express';
 import { Reservation } from '../models/Reservation';
+import Notification from '../models/Notification';
 
 const router = express.Router();
 
@@ -30,6 +31,14 @@ router.post('/', async (req, res) => {
         });
 
         const savedReservation = await newReservation.save();
+
+        // Create notification
+        await Notification.create({
+            type: 'reservation',
+            title: 'New Reservation',
+            message: `${savedReservation.name} booked a table for ${savedReservation.guests} guests on ${savedReservation.date}.`,
+        });
+
         res.status(201).json(savedReservation);
     } catch (error) {
         res.status(500).json({ message: 'Error creating reservation' });

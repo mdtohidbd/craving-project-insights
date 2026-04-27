@@ -49,6 +49,7 @@ interface Order {
     isHeld?: boolean;
     heldAt?: string;
     tableNumber?: string;
+    tableId?: string;
     createdAt: string;
 }
 
@@ -61,7 +62,7 @@ interface CustomerType {
 
 const AdminPOS = () => {
     const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
-    
+
     const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
     const [categories, setCategories] = useState<{ name: string, order: number }[]>([]);
     const [tables, setTables] = useState<Table[]>([]);
@@ -72,6 +73,7 @@ const AdminPOS = () => {
 
     const [cart, setCart] = useState<CartItem[]>([]);
     const [selectedTable, setSelectedTable] = useState("Quick Sale (No Table)");
+    const [selectedTableId, setSelectedTableId] = useState<string | null>(null);
     const [selectedCustomer, setSelectedCustomer] = useState("Walk-in");
     const [vatRate, setVatRate] = useState(0);
     const [discount, setDiscount] = useState(0);
@@ -115,6 +117,7 @@ const AdminPOS = () => {
         customer: string;
     } | null>(null);
     const [currentOrderId, setCurrentOrderId] = useState<string>("");
+    const [orderType, setOrderType] = useState<'dine-in' | 'takeaway' | 'online'>('dine-in');
 
     const getPrice = (item: MenuItem) => {
         return typeof item.price === 'string' ? parseFloat(item.price.replace(/[^0-9.]/g, '')) : Number(item.price);
@@ -136,7 +139,7 @@ const AdminPOS = () => {
         isOpen: false,
         title: "",
         message: "",
-        onConfirm: () => {},
+        onConfirm: () => { },
     });
 
     useEffect(() => {
@@ -157,11 +160,11 @@ const AdminPOS = () => {
                 if (catRes.ok) {
                     const fetchedCats = await catRes.json();
                     const menuData = parsedMenuData;
-                    
+
                     // Extract categories from menu items
                     const itemCats = Array.from(new Set(menuData.map((m: any) => m.category))).filter(Boolean) as string[];
                     const existingNames = fetchedCats.map((c: any) => c.name);
-                    
+
                     const mergedCats = [...fetchedCats];
                     itemCats.forEach(catName => {
                         if (!existingNames.includes(catName)) {
@@ -177,7 +180,7 @@ const AdminPOS = () => {
                 if (tableRes.ok) {
                     const fetchedTables = await tableRes.json();
                     setTables(fetchedTables);
-                    
+
                     // Handle table query param
                     const params = new URLSearchParams(window.location.search);
                     const tableId = params.get('table');
@@ -185,6 +188,7 @@ const AdminPOS = () => {
                         const table = fetchedTables.find((t: any) => t._id === tableId || t.tableNumber === tableId);
                         if (table) {
                             setSelectedTable(table.tableNumber);
+                            setSelectedTableId(table._id);
                         }
                     }
                 }
@@ -200,6 +204,15 @@ const AdminPOS = () => {
         };
         fetchData();
     }, []);
+
+    // Update order type based on table selection
+    useEffect(() => {
+        if (selectedTable === "Quick Sale (No Table)") {
+            setOrderType('takeaway');
+        } else {
+            setOrderType('dine-in');
+        }
+    }, [selectedTable]);
 
     // Fetch held orders
     useEffect(() => {
@@ -222,10 +235,10 @@ const AdminPOS = () => {
         setCart(prev => {
             const existing = prev.find(c => c.menuItem._id === item._id);
             if (existing) {
-                return prev.map(c => 
-                    c.menuItem._id === item._id 
-                    ? { ...c, quantity: c.quantity + 1 } 
-                    : c
+                return prev.map(c =>
+                    c.menuItem._id === item._id
+                        ? { ...c, quantity: c.quantity + 1 }
+                        : c
                 );
             }
             return [...prev, { menuItem: item, quantity: 1 }];
@@ -269,7 +282,7 @@ const AdminPOS = () => {
         const price = getPrice(curr.menuItem);
         return acc + (price || 0) * curr.quantity;
     }, 0);
-    
+
     const vatAmount = (subtotal * vatRate) / 100;
     const total = subtotal + vatAmount - discount;
 
@@ -280,11 +293,11 @@ const AdminPOS = () => {
             const p = getPrice(c.menuItem);
             return `<div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span>${c.menuItem.title} x${c.quantity}</span><span>BDT ${(p * c.quantity).toFixed(2)}</span></div>`;
         }).join('');
-        const paymentMethodsHtml = details.paymentMethods.map(pm => 
+        const paymentMethodsHtml = details.paymentMethods.map(pm =>
             `<div style="display:flex;justify-content:space-between;"><span>${pm.method.toUpperCase()}</span><span>BDT ${pm.amount.toFixed(2)}</span></div>`
         ).join('');
         const paymentLabel = details.paymentMethods.length > 1 ? 'SPLIT' : details.paymentMethods[0].method.toUpperCase();
-        const orderNum = `${new Date().toISOString().slice(0,10).replace(/-/g, '')}-${details.orderId.slice(-4).toUpperCase()}`;
+        const orderNum = `${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${details.orderId.slice(-4).toUpperCase()}`;
 
         const html = `<!DOCTYPE html><html><head><title>Bill Receipt</title><style>
             * { margin:0; padding:0; box-sizing:border-box; }
@@ -339,10 +352,10 @@ const AdminPOS = () => {
 
     const printKOTReceipt = (details: typeof lastOrderDetails) => {
         if (!details) return;
-        const itemsHtml = details.items.map(c => 
+        const itemsHtml = details.items.map(c =>
             `<div style="font-weight:bold;font-size:16px;margin-bottom:10px;">${c.quantity}x ${c.menuItem.title}</div>`
         ).join('');
-        const orderNum = `${new Date().toISOString().slice(0,10).replace(/-/g, '')}-${details.orderId.slice(-4).toUpperCase()}`;
+        const orderNum = `${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${details.orderId.slice(-4).toUpperCase()}`;
 
         const html = `<!DOCTYPE html><html><head><title>KOT</title><style>
             * { margin:0; padding:0; box-sizing:border-box; }
@@ -397,10 +410,10 @@ const AdminPOS = () => {
             toast.error("Your cart is empty");
             return;
         }
-        
+
         try {
             setIsProcessing(true);
-            
+
             const orderData = {
                 customerInfo: {
                     name: selectedCustomer || "Walk-in",
@@ -420,7 +433,7 @@ const AdminPOS = () => {
                 total: total || 0,
                 status: "preparing",
                 tableNumber: selectedTable,
-                orderType: "dine-in"
+                orderType: orderType
             };
 
             const res = await fetch(`${apiUrl}/orders`, {
@@ -433,7 +446,7 @@ const AdminPOS = () => {
                 const data = await res.json();
                 const orderId = data.orderId || data._id;
                 setCurrentOrderId(orderId);
-                
+
                 setLastOrderDetails({
                     items: [...cart],
                     subtotal,
@@ -469,10 +482,10 @@ const AdminPOS = () => {
             toast.error("Your cart is empty");
             return;
         }
-        
+
         try {
             setIsProcessing(true);
-            
+
             const orderData = {
                 customerInfo: {
                     name: selectedCustomer || "Walk-in",
@@ -492,9 +505,12 @@ const AdminPOS = () => {
                 total: total || 0,
                 status: "completed",
                 tableNumber: selectedTable,
-                orderType: "dine-in",
+                tableId: selectedTableId || undefined,
+                orderType: orderType,
                 paymentMethod: "pending"
             };
+
+            console.log('Saving bill with data:', orderData);
 
             const res = await fetch(`${apiUrl}/orders`, {
                 method: "POST",
@@ -555,10 +571,10 @@ const AdminPOS = () => {
             toast.error("Your cart is empty");
             return;
         }
-        
+
         try {
             setIsProcessing(true);
-            
+
             const orderData = {
                 customerInfo: {
                     name: selectedCustomer || "Walk-in",
@@ -579,9 +595,11 @@ const AdminPOS = () => {
                 status: "held",
                 isHeld: true,
                 tableNumber: selectedTable,
-                orderType: "dine-in"
+                tableId: selectedTableId || undefined,
+                orderType: orderType
             };
 
+            console.log('Holding order with data:', orderData);
             const res = await fetch(`${apiUrl}/orders`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -594,27 +612,15 @@ const AdminPOS = () => {
                 setSelectedTable("Quick Sale (No Table)");
                 setSelectedCustomer("Walk-in");
                 setDiscount(0);
-                
+
                 // Refresh held orders
                 const heldRes = await fetch(`${apiUrl}/orders/held/all`);
                 if (heldRes.ok) {
                     setHeldOrders(await heldRes.json());
                 }
 
-                // Update table status to Occupied if a table is selected
-                if (selectedTable && selectedTable !== "Quick Sale (No Table)") {
-                    const tableObj = tables.find(t => t.tableNumber === selectedTable);
-                    if (tableObj) {
-                        await fetch(`${apiUrl}/tables/${tableObj._id}/status`, {
-                            method: 'PATCH',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ status: 'Occupied' })
-                        });
-                        // Refresh tables local state
-                        const tRes = await fetch(`${apiUrl}/tables`);
-                        if (tRes.ok) setTables(await tRes.json());
-                    }
-                }
+                // Combined order creation and table status via backend automation
+                // Redundant manual PATCH calls removed
             } else {
                 const errData = await res.json().catch(() => ({}));
                 toast.error(errData.message || "Failed to hold order");
@@ -630,7 +636,7 @@ const AdminPOS = () => {
     const processPayment = async () => {
         try {
             setIsProcessing(true);
-            
+
             const orderData = {
                 customerInfo: {
                     name: selectedCustomer || "Walk-in",
@@ -653,7 +659,8 @@ const AdminPOS = () => {
                 amountReceived: parseFloat(amountReceived) || total,
                 changeAmount: changeAmount || 0,
                 tableNumber: selectedTable,
-                orderType: "dine-in"
+                tableId: selectedTableId || undefined,
+                orderType: orderType
             };
 
             const res = await fetch(`${apiUrl}/orders`, {
@@ -666,7 +673,7 @@ const AdminPOS = () => {
                 const data = await res.json();
                 const orderId = data.orderId || data._id;
                 setCurrentOrderId(orderId);
-                
+
                 setLastOrderDetails({
                     items: [...cart],
                     subtotal,
@@ -682,29 +689,16 @@ const AdminPOS = () => {
                 toast.success(`Payment completed with ${selectedPaymentMethod}!`);
                 setShowPaymentModal(false);
                 setShowBillPreview(true);
-                
+
                 setCart([]);
                 setSelectedTable("Quick Sale (No Table)");
+                setSelectedTableId(null);
                 setSelectedCustomer("Walk-in");
                 setDiscount(0);
                 setAmountReceived('');
                 setChangeAmount(0);
-
-                // Update table status to Cleaning or Free if a table was selected
-                if (selectedTable && selectedTable !== "Quick Sale (No Table)") {
-                    const tableObj = tables.find(t => t.tableNumber === selectedTable);
-                    if (tableObj) {
-                        await fetch(`${apiUrl}/tables/${tableObj._id}/status`, {
-                            method: 'PATCH',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ status: 'Cleaning' })
-                        });
-                        // Refresh tables local state
-                        const tRes = await fetch(`${apiUrl}/tables`);
-                        if (tRes.ok) setTables(await tRes.json());
-                    }
-                }
-            } else {
+            }
+            else {
                 const errData = await res.json().catch(() => ({}));
                 toast.error(errData.message || "Failed to process payment");
             }
@@ -722,7 +716,7 @@ const AdminPOS = () => {
             toast.error("Please enter a valid amount");
             return;
         }
-        
+
         const allocated = splitPayments.reduce((sum, p) => sum + p.amount, 0);
         if (allocated + amount > total) {
             toast.error("Total exceeds order amount");
@@ -747,7 +741,7 @@ const AdminPOS = () => {
 
         try {
             setIsProcessing(true);
-            
+
             const orderData = {
                 customerInfo: {
                     name: selectedCustomer || "Walk-in",
@@ -771,7 +765,8 @@ const AdminPOS = () => {
                 amountReceived: allocated || 0,
                 changeAmount: (allocated || 0) - (total || 0),
                 tableNumber: selectedTable,
-                orderType: "dine-in"
+                tableId: selectedTableId || undefined,
+                orderType: orderType
             };
 
             const res = await fetch(`${apiUrl}/orders`, {
@@ -800,28 +795,15 @@ const AdminPOS = () => {
                 toast.success("Split payment completed successfully!");
                 setShowSplitModal(false);
                 setShowBillPreview(true);
-                
+
                 setSplitPayments([]);
                 setCart([]);
                 setSelectedTable("Quick Sale (No Table)");
+                setSelectedTableId(null);
                 setSelectedCustomer("Walk-in");
                 setDiscount(0);
-
-                // Update table status
-                if (selectedTable && selectedTable !== "Quick Sale (No Table)") {
-                    const tableObj = tables.find(t => t.tableNumber === selectedTable);
-                    if (tableObj) {
-                        await fetch(`${apiUrl}/tables/${tableObj._id}/status`, {
-                            method: 'PATCH',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ status: 'Cleaning' })
-                        });
-                        // Refresh tables local state
-                        const tRes = await fetch(`${apiUrl}/tables`);
-                        if (tRes.ok) setTables(await tRes.json());
-                    }
-                }
-            } else {
+            }
+            else {
                 const errData = await res.json().catch(() => ({}));
                 toast.error(errData.message || "Failed to process split payment");
             }
@@ -854,10 +836,10 @@ const AdminPOS = () => {
                 setSelectedTable(order.tableNumber || "Quick Sale (No Table)");
                 setSelectedCustomer(order.customerInfo.name || "Walk-in");
                 setDiscount(order.discount || 0);
-                
+
                 toast.success("Order released to cart!");
                 setShowHeldOrdersModal(false);
-                
+
                 // Refresh held orders
                 const heldRes = await fetch(`${apiUrl}/orders/held/all`);
                 if (heldRes.ok) {
@@ -882,7 +864,7 @@ const AdminPOS = () => {
     return (
         <AdminLayout title="POS System">
             <div className="flex flex-col lg:flex-row gap-6 h-[calc(100vh-6rem)]">
-                
+
                 {/* Left Side: Menu Grid */}
                 <div className="flex-1 flex flex-col bg-white border border-neutral-200 rounded-xl overflow-hidden shadow-sm min-h-0">
                     {/* Top Bar / Filters */}
@@ -911,11 +893,10 @@ const AdminPOS = () => {
                                 <button
                                     key={idx}
                                     onClick={() => setSelectedCategory(cat.name)}
-                                    className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
-                                        selectedCategory === cat.name
-                                            ? 'bg-primary text-primary-foreground'
-                                            : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200'
-                                    }`}
+                                    className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${selectedCategory === cat.name
+                                        ? 'bg-primary text-primary-foreground'
+                                        : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200'
+                                        }`}
                                 >
                                     {cat.name}
                                 </button>
@@ -940,16 +921,16 @@ const AdminPOS = () => {
                                     const price = getPrice(item);
                                     const originalPrice = getOriginalPrice(item);
                                     return (
-                                        <div 
-                                            key={item._id} 
+                                        <div
+                                            key={item._id}
                                             onClick={() => addToCart(item)}
                                             className="bg-white border border-neutral-200 rounded-xl overflow-hidden cursor-pointer hover:border-primary transition-all group flex flex-col h-full"
                                         >
                                             <div className="h-32 bg-neutral-100 overflow-hidden">
                                                 {item.image ? (
-                                                    <img 
-                                                        src={item.image} 
-                                                        alt={item.title} 
+                                                    <img
+                                                        src={item.image}
+                                                        alt={item.title}
                                                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                                                         onError={(e) => {
                                                             (e.target as HTMLImageElement).style.display = 'none';
@@ -998,7 +979,18 @@ const AdminPOS = () => {
                         <div className="relative flex-1">
                             <select
                                 value={selectedTable}
-                                onChange={(e) => setSelectedTable(e.target.value)}
+                                onChange={(e) => {
+                                    const val = e.target.value;
+                                    setSelectedTable(val);
+                                    if (val === "Quick Sale (No Table)") {
+                                        setSelectedTableId(null);
+                                        setOrderType('takeaway');
+                                    } else {
+                                        const table = tables.find(t => t.tableNumber === val);
+                                        if (table) setSelectedTableId(table._id);
+                                        setOrderType('dine-in');
+                                    }
+                                }}
                                 className="w-full bg-white border border-neutral-200 text-neutral-900 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-primary appearance-none cursor-pointer font-medium"
                             >
                                 <option value="Quick Sale (No Table)">Quick Sale (No Table)</option>
@@ -1049,9 +1041,9 @@ const AdminPOS = () => {
                                             {/* Item Image */}
                                             <div className="w-14 h-14 bg-neutral-100 rounded-lg overflow-hidden flex-shrink-0">
                                                 {c.menuItem.image ? (
-                                                    <img 
-                                                        src={c.menuItem.image} 
-                                                        alt={c.menuItem.title} 
+                                                    <img
+                                                        src={c.menuItem.image}
+                                                        alt={c.menuItem.title}
                                                         className="w-full h-full object-cover"
                                                         onError={(e) => {
                                                             (e.target as HTMLImageElement).style.display = 'none';
@@ -1065,13 +1057,13 @@ const AdminPOS = () => {
                                                     </div>
                                                 )}
                                             </div>
-                                            
+
                                             {/* Item Details */}
                                             <div className="flex-1 min-w-0">
                                                 <h4 className="text-xs font-semibold text-neutral-900 truncate">{c.menuItem.title}</h4>
                                                 <div className="text-xs text-neutral-500 mt-0.5">BDT {priceVal.toFixed(2)}</div>
                                             </div>
-                                            
+
                                             {/* Quantity Controls */}
                                             <div className="flex items-center gap-0.5 bg-neutral-100 rounded-md p-0.5">
                                                 <button onClick={() => updateQuantity(c.menuItem._id, -1)} className="p-1 hover:bg-white rounded text-neutral-600 transition-colors">
@@ -1082,7 +1074,7 @@ const AdminPOS = () => {
                                                     <Plus className="w-3.5 h-3.5" />
                                                 </button>
                                             </div>
-                                            
+
                                             {/* Price and Remove */}
                                             <div className="flex flex-col items-end gap-0.5">
                                                 <div className="text-xs font-bold text-neutral-900">BDT {(priceVal * c.quantity).toFixed(2)}</div>
@@ -1165,8 +1157,8 @@ const AdminPOS = () => {
                     <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
                         {/* Header */}
                         <div className="bg-[#10b981] p-6 text-center text-white relative shrink-0">
-                            <button 
-                                onClick={() => setShowPaymentModal(false)} 
+                            <button
+                                onClick={() => setShowPaymentModal(false)}
                                 className="absolute right-4 top-4 text-white hover:text-gray-200"
                             >
                                 <X className="w-5 h-5" />
@@ -1182,11 +1174,11 @@ const AdminPOS = () => {
                                 <button className="flex-1 py-2 bg-white rounded-lg shadow-sm text-[#10b981] font-medium flex items-center justify-center gap-2 text-sm">
                                     <Banknote className="w-4 h-4" /> Single Payment
                                 </button>
-                                <button 
+                                <button
                                     onClick={() => {
                                         setShowPaymentModal(false);
                                         handleSplit();
-                                    }} 
+                                    }}
                                     className="flex-1 py-2 text-neutral-500 font-medium flex items-center justify-center gap-2 text-sm hover:text-neutral-700 transition-colors"
                                 >
                                     <Scissors className="w-4 h-4" /> Split Payment
@@ -1195,7 +1187,7 @@ const AdminPOS = () => {
 
                             {/* Add Discount */}
                             <div className="mb-4">
-                                <div 
+                                <div
                                     onClick={() => setShowDiscountInput(!showDiscountInput)}
                                     className={`flex items-center justify-between border ${showDiscountInput ? 'border-orange-500 bg-orange-50/30' : 'border-neutral-200'} rounded-lg p-3 cursor-pointer hover:bg-neutral-50 transition-all`}
                                 >
@@ -1210,13 +1202,13 @@ const AdminPOS = () => {
                                 {showDiscountInput && (
                                     <div className="mt-3 p-4 bg-neutral-50 rounded-xl border border-neutral-100 space-y-4 animate-in fade-in slide-in-from-top-2 duration-200">
                                         <div className="flex bg-white p-1 rounded-lg border border-neutral-200">
-                                            <button 
+                                            <button
                                                 onClick={() => setDiscountType('percentage')}
                                                 className={`flex-1 py-1.5 rounded-md text-xs font-bold transition-all ${discountType === 'percentage' ? 'bg-[#fff7ed] text-[#ea580c]' : 'text-neutral-500'}`}
                                             >
                                                 Percentage (%)
                                             </button>
-                                            <button 
+                                            <button
                                                 onClick={() => setDiscountType('fixed')}
                                                 className={`flex-1 py-1.5 rounded-md text-xs font-bold transition-all ${discountType === 'fixed' ? 'bg-[#fff7ed] text-[#ea580c]' : 'text-neutral-500'}`}
                                             >
@@ -1272,47 +1264,44 @@ const AdminPOS = () => {
                             <div className="mb-4">
                                 <label className="block text-sm text-neutral-600 mb-2">Payment Method</label>
                                 <div className="grid grid-cols-3 gap-3">
-                                    <button 
+                                    <button
                                         onClick={() => {
                                             setSelectedPaymentMethod('Cash');
                                             setAmountReceived('');
                                             setChangeAmount(-total);
                                         }}
-                                        className={`rounded-xl py-3 flex flex-col items-center gap-1 transition-colors ${
-                                            selectedPaymentMethod === 'Cash' 
-                                            ? 'border-2 border-[#10b981] bg-[#10b981]/5 text-[#10b981]' 
+                                        className={`rounded-xl py-3 flex flex-col items-center gap-1 transition-colors ${selectedPaymentMethod === 'Cash'
+                                            ? 'border-2 border-[#10b981] bg-[#10b981]/5 text-[#10b981]'
                                             : 'border border-neutral-200 text-neutral-500 hover:bg-neutral-50'
-                                        }`}
+                                            }`}
                                     >
                                         <Banknote className="w-6 h-6" />
                                         <span className="font-medium text-sm">Cash</span>
                                     </button>
-                                    <button 
+                                    <button
                                         onClick={() => {
                                             setSelectedPaymentMethod('Card');
                                             setAmountReceived(total.toFixed(2));
                                             setChangeAmount(0);
                                         }}
-                                        className={`rounded-xl py-3 flex flex-col items-center gap-1 transition-colors ${
-                                            selectedPaymentMethod === 'Card' 
-                                            ? 'border-2 border-[#10b981] bg-[#10b981]/5 text-[#10b981]' 
+                                        className={`rounded-xl py-3 flex flex-col items-center gap-1 transition-colors ${selectedPaymentMethod === 'Card'
+                                            ? 'border-2 border-[#10b981] bg-[#10b981]/5 text-[#10b981]'
                                             : 'border border-neutral-200 text-neutral-500 hover:bg-neutral-50'
-                                        }`}
+                                            }`}
                                     >
                                         <CreditCard className="w-6 h-6" />
                                         <span className="font-medium text-sm">Card</span>
                                     </button>
-                                    <button 
+                                    <button
                                         onClick={() => {
                                             setSelectedPaymentMethod('MFS');
                                             setAmountReceived(total.toFixed(2));
                                             setChangeAmount(0);
                                         }}
-                                        className={`rounded-xl py-3 flex flex-col items-center gap-1 transition-colors ${
-                                            selectedPaymentMethod === 'MFS' 
-                                            ? 'border-2 border-[#10b981] bg-[#10b981]/5 text-[#10b981]' 
+                                        className={`rounded-xl py-3 flex flex-col items-center gap-1 transition-colors ${selectedPaymentMethod === 'MFS'
+                                            ? 'border-2 border-[#10b981] bg-[#10b981]/5 text-[#10b981]'
                                             : 'border border-neutral-200 text-neutral-500 hover:bg-neutral-50'
-                                        }`}
+                                            }`}
                                     >
                                         <Smartphone className="w-6 h-6" />
                                         <span className="font-medium text-sm">Mobile</span>
@@ -1372,7 +1361,7 @@ const AdminPOS = () => {
                                                 </button>
                                             ))}
                                         </div>
-                                        
+
                                         {/* Exact Amount */}
                                         <button
                                             onClick={() => {
@@ -1431,8 +1420,8 @@ const AdminPOS = () => {
                     <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
                         {/* Header */}
                         <div className="bg-[#10b981] p-6 text-center text-white relative shrink-0">
-                            <button 
-                                onClick={() => setShowSplitModal(false)} 
+                            <button
+                                onClick={() => setShowSplitModal(false)}
                                 className="absolute right-4 top-4 text-white hover:text-gray-200"
                             >
                                 <X className="w-5 h-5" />
@@ -1445,7 +1434,7 @@ const AdminPOS = () => {
                         <div className="p-6 overflow-y-auto custom-scrollbar">
                             {/* Tabs */}
                             <div className="flex bg-neutral-100 p-1 rounded-xl mb-4">
-                                <button 
+                                <button
                                     onClick={() => {
                                         setShowSplitModal(false);
                                         setShowPaymentModal(true);
@@ -1461,7 +1450,7 @@ const AdminPOS = () => {
 
                             {/* Add Discount */}
                             <div className="mb-4">
-                                <div 
+                                <div
                                     onClick={() => setShowDiscountInput(!showDiscountInput)}
                                     className={`flex items-center justify-between border ${showDiscountInput ? 'border-orange-500 bg-orange-50/30' : 'border-neutral-200'} rounded-lg p-3 cursor-pointer hover:bg-neutral-50 transition-all`}
                                 >
@@ -1476,13 +1465,13 @@ const AdminPOS = () => {
                                 {showDiscountInput && (
                                     <div className="mt-3 p-4 bg-neutral-50 rounded-xl border border-neutral-100 space-y-4 animate-in fade-in slide-in-from-top-2 duration-200">
                                         <div className="flex bg-white p-1 rounded-lg border border-neutral-200">
-                                            <button 
+                                            <button
                                                 onClick={() => setDiscountType('percentage')}
                                                 className={`flex-1 py-1.5 rounded-md text-xs font-bold transition-all ${discountType === 'percentage' ? 'bg-[#fff7ed] text-[#ea580c]' : 'text-neutral-500'}`}
                                             >
                                                 Percentage (%)
                                             </button>
-                                            <button 
+                                            <button
                                                 onClick={() => setDiscountType('fixed')}
                                                 className={`flex-1 py-1.5 rounded-md text-xs font-bold transition-all ${discountType === 'fixed' ? 'bg-[#fff7ed] text-[#ea580c]' : 'text-neutral-500'}`}
                                             >
@@ -1733,14 +1722,14 @@ const AdminPOS = () => {
                                 </button>
                             </div>
                         </div>
-                        
+
                         {/* Scrollable Content */}
                         <div className="p-8 overflow-y-auto custom-scrollbar">
                             <div className="text-center mb-8">
                                 <h2 className="text-3xl font-serif font-bold text-[#0f172a] mb-2">Cravings...</h2>
                                 <p className="text-sm font-medium text-neutral-500 tracking-[0.2em] uppercase">Order Receipt</p>
                             </div>
-                            
+
                             <div className="space-y-4 mb-6">
                                 <div className="flex justify-between text-[15px]">
                                     <span className="text-neutral-500">Order ID</span>
@@ -1755,7 +1744,7 @@ const AdminPOS = () => {
                                     <span className="font-medium text-neutral-900">Paid</span>
                                 </div>
                             </div>
-                            
+
                             <div className="border-t border-dashed border-neutral-300 py-6">
                                 {lastOrderDetails.items.map((c, idx) => {
                                     const price = getPrice(c.menuItem);
@@ -1767,7 +1756,7 @@ const AdminPOS = () => {
                                     );
                                 })}
                             </div>
-                            
+
                             <div className="border-t border-dashed border-neutral-300 py-6 space-y-4">
                                 <div className="flex justify-between text-[15px]">
                                     <span className="text-neutral-500">Subtotal</span>
@@ -1790,7 +1779,7 @@ const AdminPOS = () => {
                                     <span className="text-yellow-500">৳{lastOrderDetails.total.toFixed(0)}</span>
                                 </div>
                             </div>
-                            
+
                             <div className="bg-neutral-50 rounded-2xl p-6 mt-2">
                                 <h4 className="font-bold text-neutral-900 mb-2">Delivery Details:</h4>
                                 <div className="text-neutral-600 text-[15px] space-y-1">
@@ -1814,10 +1803,10 @@ const AdminPOS = () => {
                                 </svg>
                             </div>
                         </div>
-                        
+
                         <h3 className="text-2xl font-bold text-[#0f172a] mb-2">Confirm Payment</h3>
                         <p className="text-neutral-500 text-center mb-8">Are you sure you want to complete this payment?</p>
-                        
+
                         <div className="w-full bg-neutral-50 rounded-2xl p-6 space-y-4 mb-8">
                             <div className="flex justify-between items-center">
                                 <span className="text-neutral-500 font-medium">Subtotal</span>
@@ -1832,15 +1821,15 @@ const AdminPOS = () => {
                                 <span className="text-[#0f172a] font-bold">BDT{parseFloat(amountReceived || '0').toFixed(2)}</span>
                             </div>
                         </div>
-                        
+
                         <div className="flex gap-4 w-full">
-                            <button 
+                            <button
                                 onClick={() => setShowConfirmModal(false)}
                                 className="flex-1 py-4 bg-neutral-100 hover:bg-neutral-200 text-neutral-600 font-bold rounded-2xl transition-colors"
                             >
                                 Back
                             </button>
-                            <button 
+                            <button
                                 onClick={() => {
                                     setShowConfirmModal(false);
                                     processPayment();
@@ -1859,7 +1848,7 @@ const AdminPOS = () => {
                     <div className="bg-white rounded-3xl w-full max-w-sm shadow-2xl overflow-hidden p-6">
                         <div className="flex justify-between items-center mb-6">
                             <h3 className="text-xl font-bold text-[#0f172a]">Add Customer</h3>
-                            <button 
+                            <button
                                 onClick={() => setShowAddCustomerModal(false)}
                                 className="text-neutral-400 hover:text-neutral-600 transition-colors"
                             >
@@ -1904,7 +1893,7 @@ const AdminPOS = () => {
                                         toast.error("Name is required");
                                         return;
                                     }
-                                    
+
                                     try {
                                         const res = await fetch(`${apiUrl}/customers`, {
                                             method: 'POST',

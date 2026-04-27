@@ -4,6 +4,8 @@ import axios from 'axios';
 import { Order } from '../models/Order';
 import { Customer } from '../models/Customer';
 import { Message } from '../models/Message';
+import Notification from '../models/Notification';
+import Table from '../models/Table';
 
 const router = express.Router();
 
@@ -22,6 +24,7 @@ router.post('/', async (req, res) => {
         }
         
         // Create the order in the database
+        console.log('Creating order with body:', JSON.stringify(req.body));
         const orderData = { ...req.body };
         if (customer) {
             orderData.customerId = customer._id;
@@ -34,6 +37,18 @@ router.post('/', async (req, res) => {
             // @ts-ignore
             customer.orders.push(savedOrder._id);
             await customer.save();
+        }
+
+        // Handle table status update
+        const tableId = req.body.tableId || savedOrder.tableId;
+        console.log('Order saved:', savedOrder._id, 'Type:', savedOrder.orderType, 'TableId:', tableId);
+        
+        if (tableId && savedOrder.orderType === 'dine-in') {
+            console.log('Updating table', tableId, 'to Occupied');
+            await Table.findByIdAndUpdate(tableId, {
+                status: 'Occupied',
+                currentOrder: savedOrder._id
+            });
         }
 
         // Prepare SMS to admin (or customer depending on preference)
@@ -95,6 +110,12 @@ router.post('/', async (req, res) => {
         }
         await savedOrder.save();
 
+        // Create notification
+        await Notification.create({
+            type: 'order',
+            title: 'New Order Received',
+            message: `Order #${savedOrder._id.toString().slice(-6)}: ৳${savedOrder.total}`,
+        });
 
         res.status(201).json({ message: 'Order placed successfully', orderId: savedOrder._id });
     } catch (error) {
@@ -149,6 +170,15 @@ router.put('/:id', async (req, res) => {
         if (!order) {
             return res.status(404).json({ message: 'Order not found' });
         }
+
+        // Handle table status update on completion
+        if (req.body.status === 'completed' && (order.tableId || req.body.tableId) && order.orderType === 'dine-in') {
+            const tableId = order.tableId || req.body.tableId;
+            await Table.findByIdAndUpdate(tableId, {
+                status: 'Cleaning'
+            });
+        }
+
         res.json(order);
     } catch (error) {
         res.status(500).json({ message: 'Failed to update order' });

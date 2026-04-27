@@ -26,7 +26,8 @@ import AdminSettings from "./pages/admin/AdminSettings";
 import AdminReservations from "./pages/admin/AdminReservations";
 import AdminPOS from "./pages/admin/AdminPOS";
 import AdminTables from "./pages/admin/AdminTables";
-import AdminReports from "./pages/admin/AdminReports";
+import AdminDelivery from "./pages/admin/AdminDelivery";
+import AdminNotifications from "./pages/admin/AdminNotifications";
 import OrderTracking from "@/pages/OrderTracking";
 import NotFound from "./pages/NotFound";
 
@@ -60,10 +61,11 @@ const App = () => (
             <Route path="/admin/menu" element={<AdminMenu />} />
             <Route path="/admin/categories" element={<AdminCategories />} />
             <Route path="/admin/inventory" element={<AdminInventory />} />
-            <Route path="/admin/reports" element={<AdminReports />} />
             <Route path="/admin/messages" element={<AdminMessages />} />
+            <Route path="/admin/notifications" element={<AdminNotifications />} />
             <Route path="/admin/settings" element={<AdminSettings />} />
             <Route path="/admin/reservations" element={<AdminReservations />} />
+            <Route path="/admin/delivery" element={<AdminDelivery />} />
             <Route path="/admin/pos" element={<AdminPOS />} />
             <Route path="*" element={<NotFound />} />
           </Routes>

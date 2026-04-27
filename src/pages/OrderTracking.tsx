@@ -77,8 +77,12 @@ const OrderTracking = () => {
     };
 
     const getStatusIndex = (status: string) => {
-        const statuses = ["pending", "preparing", "ready", "completed"];
-        return statuses.indexOf(status.toLowerCase());
+        const s = status.toLowerCase();
+        if (s === 'pending') return 0;
+        if (s === 'preparing') return 1;
+        if (s === 'ready' || s === 'assigned' || s === 'out_for_delivery') return 2;
+        if (s === 'completed' || s === 'delivered') return 3;
+        return 0;
     };
 
     const statusSteps = [
@@ -181,8 +185,11 @@ const OrderTracking = () => {
                                                     <h3 className="text-3xl font-serif font-bold text-primary capitalize">
                                                         {order.status === 'pending' ? 'Order Received' :
                                                             order.status === 'preparing' ? 'Cooking in Progress' :
-                                                                order.status === 'ready' ? 'Ready for Collection' :
-                                                                    order.status === 'completed' ? 'Delivered & Enjoyed' : order.status}
+                                                                order.status === 'ready' ? 'Ready for Selection' :
+                                                                    order.status === 'assigned' ? 'Courier Assigned' :
+                                                                        order.status === 'out_for_delivery' ? 'Out for Delivery' :
+                                                                            order.status === 'completed' ? 'Delivered & Enjoyed' :
+                                                                                order.status.replace(/_/g, ' ')}
                                                     </h3>
                                                 </div>
                                                 <div className="text-right">

@@ -63,7 +63,8 @@ const Checkout = () => {
       subtotal: totalAmount,
       tax: 0,
       total: finalTotal,
-      status: "pending"
+      status: "pending",
+      orderType: "online"
     };
 
     try {

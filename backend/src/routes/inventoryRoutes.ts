@@ -1,5 +1,6 @@
 import express from 'express';
 import { InventoryItem } from '../models/InventoryItem';
+import Notification from '../models/Notification';
 
 const router = express.Router();
 
@@ -48,6 +49,15 @@ router.put('/:id', async (req, res) => {
     try {
         const updatedItem = await InventoryItem.findByIdAndUpdate(req.params.id, req.body, { new: true });
         if (!updatedItem) return res.status(404).json({ message: 'Item not found' });
+        
+        // Create stock alert if stock is low (e.g., <= 5)
+        if (updatedItem.stock <= 5) {
+            await Notification.create({
+                type: 'stock',
+                title: 'Low Stock Alert' + (updatedItem.stock === 0 ? ' (Out of Stock)' : ''),
+                message: `${updatedItem.name} has only ${updatedItem.stock} ${updatedItem.unit} remaining.`,
+            });
+        }
         
         res.json({
             id: updatedItem._id,
