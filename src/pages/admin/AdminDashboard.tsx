@@ -54,6 +54,14 @@ const AdminDashboard = () => {
 
     const COLORS = ['#eab308', '#3b82f6', '#10b981', '#f59e0b', '#ef4444'];
 
+    const normalizeSmsCurrency = (message: string) => {
+        return message.replace(/\$([0-9]+(?:\.[0-9]+)?)/g, (_, amount: string) => {
+            const parsed = Number(amount);
+            if (Number.isNaN(parsed)) return `৳${amount}`;
+            return `৳${parsed.toFixed(2)}`;
+        });
+    };
+
 
     useEffect(() => {
         const fetchDashboard = async () => {
@@ -272,7 +280,7 @@ const AdminDashboard = () => {
                                                     </span>
                                                 </div>
                                                 <p className="text-sm text-neutral-600 leading-relaxed">
-                                                    {sms.message}
+                                                    {normalizeSmsCurrency(sms.message)}
                                                 </p>
                                             </div>
                                         ))}

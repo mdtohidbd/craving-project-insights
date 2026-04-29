@@ -72,7 +72,7 @@ const AdminPOS = () => {
     const [selectedCategory, setSelectedCategory] = useState("All");
 
     const [cart, setCart] = useState<CartItem[]>([]);
-    const [selectedTable, setSelectedTable] = useState("Quick Sale (No Table)");
+    const [selectedTable, setSelectedTable] = useState("Takeaway");
     const [selectedTableId, setSelectedTableId] = useState<string | null>(null);
     const [selectedCustomer, setSelectedCustomer] = useState("Walk-in");
     const [vatRate, setVatRate] = useState(0);
@@ -189,7 +189,7 @@ const AdminPOS = () => {
                         if (table) {
                             if (table.status !== 'Free') {
                                 toast.warning(`Table ${table.tableNumber} is currently ${table.status}. Defaulting to Quick Sale.`);
-                                setSelectedTable("Quick Sale (No Table)");
+                                setSelectedTable("Takeaway");
                                 setSelectedTableId(null);
                             } else {
                                 setSelectedTable(table.tableNumber);
@@ -213,7 +213,7 @@ const AdminPOS = () => {
 
     // Update order type based on table selection
     useEffect(() => {
-        if (selectedTable === "Quick Sale (No Table)") {
+        if (selectedTable === "Takeaway") {
             setOrderType('takeaway');
         } else {
             setOrderType('dine-in');
@@ -275,7 +275,7 @@ const AdminPOS = () => {
             message: "Are you sure you want to clear the current order? This will remove all items from the cart.",
             onConfirm: () => {
                 setCart([]);
-                setSelectedTable("Quick Sale (No Table)");
+                setSelectedTable("Takeaway");
                 setSelectedCustomer("Walk-in");
                 setDiscount(0);
                 setConfirmModal(prev => ({ ...prev, isOpen: false }));
@@ -424,7 +424,7 @@ const AdminPOS = () => {
                 customerInfo: {
                     name: selectedCustomer || "Walk-in",
                     phone: "N/A",
-                    address: selectedTable || "Quick Sale (No Table)",
+                    address: selectedTable || "Takeaway",
                     notes: "KOT Order"
                 },
                 items: cart.map(c => ({
@@ -455,7 +455,7 @@ const AdminPOS = () => {
                 setCurrentOrderId(orderId);
 
                 // Update table status to Occupied if a table was selected
-                if (selectedTableId && selectedTable !== "Quick Sale (No Table)") {
+                if (selectedTableId && selectedTable !== "Takeaway") {
                     try {
                         await fetch(`${apiUrl}/tables/${selectedTableId}/status`, {
                             method: 'PATCH',
@@ -486,7 +486,7 @@ const AdminPOS = () => {
                 setShowKOTPreview(true);
                 toast.success("KOT saved successfully!");
                 setCart([]);
-                setSelectedTable("Quick Sale (No Table)");
+                setSelectedTable("Takeaway");
                 setSelectedTableId(null);
                 setSelectedCustomer("Walk-in");
                 setDiscount(0);
@@ -512,7 +512,7 @@ const AdminPOS = () => {
             setIsProcessing(true);
 
             // Double check table status before proceeding
-            if (selectedTableId && selectedTable !== "Quick Sale (No Table)") {
+            if (selectedTableId && selectedTable !== "Takeaway") {
                 const tableRes = await fetch(`${apiUrl}/tables/${selectedTableId}`);
                 if (tableRes.ok) {
                     const tableData = await tableRes.json();
@@ -528,7 +528,7 @@ const AdminPOS = () => {
                 customerInfo: {
                     name: selectedCustomer || "Walk-in",
                     phone: "N/A",
-                    address: selectedTable || "Quick Sale (No Table)",
+                    address: selectedTable || "Takeaway",
                     notes: "Bill Print"
                 },
                 items: cart.map(c => ({
@@ -562,7 +562,7 @@ const AdminPOS = () => {
                 setCurrentOrderId(orderId);
 
                 // Update table status to Occupied if a table was selected
-                if (selectedTableId && selectedTable !== "Quick Sale (No Table)") {
+                if (selectedTableId && selectedTable !== "Takeaway") {
                     try {
                         await fetch(`${apiUrl}/tables/${selectedTableId}/status`, {
                             method: 'PATCH',
@@ -593,7 +593,7 @@ const AdminPOS = () => {
                 setShowBillPreview(true);
                 toast.success("Bill saved successfully!");
                 setCart([]);
-                setSelectedTable("Quick Sale (No Table)");
+                setSelectedTable("Takeaway");
                 setSelectedTableId(null);
                 setSelectedCustomer("Walk-in");
                 setDiscount(0);
@@ -635,7 +635,7 @@ const AdminPOS = () => {
                 customerInfo: {
                     name: selectedCustomer || "Walk-in",
                     phone: "N/A",
-                    address: selectedTable || "Quick Sale (No Table)",
+                    address: selectedTable || "Takeaway",
                     notes: "Held order"
                 },
                 items: cart.map(c => ({
@@ -667,7 +667,7 @@ const AdminPOS = () => {
                 const orderId = data.orderId || data._id;
 
                 // Update table status to Occupied if a table was selected
-                if (selectedTableId && selectedTable !== "Quick Sale (No Table)") {
+                if (selectedTableId && selectedTable !== "Takeaway") {
                     try {
                         await fetch(`${apiUrl}/tables/${selectedTableId}/status`, {
                             method: 'PATCH',
@@ -685,7 +685,7 @@ const AdminPOS = () => {
 
                 toast.success("Order held successfully!");
                 setCart([]);
-                setSelectedTable("Quick Sale (No Table)");
+                setSelectedTable("Takeaway");
                 setSelectedTableId(null);
                 setSelectedCustomer("Walk-in");
                 setDiscount(0);
@@ -715,7 +715,7 @@ const AdminPOS = () => {
                 customerInfo: {
                     name: selectedCustomer || "Walk-in",
                     phone: "N/A",
-                    address: selectedTable || "Quick Sale (No Table)",
+                    address: selectedTable || "Takeaway",
                     notes: `Payment method: ${selectedPaymentMethod}`
                 },
                 items: cart.map(c => ({
@@ -749,7 +749,7 @@ const AdminPOS = () => {
                 setCurrentOrderId(orderId);
 
                 // Update table status to Free after payment is completed
-                if (selectedTableId && selectedTable !== "Quick Sale (No Table)") {
+                if (selectedTableId && selectedTable !== "Takeaway") {
                     try {
                         await fetch(`${apiUrl}/tables/${selectedTableId}/status`, {
                             method: 'PATCH',
@@ -783,7 +783,7 @@ const AdminPOS = () => {
                 setShowBillPreview(true);
 
                 setCart([]);
-                setSelectedTable("Quick Sale (No Table)");
+                setSelectedTable("Takeaway");
                 setSelectedTableId(null);
                 setSelectedCustomer("Walk-in");
                 setDiscount(0);
@@ -838,7 +838,7 @@ const AdminPOS = () => {
                 customerInfo: {
                     name: selectedCustomer || "Walk-in",
                     phone: "N/A",
-                    address: selectedTable || "Quick Sale (No Table)",
+                    address: selectedTable || "Takeaway",
                     notes: "Split payment"
                 },
                 items: cart.map(c => ({
@@ -873,7 +873,7 @@ const AdminPOS = () => {
                 setCurrentOrderId(orderId);
 
                 // Update table status to Free after payment is completed
-                if (selectedTableId && selectedTable !== "Quick Sale (No Table)") {
+                if (selectedTableId && selectedTable !== "Takeaway") {
                     try {
                         await fetch(`${apiUrl}/tables/${selectedTableId}/status`, {
                             method: 'PATCH',
@@ -908,7 +908,7 @@ const AdminPOS = () => {
 
                 setSplitPayments([]);
                 setCart([]);
-                setSelectedTable("Quick Sale (No Table)");
+                setSelectedTable("Takeaway");
                 setSelectedTableId(null);
                 setSelectedCustomer("Walk-in");
                 setDiscount(0);
@@ -943,7 +943,7 @@ const AdminPOS = () => {
                 }).filter((item): item is CartItem => item !== null);
 
                 setCart(newCart);
-                setSelectedTable(order.tableNumber || "Quick Sale (No Table)");
+                setSelectedTable(order.tableNumber || "Takeaway");
                 setSelectedCustomer(order.customerInfo.name || "Walk-in");
                 setDiscount(order.discount || 0);
 
@@ -1092,7 +1092,7 @@ const AdminPOS = () => {
                                 onChange={(e) => {
                                     const val = e.target.value;
                                     setSelectedTable(val);
-                                    if (val === "Quick Sale (No Table)") {
+                                    if (val === "Takeaway") {
                                         setSelectedTableId(null);
                                         setOrderType('takeaway');
                                     } else {
@@ -1103,7 +1103,7 @@ const AdminPOS = () => {
                                 }}
                                 className="w-full bg-white border border-neutral-200 text-neutral-900 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-primary appearance-none cursor-pointer font-medium"
                             >
-                                <option value="Quick Sale (No Table)">Quick Sale (No Table)</option>
+                                <option value="Takeaway">Takeaway</option>
                                 {tables.map(table => {
                                     const isOccupied = table.status !== 'Free';
                                     return (

@@ -24,6 +24,14 @@ const AdminMessages = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState("");
 
+    const normalizeSmsCurrency = (message: string) => {
+        return message.replace(/\$([0-9]+(?:\.[0-9]+)?)/g, (_, amount: string) => {
+            const parsed = Number(amount);
+            if (Number.isNaN(parsed)) return `৳${amount}`;
+            return `৳${parsed.toFixed(2)}`;
+        });
+    };
+
     useEffect(() => {
         const fetchMessages = async () => {
             try {
@@ -120,7 +128,7 @@ const AdminMessages = () => {
                                             </td>
                                             <td className="px-6 py-4">
                                                 <div className="text-xs text-neutral-600 max-w-sm line-clamp-2" title={msg.messageContent}>
-                                                    {msg.messageContent}
+                                                    {normalizeSmsCurrency(msg.messageContent)}
                                                 </div>
                                             </td>
                                             <td className="px-6 py-4">

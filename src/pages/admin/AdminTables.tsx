@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import AdminLayout from "../../components/admin/AdminLayout";
-import { Plus, Edit, Trash2, Users, Clock, CheckCircle, XCircle, Search, ShoppingCart, Calendar, Home, Settings, X, RefreshCcw, Filter, Sparkles } from "lucide-react";
+import { Plus, Edit, Trash2, Users, Clock, CheckCircle, XCircle, X, RefreshCcw, Filter, Sparkles, FileText, Receipt } from "lucide-react";
 import { toast } from "sonner";
 
 interface Table {
@@ -15,6 +15,15 @@ interface Table {
     server?: string;
     createdAt?: string;
     updatedAt?: string;
+}
+
+interface TableOrder {
+    _id: string;
+    items: Array<{ title: string; quantity: number; price: number }>;
+    subtotal: number;
+    tax: number;
+    total: number;
+    createdAt?: string;
 }
 
 const AdminTables = () => {
@@ -44,6 +53,8 @@ const AdminTables = () => {
         message: "",
         onConfirm: () => {},
     });
+    const [tableServiceState, setTableServiceState] = useState<Record<string, { kotSent: boolean; billPrinted: boolean }>>({});
+    const [processingServiceTableId, setProcessingServiceTableId] = useState<string | null>(null);
 
     const fetchTables = async () => {
         try {
@@ -72,6 +83,163 @@ const AdminTables = () => {
     useEffect(() => {
         fetchTables();
     }, []);
+
+    useEffect(() => {
+        setTableServiceState((prev) => {
+            const next: Record<string, { kotSent: boolean; billPrinted: boolean }> = {};
+            tables.forEach((table) => {
+                next[table._id] = prev[table._id] || { kotSent: false, billPrinted: false };
+            });
+            return next;
+        });
+    }, [tables]);
+
+    const getOrderForTable = async (table: Table): Promise<TableOrder | null> => {
+        const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+
+        if (table.currentOrder) {
+            const orderRes = await fetch(`${apiUrl}/orders/${table.currentOrder}`);
+            if (orderRes.ok) {
+                return await orderRes.json();
+            }
+        }
+
+        const allOrdersRes = await fetch(`${apiUrl}/orders`);
+        if (!allOrdersRes.ok) return null;
+        const allOrders = await allOrdersRes.json();
+        const matched = allOrders.find(
+            (o: any) =>
+                o.tableNumber === table.tableNumber &&
+                o.orderType === "dine-in" &&
+                o.status !== "cancelled"
+        );
+        return matched || null;
+    };
+
+    const openPrintWindow = (html: string, errorText: string) => {
+        const printWindow = window.open("", "_blank", "width=420,height=640");
+        if (!printWindow) {
+            toast.error(errorText);
+            return false;
+        }
+
+        printWindow.document.write(html);
+        printWindow.document.close();
+        setTimeout(() => {
+            if (!printWindow.closed) {
+                printWindow.focus();
+                printWindow.print();
+            }
+        }, 350);
+        return true;
+    };
+
+    const printKOTForOrder = (table: Table, order: TableOrder) => {
+        const itemsHtml = order.items
+            .map(
+                (item) =>
+                    `<div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span>${item.title} x${item.quantity}</span><span>${item.quantity}</span></div>`
+            )
+            .join("");
+        const orderNum = `#${order._id.slice(-6).toUpperCase()}`;
+        const date = new Date(order.createdAt || Date.now()).toLocaleString("en-GB");
+
+        const html = `<!DOCTYPE html><html><head><title>KOT</title><style>
+            * { margin:0; padding:0; box-sizing:border-box; }
+            body { font-family: 'Courier New', monospace; width: 80mm; padding: 10px; color: #000; font-size: 14px; }
+            .center { text-align: center; }
+            .row { display: flex; justify-content: space-between; margin-bottom: 4px; }
+            .dashed { border-bottom: 2px dashed #000; margin: 10px 0; }
+        </style></head><body>
+            <div class="center" style="font-size:18px;font-weight:bold;margin-bottom:10px;">KITCHEN ORDER</div>
+            <div class="dashed"></div>
+            <div class="row"><span>Table</span><span>${table.tableNumber}</span></div>
+            <div class="row"><span>Order</span><span>${orderNum}</span></div>
+            <div class="row"><span>Time</span><span>${date}</span></div>
+            <div class="dashed"></div>
+            ${itemsHtml}
+            <div class="dashed"></div>
+            <div class="center" style="margin-top:8px;">*** KOT ***</div>
+        </body></html>`;
+
+        return openPrintWindow(html, "Please allow pop-ups to print the KOT");
+    };
+
+    const printBillForOrder = (table: Table, order: TableOrder) => {
+        const itemsHtml = order.items
+            .map(
+                (item) =>
+                    `<div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span>${item.title} x${item.quantity}</span><span>BDT ${(item.price * item.quantity).toFixed(2)}</span></div>`
+            )
+            .join("");
+        const orderNum = `#${order._id.slice(-6).toUpperCase()}`;
+        const date = new Date(order.createdAt || Date.now()).toLocaleString("en-GB");
+
+        const html = `<!DOCTYPE html><html><head><title>Bill Receipt</title><style>
+            * { margin:0; padding:0; box-sizing:border-box; }
+            body { font-family: 'Courier New', monospace; width: 80mm; padding: 10px; color: #000; font-size: 14px; }
+            .center { text-align: center; }
+            .row { display: flex; justify-content: space-between; margin-bottom: 4px; }
+            .dashed { border-bottom: 2px dashed #000; margin: 10px 0; }
+            .total-row { display: flex; justify-content: space-between; font-weight: bold; font-size: 16px; margin: 8px 0; }
+        </style></head><body>
+            <div class="center" style="font-size:20px;font-weight:bold;margin-bottom:10px;">CRAVINGS</div>
+            <div class="dashed"></div>
+            <div class="row"><span>Table</span><span>${table.tableNumber}</span></div>
+            <div class="row"><span>Order</span><span>${orderNum}</span></div>
+            <div class="row"><span>Date</span><span>${date}</span></div>
+            <div class="dashed"></div>
+            ${itemsHtml}
+            <div class="dashed"></div>
+            <div class="row"><span>Subtotal</span><span>BDT ${(order.subtotal || 0).toFixed(2)}</span></div>
+            <div class="row"><span>Tax</span><span>BDT ${(order.tax || 0).toFixed(2)}</span></div>
+            <div class="total-row"><span>TOTAL</span><span>BDT ${(order.total || 0).toFixed(2)}</span></div>
+        </body></html>`;
+
+        return openPrintWindow(html, "Please allow pop-ups to print the bill");
+    };
+
+    const handleTableServiceAction = async (table: Table, action: "kot" | "bill") => {
+        if (action === "bill" && table.status === "Free") {
+            toast.error(`Table ${table.tableNumber} is free. Please place an order first.`);
+            return;
+        }
+
+        try {
+            setProcessingServiceTableId(table._id);
+            const order = await getOrderForTable(table);
+            if (!order) {
+                toast.error(`No active order found for Table ${table.tableNumber}`);
+                return;
+            }
+
+            const printed = action === "kot" ? printKOTForOrder(table, order) : printBillForOrder(table, order);
+            if (!printed) return;
+
+            setTableServiceState((prev) => {
+                const current = prev[table._id] || { kotSent: false, billPrinted: false };
+                return {
+                    ...prev,
+                    [table._id]: {
+                        ...current,
+                        kotSent: action === "kot" ? true : current.kotSent,
+                        billPrinted: action === "bill" ? true : current.billPrinted,
+                    },
+                };
+            });
+
+            toast.success(
+                action === "kot"
+                    ? `KOT printed for Table ${table.tableNumber}`
+                    : `Bill printed for Table ${table.tableNumber}`
+            );
+        } catch (error) {
+            console.error(`Failed to process ${action}:`, error);
+            toast.error(`Failed to ${action === "kot" ? "print KOT" : "print bill"}`);
+        } finally {
+            setProcessingServiceTableId(null);
+        }
+    };
 
     const handleOpenModal = (table?: Table) => {
         if (table) {
@@ -190,8 +358,8 @@ const AdminTables = () => {
         All: tables.length,
         Available: tables.filter(t => t.status === "Free").length,
         Reserved: tables.filter(t => t.status === "Reserved").length,
-        "KOT Sent": tables.filter(t => t.status === "Occupied").length,
-        "Bill Printed": 0,
+        "KOT Sent": tables.filter(t => tableServiceState[t._id]?.kotSent).length,
+        "Bill Printed": tables.filter(t => tableServiceState[t._id]?.billPrinted).length,
         Cleaning: tables.filter(t => t.status === "Cleaning").length
     };
 
@@ -199,7 +367,8 @@ const AdminTables = () => {
         if (activeFilter === "All") return true;
         if (activeFilter === "Available") return table.status === "Free";
         if (activeFilter === "Reserved") return table.status === "Reserved";
-        if (activeFilter === "KOT Sent") return table.status === "Occupied";
+        if (activeFilter === "KOT Sent") return !!tableServiceState[table._id]?.kotSent;
+        if (activeFilter === "Bill Printed") return !!tableServiceState[table._id]?.billPrinted;
         if (activeFilter === "Cleaning") return table.status === "Cleaning";
         return true;
     });
@@ -286,8 +455,44 @@ const AdminTables = () => {
                                 </div>
                             </div>
                             
-                            {/* Hover Actions */}
-                            <div className="absolute right-4 bottom-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                            {/* KOT / Bill Actions (Only for occupied tables) */}
+                            {table.status === "Occupied" && (
+                                <div className="mt-5 grid grid-cols-2 gap-2">
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleTableServiceAction(table, "kot");
+                                        }}
+                                        disabled={processingServiceTableId === table._id}
+                                        className={`py-2.5 rounded-xl border text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 ${
+                                            tableServiceState[table._id]?.kotSent
+                                                ? "bg-blue-600 text-white border-blue-600"
+                                                : "bg-white/70 hover:bg-white text-blue-700 border-blue-200"
+                                        } disabled:opacity-60 disabled:cursor-not-allowed`}
+                                    >
+                                        <FileText className="w-3.5 h-3.5" />
+                                        {processingServiceTableId === table._id ? "..." : "KOT"}
+                                    </button>
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleTableServiceAction(table, "bill");
+                                        }}
+                                        disabled={processingServiceTableId === table._id}
+                                        className={`py-2.5 rounded-xl border text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 ${
+                                            tableServiceState[table._id]?.billPrinted
+                                                ? "bg-emerald-600 text-white border-emerald-600"
+                                                : "bg-white/70 hover:bg-white text-emerald-700 border-emerald-200"
+                                        } disabled:opacity-60 disabled:cursor-not-allowed`}
+                                    >
+                                        <Receipt className="w-3.5 h-3.5" />
+                                        {processingServiceTableId === table._id ? "..." : "Bill"}
+                                    </button>
+                                </div>
+                            )}
+
+                            {/* Edit/Delete Actions */}
+                            <div className="mt-3 flex justify-end gap-2">
                                 <button 
                                     onClick={(e) => { e.stopPropagation(); handleOpenModal(table); }}
                                     className="p-2 bg-white/80 hover:bg-white rounded-full text-neutral-600 shadow-sm transition-all"

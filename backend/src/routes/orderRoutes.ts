@@ -82,9 +82,10 @@ router.post('/', async (req, res) => {
             apiKey !== 'your_mimsms_api_key_here' && 
             senderId !== 'your_sender_id_here' &&
             smsPhone && smsPhone !== 'N/A';
+        const formattedTotal = Number(savedOrder.total || 0).toFixed(2);
         
         if (isValidCredentials) {
-            const smsMessage = `Thank you for your order! Your order (Total: $${savedOrder.total}) has been received by Craving Insights.`;
+            const smsMessage = `Thank you for your order! Your order (Total: ৳${formattedTotal}) has been received by Craving Insights.`;
             let smsSuccess = false;
             
             try {
@@ -116,7 +117,7 @@ router.post('/', async (req, res) => {
             console.log('MimSMS credentials not configured or invalid. SMS not sent.');
             savedOrder.smsStatus = 'pending';
             
-            const smsMessage = `Thank you for your order! Your order (Total: $${savedOrder.total}) has been received by Craving Insights.`;
+            const smsMessage = `Thank you for your order! Your order (Total: ৳${formattedTotal}) has been received by Craving Insights.`;
             await Message.create({
                 recipientNumber: smsPhone || 'Unknown',
                 messageContent: smsMessage,
@@ -132,7 +133,7 @@ router.post('/', async (req, res) => {
         await Notification.create({
             type: 'order',
             title: 'New Order Received',
-            message: `Order #${savedOrder._id.toString().slice(-6)}: ৳${savedOrder.total}`,
+            message: `Order #${savedOrder._id.toString().slice(-6)}: ৳${formattedTotal}`,
         });
 
         res.status(201).json({ message: 'Order placed successfully', orderId: savedOrder._id });

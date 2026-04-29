@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import AdminLayout from "../../components/admin/AdminLayout";
-import { Check, X, Info, Search, FileText, Printer, Clock, ArrowRight, CheckCircle, CheckCheck, LayoutGrid, List as ListIcon, Users, Banknote, CreditCard, Smartphone, Bike, MapPin, Phone } from "lucide-react";
+import { Check, X, Info, Search, FileText, Printer, Clock, ArrowRight, CheckCircle, CheckCheck, LayoutGrid, List as ListIcon, Users, Bike, MapPin, Phone } from "lucide-react";
 import { toast } from "sonner";
 
 interface OrderItem {
@@ -31,7 +31,7 @@ interface Order {
     deliveryStatus?: 'pending' | 'assigned' | 'out_for_delivery' | 'delivered';
 }
 
-const KDSOrderCard = ({ order, onUpdateStatus, onSelect, onCollectPayment }: { order: Order, onUpdateStatus: any, onSelect: any, onCollectPayment: (order: Order) => void }) => {
+const KDSOrderCard = ({ order, onUpdateStatus, onSelect, onCompleteOrder }: { order: Order, onUpdateStatus: any, onSelect: any, onCompleteOrder: (order: Order) => void }) => {
     const getElapsedTime = (createdAt: string) => {
         const diff = new Date().getTime() - new Date(createdAt).getTime();
         const minutes = Math.floor(diff / 60000);
@@ -124,7 +124,7 @@ const KDSOrderCard = ({ order, onUpdateStatus, onSelect, onCollectPayment }: { o
                     )}
                     {order.status === 'ready' && (
                         <button
-                            onClick={() => onCollectPayment(order)}
+                            onClick={() => onCompleteOrder(order)}
                             className="flex-1 py-3 bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold uppercase tracking-widest rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-emerald-200 active:scale-95"
                         >
                             <CheckCheck className="w-3.5 h-3.5" />
@@ -146,26 +146,6 @@ const AdminOrders = () => {
     const [viewMode, setViewMode] = useState<'list' | 'kds'>('kds');
     const [processingId, setProcessingId] = useState<string | null>(null);
     const [searchTerm, setSearchTerm] = useState("");
-
-    // Payment states
-    const [showPaymentModal, setShowPaymentModal] = useState(false);
-    const [paymentOrder, setPaymentOrder] = useState<Order | null>(null);
-    const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<'Cash' | 'Card' | 'MFS'>('Cash');
-    const [amountReceived, setAmountReceived] = useState<string>('');
-    const [changeAmount, setChangeAmount] = useState(0);
-
-    const [showBillPreview, setShowBillPreview] = useState(false);
-    const [lastOrderDetails, setLastOrderDetails] = useState<{
-        items: OrderItem[];
-        subtotal: number;
-        tax: number;
-        total: number;
-        paymentMethods: { method: string; amount: number }[];
-        orderId: string;
-        date: string;
-        table: string;
-        customer: string;
-    } | null>(null);
 
     const fetchOrders = async () => {
         try {
@@ -264,155 +244,37 @@ const AdminOrders = () => {
         }
     };
 
-    const printBillReceipt = (details: any) => {
-        if (!details) return;
-        const itemsHtml = details.items.map((item: any) => {
-            return `<div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span>${item.title} x${item.quantity}</span><span>BDT ${(item.price * item.quantity).toFixed(2)}</span></div>`;
-        }).join('');
-        
-        const paymentMethodsHtml = details.paymentMethods.map((pm: any) =>
-            `<div style="display:flex;justify-content:space-between;"><span>${pm.method.toUpperCase()}</span><span>BDT ${pm.amount.toFixed(2)}</span></div>`
-        ).join('');
-        
-        const orderNum = `#${details.orderId.slice(-6).toUpperCase()}`;
-
-        const html = `<!DOCTYPE html><html><head><title>Bill Receipt</title><style>
-            * { margin:0; padding:0; box-sizing:border-box; }
-            body { font-family: 'Courier New', monospace; width: 80mm; padding: 10px; color: #000; font-size: 14px; }
-            .center { text-align: center; }
-            .bold { font-weight: bold; }
-            .row { display: flex; justify-content: space-between; margin-bottom: 4px; }
-            .dashed { border-bottom: 2px dashed #000; margin: 10px 0; }
-            .solid { border-bottom: 2px solid #000; margin: 10px 0; }
-            .total-row { display: flex; justify-content: space-between; font-weight: bold; font-size: 16px; margin: 10px 0; }
-            img { display: block; margin: 10px auto; }
-            @media print { @page { margin: 0; size: 80mm auto; } }
-        </style></head><body>
-            <div class="center bold" style="font-size:20px;margin-bottom:15px;">CRAVINGS</div>
-            <div class="dashed"></div>
-            <div class="row"><span>Order #</span><span>${orderNum}</span></div>
-            <div class="row"><span>Date</span><span>${details.date}</span></div>
-            <div class="dashed"></div>
-            <div class="row bold" style="margin-bottom:8px;"><span>Item</span><span>Amount</span></div>
-            <div class="solid"></div>
-            ${itemsHtml}
-            <div class="solid"></div>
-            <div class="row"><span>Subtotal</span><span>BDT ${details.subtotal.toFixed(2)}</span></div>
-            <div class="row"><span>Tax</span><span>BDT ${details.tax.toFixed(2)}</span></div>
-            ${paymentMethodsHtml}
-            <div class="solid"></div>
-            <div class="total-row"><span>TOTAL</span><span>BDT ${details.total.toFixed(2)}</span></div>
-            <div class="dashed"></div>
-            <div class="center" style="margin-top:10px;">
-                <p style="margin-bottom:10px;">Thank you for your visit!</p>
-                <img src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${details.orderId}" alt="QR" width="100" height="100" />
-            </div>
-        </body></html>`;
-
-        const printWindow = window.open('', '_blank', 'width=400,height=600');
-        if (printWindow) {
-            printWindow.document.write(html);
-            printWindow.document.close();
-            setTimeout(() => {
-                if (!printWindow.closed) {
-                    printWindow.focus();
-                    printWindow.print();
-                }
-            }, 500);
-        } else {
-            toast.error("Please allow pop-ups to print the receipt");
+    const handleCompleteOrder = async (order: Order) => {
+        if (order.orderType !== "dine-in") {
+            setSelectedOrder(order);
+            setShowAssignmentModal(true);
+            return;
         }
-    };
 
-    const handleCollectPayment = (order: Order) => {
-        setPaymentOrder(order);
-        setAmountReceived(order.total.toFixed(2));
-        setChangeAmount(0);
-        setSelectedPaymentMethod('Cash');
-        setShowPaymentModal(true);
-    };
+        await updateOrderStatus(order._id, "completed");
 
-    const processPayment = async () => {
-        if (!paymentOrder) return;
-        
+        if (!order.tableNumber) return;
+
         try {
-            setProcessingId(paymentOrder._id);
             const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
-            
-            const res = await fetch(`${apiUrl}/orders/${paymentOrder._id}`, {
-                method: "PUT",
+            const tableRes = await fetch(`${apiUrl}/tables`);
+            if (!tableRes.ok) return;
+
+            const tables = await tableRes.json();
+            const table = tables.find((t: any) => t.tableNumber === order.tableNumber);
+            if (!table) return;
+
+            await fetch(`${apiUrl}/tables/${table._id}/status`, {
+                method: "PATCH",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ 
-                    status: 'completed',
-                    paymentMethod: selectedPaymentMethod,
-                    amountReceived: parseFloat(amountReceived) || paymentOrder.total,
-                    changeAmount: changeAmount || 0
-                }),
+                body: JSON.stringify({
+                    status: "Free",
+                    currentOrder: undefined,
+                    occupiedTime: undefined
+                })
             });
-
-            if (res.ok) {
-                // Update table status to Free if it's a dine-in order
-                if (paymentOrder.orderType === 'dine-in' && paymentOrder.tableNumber) {
-                    try {
-                        // We need the table ID. Since we only have tableNumber, 
-                        // we might need to find the table first or use a different endpoint.
-                        // Looking at AdminPOS, it uses tableId. 
-                        // Let's try to find the table by number if tableId is missing.
-                        const tableRes = await fetch(`${apiUrl}/tables`);
-                        if (tableRes.ok) {
-                            const tables = await tableRes.json();
-                            const table = tables.find((t: any) => t.tableNumber === paymentOrder.tableNumber);
-                            if (table) {
-                                await fetch(`${apiUrl}/tables/${table._id}/status`, {
-                                    method: 'PATCH',
-                                    headers: { 'Content-Type': 'application/json' },
-                                    body: JSON.stringify({ 
-                                        status: 'Free',
-                                        currentOrder: undefined,
-                                        occupiedTime: undefined
-                                    })
-                                });
-                            }
-                        }
-                    } catch (tableErr) {
-                        console.error("Failed to update table status:", tableErr);
-                    }
-                }
-
-                toast.success(`Payment collected and Order #${paymentOrder._id.slice(-6).toUpperCase()} completed!`);
-                setShowPaymentModal(false);
-                
-                // Set order details for printing
-                setLastOrderDetails({
-                    items: paymentOrder.items,
-                    subtotal: paymentOrder.subtotal,
-                    tax: paymentOrder.tax,
-                    total: paymentOrder.total,
-                    paymentMethods: [{ method: selectedPaymentMethod, amount: paymentOrder.total }],
-                    orderId: paymentOrder._id,
-                    date: new Date().toLocaleString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }).replace(',', ''),
-                    table: paymentOrder.tableNumber || "N/A",
-                    customer: paymentOrder.customerInfo.name || "Walk-in"
-                });
-                setShowBillPreview(true);
-                
-                // If it's a takeaway or online order, open the assignment modal
-                if (paymentOrder.orderType !== 'dine-in') {
-                    setSelectedOrder(paymentOrder);
-                    setShowAssignmentModal(true);
-                } else {
-                    setPaymentOrder(null);
-                }
-                
-                await fetchOrders();
-            } else {
-                toast.error("Failed to process payment");
-            }
         } catch (error) {
-            console.error(error);
-            toast.error("An error occurred during payment");
-        } finally {
-            setProcessingId(null);
+            console.error("Failed to update table status:", error);
         }
     };
 
@@ -552,7 +414,7 @@ const AdminOrders = () => {
                                     </div>
                                     <div className="flex-1 overflow-y-auto p-5 space-y-5 custom-scrollbar">
                                         {pendingOrders.map(order => (
-                                            <KDSOrderCard key={order._id} order={order} onUpdateStatus={updateOrderStatus} onCollectPayment={handleCollectPayment} onSelect={(order: any, isAssignment: boolean) => {
+                                            <KDSOrderCard key={order._id} order={order} onUpdateStatus={updateOrderStatus} onCompleteOrder={handleCompleteOrder} onSelect={(order: any, isAssignment: boolean) => {
                                                 setSelectedOrder(order);
                                                 setShowAssignmentModal(isAssignment || false);
                                             }} />
@@ -581,7 +443,7 @@ const AdminOrders = () => {
                                     </div>
                                     <div className="flex-1 overflow-y-auto p-5 space-y-5 custom-scrollbar">
                                         {preparingOrders.map(order => (
-                                            <KDSOrderCard key={order._id} order={order} onUpdateStatus={updateOrderStatus} onCollectPayment={handleCollectPayment} onSelect={(order: any, isAssignment: boolean) => {
+                                            <KDSOrderCard key={order._id} order={order} onUpdateStatus={updateOrderStatus} onCompleteOrder={handleCompleteOrder} onSelect={(order: any, isAssignment: boolean) => {
                                                 setSelectedOrder(order);
                                                 setShowAssignmentModal(isAssignment || false);
                                             }} />
@@ -610,7 +472,7 @@ const AdminOrders = () => {
                                     </div>
                                     <div className="flex-1 overflow-y-auto p-5 space-y-5 custom-scrollbar">
                                         {readyOrders.map(order => (
-                                            <KDSOrderCard key={order._id} order={order} onUpdateStatus={updateOrderStatus} onCollectPayment={handleCollectPayment} onSelect={(order: any, isAssignment: boolean) => {
+                                            <KDSOrderCard key={order._id} order={order} onUpdateStatus={updateOrderStatus} onCompleteOrder={handleCompleteOrder} onSelect={(order: any, isAssignment: boolean) => {
                                                 setSelectedOrder(order);
                                                 setShowAssignmentModal(isAssignment || false);
                                             }} />
@@ -812,210 +674,6 @@ const AdminOrders = () => {
                 </div>
             )}
 
-            {/* Payment Collection Modal */}
-            {showPaymentModal && paymentOrder && (
-                <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-                    <div className="bg-white rounded-3xl w-full max-w-md shadow-2xl overflow-hidden flex flex-col animate-in fade-in zoom-in duration-200">
-                        {/* Header */}
-                        <div className="bg-emerald-600 p-6 text-white relative">
-                            <button
-                                onClick={() => setShowPaymentModal(false)}
-                                className="absolute right-4 top-4 text-white/80 hover:text-white transition-colors"
-                            >
-                                <X className="w-5 h-5" />
-                            </button>
-                            <h3 className="text-xl font-bold mb-1">Collect Payment</h3>
-                            <p className="text-emerald-100 text-xs">Order #{paymentOrder._id.slice(-6).toUpperCase()}</p>
-                            
-                            <div className="mt-6">
-                                <p className="text-emerald-100 text-[10px] font-bold uppercase tracking-widest mb-1">Total Payable Amount</p>
-                                <div className="flex items-baseline gap-2">
-                                    <span className="text-emerald-200 text-lg font-medium uppercase">BDT</span>
-                                    <span className="text-4xl font-black">{paymentOrder.total.toFixed(2)}</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="p-6 space-y-6">
-                            {/* Payment Method Selection */}
-                            <div>
-                                <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest mb-3">Choose Payment Method</p>
-                                <div className="grid grid-cols-3 gap-3">
-                                    {[
-                                        { id: 'Cash', icon: Banknote, color: 'emerald' },
-                                        { id: 'Card', icon: CreditCard, color: 'blue' },
-                                        { id: 'MFS', icon: Smartphone, color: 'purple' }
-                                    ].map((method) => (
-                                        <button
-                                            key={method.id}
-                                            onClick={() => setSelectedPaymentMethod(method.id as any)}
-                                            className={`flex flex-col items-center justify-center p-4 rounded-2xl border-2 transition-all gap-2 ${
-                                                selectedPaymentMethod === method.id 
-                                                ? `bg-${method.color}-50 border-${method.color}-500 text-${method.color}-600` 
-                                                : 'bg-white border-neutral-100 text-neutral-400 hover:border-neutral-200'
-                                            }`}
-                                        >
-                                            <method.icon className="w-6 h-6" />
-                                            <span className="text-[10px] font-black uppercase tracking-tighter">{method.id}</span>
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-
-                            {/* Amount Received Input (only for Cash) */}
-                            {selectedPaymentMethod === 'Cash' && (
-                                <div className="space-y-3">
-                                    <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest px-1">Amount Received</p>
-                                    <div className="relative group">
-                                        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-400 font-bold text-sm group-focus-within:text-emerald-500 transition-colors">BDT</div>
-                                        <input
-                                            type="number"
-                                            value={amountReceived}
-                                            onChange={(e) => {
-                                                const val = e.target.value;
-                                                setAmountReceived(val);
-                                                const received = parseFloat(val) || 0;
-                                                setChangeAmount(Math.max(0, received - paymentOrder.total));
-                                            }}
-                                            className="w-full bg-neutral-50 border border-neutral-200 text-neutral-900 rounded-2xl pl-14 pr-4 py-4 text-xl font-black focus:outline-none focus:bg-white focus:border-emerald-500 transition-all"
-                                        />
-                                    </div>
-                                    
-                                    <div className="grid grid-cols-3 gap-2">
-                                        {[500, 1000, 2000].map(val => (
-                                            <button
-                                                key={val}
-                                                onClick={() => {
-                                                    setAmountReceived(val.toString());
-                                                    setChangeAmount(Math.max(0, val - paymentOrder.total));
-                                                }}
-                                                className="py-2 bg-neutral-100 hover:bg-neutral-200 rounded-xl text-xs font-bold text-neutral-600 transition-colors"
-                                            >
-                                                BDT {val}
-                                            </button>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* Change to Return */}
-                            {selectedPaymentMethod === 'Cash' && parseFloat(amountReceived) > paymentOrder.total && (
-                                <div className="flex justify-between items-center p-4 bg-amber-50 border border-amber-100 rounded-2xl animate-in slide-in-from-top-2">
-                                    <span className="text-amber-700 font-bold text-xs uppercase tracking-wider">Change to Return</span>
-                                    <span className="text-xl font-black text-amber-800">BDT {changeAmount.toFixed(2)}</span>
-                                </div>
-                            )}
-
-                            {/* Footer Actions */}
-                            <div className="flex gap-3 pt-2">
-                                <button
-                                    onClick={() => setShowPaymentModal(false)}
-                                    className="flex-1 py-4 bg-neutral-100 hover:bg-neutral-200 text-neutral-600 font-bold rounded-2xl transition-all"
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    onClick={processPayment}
-                                    disabled={processingId === paymentOrder._id || (selectedPaymentMethod === 'Cash' && (parseFloat(amountReceived) < paymentOrder.total))}
-                                    className="flex-[2] py-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-2xl transition-all shadow-lg shadow-emerald-100 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                                >
-                                    {processingId === paymentOrder._id ? (
-                                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                                    ) : (
-                                        <>
-                                            <CheckCircle className="w-4 h-4" />
-                                            {selectedPaymentMethod === 'Cash' ? `Exact Amount (BDT${paymentOrder.total.toFixed(2)})` : 'Confirm Payment'}
-                                        </>
-                                    )}
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {/* Bill Preview Modal */}
-            {showBillPreview && lastOrderDetails && (
-                <div className="fixed inset-0 z-[130] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-                    <div className="bg-white rounded-3xl w-full max-w-md shadow-2xl overflow-hidden flex flex-col max-h-[90vh] animate-in fade-in zoom-in duration-200">
-                        {/* Header */}
-                        <div className="flex justify-between items-center p-4 border-b border-yellow-400 border-b-4">
-                            <h3 className="text-xl font-medium text-neutral-800">Order Slip</h3>
-                            <div className="flex gap-2">
-                                <button onClick={() => printBillReceipt(lastOrderDetails)} className="w-10 h-10 flex items-center justify-center bg-blue-50 text-blue-600 rounded-full hover:bg-blue-100 transition-colors">
-                                    <Printer className="w-5 h-5" />
-                                </button>
-                                <button onClick={() => setShowBillPreview(false)} className="w-10 h-10 flex items-center justify-center bg-red-50 text-red-500 rounded-full hover:bg-red-100 transition-colors">
-                                    <X className="w-5 h-5" />
-                                </button>
-                            </div>
-                        </div>
-
-                        {/* Scrollable Content */}
-                        <div className="p-8 overflow-y-auto custom-scrollbar">
-                            <div className="text-center mb-8">
-                                <h2 className="text-3xl font-serif font-bold text-[#0f172a] mb-2">Cravings...</h2>
-                                <p className="text-sm font-medium text-neutral-500 tracking-[0.2em] uppercase">Order Receipt</p>
-                            </div>
-
-                            <div className="space-y-4 mb-6">
-                                <div className="flex justify-between text-[15px]">
-                                    <span className="text-neutral-500">Order ID</span>
-                                    <span className="font-bold text-neutral-900">#{lastOrderDetails.orderId.slice(-6).toUpperCase()}</span>
-                                </div>
-                                <div className="flex justify-between text-[15px]">
-                                    <span className="text-neutral-500">Date</span>
-                                    <span className="font-medium text-neutral-900">{lastOrderDetails.date}</span>
-                                </div>
-                                <div className="flex justify-between text-[15px]">
-                                    <span className="text-neutral-500">Payment Status</span>
-                                    <span className="font-medium text-neutral-900">Paid</span>
-                                </div>
-                            </div>
-
-                            <div className="border-t border-dashed border-neutral-300 py-6">
-                                {lastOrderDetails.items.map((item, idx) => (
-                                    <div key={idx} className="flex justify-between items-start mb-4 last:mb-0">
-                                        <span className="font-bold text-neutral-900 text-[15px]">{item.quantity}x {item.title}</span>
-                                        <span className="font-medium text-neutral-900">৳{(item.price * item.quantity).toFixed(0)}</span>
-                                    </div>
-                                ))}
-                            </div>
-
-                            <div className="border-t border-dashed border-neutral-300 py-6 space-y-4">
-                                <div className="flex justify-between text-[15px]">
-                                    <span className="text-neutral-500">Subtotal</span>
-                                    <span className="font-medium text-neutral-900">৳{lastOrderDetails.subtotal.toFixed(0)}</span>
-                                </div>
-                                <div className="flex justify-between text-[15px]">
-                                    <span className="text-neutral-500">Tax</span>
-                                    <span className="font-medium text-neutral-900">৳{lastOrderDetails.tax.toFixed(0)}</span>
-                                </div>
-                                <div className="space-y-1">
-                                    {lastOrderDetails.paymentMethods.map((pm, idx) => (
-                                        <div key={idx} className="flex justify-between text-[15px] italic text-neutral-600">
-                                            <span>{pm.method}</span>
-                                            <span>৳{pm.amount.toFixed(0)}</span>
-                                        </div>
-                                    ))}
-                                </div>
-                                <div className="flex justify-between text-xl font-black mt-2">
-                                    <span className="text-neutral-900">Total</span>
-                                    <span className="text-yellow-500">৳{lastOrderDetails.total.toFixed(0)}</span>
-                                </div>
-                            </div>
-
-                            <div className="bg-neutral-50 rounded-2xl p-6 mt-2">
-                                <h4 className="font-bold text-neutral-900 mb-2">Details:</h4>
-                                <div className="text-neutral-600 text-[15px] space-y-1">
-                                    <p>Customer: {lastOrderDetails.customer}</p>
-                                    <p>Table/Area: {lastOrderDetails.table}</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
 
             <style>{`
                 .custom-scrollbar::-webkit-scrollbar {
