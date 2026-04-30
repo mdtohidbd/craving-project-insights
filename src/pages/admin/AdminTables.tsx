@@ -46,24 +46,52 @@ const AdminTables = () => {
         isOpen: boolean;
         title: string;
         message: string;
+        confirmText?: string;
+        variant?: "danger" | "warning" | "info";
         onConfirm: () => void;
     }>({
         isOpen: false,
         title: "",
         message: "",
+        confirmText: "Confirm",
+        variant: "danger",
         onConfirm: () => {},
     });
     const [tableServiceState, setTableServiceState] = useState<Record<string, { kotSent: boolean; billPrinted: boolean }>>({});
+    const [tableOrderStatuses, setTableOrderStatuses] = useState<Record<string, string>>({});
     const [processingServiceTableId, setProcessingServiceTableId] = useState<string | null>(null);
 
     const fetchTables = async () => {
         try {
             setLoading(true);
             const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
-            const res = await fetch(`${apiUrl}/tables`);
-            if (res.ok) {
-                const data = await res.json();
+            const [tablesRes, ordersRes] = await Promise.all([
+                fetch(`${apiUrl}/tables`),
+                fetch(`${apiUrl}/orders`)
+            ]);
+            
+            if (tablesRes.ok) {
+                const data = await tablesRes.json();
                 setTables(data);
+                
+                if (ordersRes.ok) {
+                    const allOrders = await ordersRes.json();
+                    const statusMap: Record<string, string> = {};
+                    data.forEach((table: Table) => {
+                        if (table.status === 'Occupied') {
+                            const order = allOrders.find((o: any) => 
+                                (o._id === table.currentOrder || o.tableNumber === table.tableNumber) && 
+                                o.orderType === 'dine-in' && 
+                                o.status !== 'completed' && 
+                                o.status !== 'cancelled'
+                            );
+                            if (order) {
+                                statusMap[table._id] = order.status;
+                            }
+                        }
+                    });
+                    setTableOrderStatuses(statusMap);
+                }
             } else {
                 throw new Error('Failed to fetch tables');
             }
@@ -288,6 +316,8 @@ const AdminTables = () => {
             isOpen: true,
             title: "Delete Table",
             message: "Are you sure you want to delete this table? This action cannot be undone.",
+            confirmText: "Delete",
+            variant: "danger",
             onConfirm: async () => {
                 try {
                     const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
@@ -303,55 +333,81 @@ const AdminTables = () => {
         });
     };
 
-    const handleStatusAction = async (action: string) => {
-        if (!selectedTable) return;
-
+    const performStatusUpdate = async (tableId: string, status: string, additionalData: Record<string, any> = {}) => {
         try {
             const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
-            let newStatus = selectedTable.status;
-            let updateData: Record<string, any> = {};
-
-            switch (action) {
-                case 'newOrder':
-                    if (selectedTable.status !== 'Free') {
-                        toast.error(`Table ${selectedTable.tableNumber} is currently ${selectedTable.status}. It must be Free before creating a new order.`);
-                        return;
-                    }
-                    window.location.href = `/admin/pos?table=${selectedTable._id}`;
-                    return;
-                case 'reserve':
-                    newStatus = 'Reserved';
-                    break;
-                case 'markCleaning':
-                    newStatus = 'Cleaning';
-                    break;
-                case 'markFree':
-                    newStatus = 'Free';
-                    updateData = { currentOrder: undefined, occupiedTime: undefined, server: undefined };
-                    break;
-                case 'edit':
-                    handleOpenModal(selectedTable);
-                    setIsStatusModalOpen(false);
-                    return;
-                case 'delete':
-                    handleDelete(selectedTable._id);
-                    setIsStatusModalOpen(false);
-                    return;
-            }
-
-            await fetch(`${apiUrl}/tables/${selectedTable._id}/status`, {
+            await fetch(`${apiUrl}/tables/${tableId}/status`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ status: newStatus, ...updateData })
+                body: JSON.stringify({ status, ...additionalData })
             });
 
             setIsStatusModalOpen(false);
             fetchTables();
-            toast.success(`Table status updated to ${newStatus}`);
+            toast.success(`Table status updated to ${status}`);
         } catch (err) {
             console.error("Failed to update table status:", err);
             toast.error("Failed to update status");
         }
+    };
+
+    const handleStatusAction = async (action: string) => {
+        if (!selectedTable) return;
+
+        let newStatus = selectedTable.status;
+        let updateData: Record<string, any> = {};
+
+        switch (action) {
+            case 'newOrder':
+                if (selectedTable.status !== 'Free') {
+                    toast.error(`Table ${selectedTable.tableNumber} is currently ${selectedTable.status}. It must be Free before creating a new order.`);
+                    return;
+                }
+                window.location.href = `/admin/pos?table=${selectedTable._id}`;
+                return;
+            case 'addItems':
+                window.location.href = `/admin/pos?table=${selectedTable._id}`;
+                return;
+            case 'reserve':
+                newStatus = 'Reserved';
+                break;
+
+            case 'markCleaning':
+                newStatus = 'Cleaning';
+                break;
+            case 'markFree':
+                if (selectedTable.status === 'Occupied') {
+                    setConfirmModal({
+                        isOpen: true,
+                        title: "Mark Table as Free?",
+                        message: `Table ${selectedTable.tableNumber} is currently occupied. Do you want to cancel the active order and mark it as free?`,
+                        confirmText: "Yes, Mark Free",
+                        variant: "warning",
+                        onConfirm: async () => {
+                            await performStatusUpdate(selectedTable._id, 'Free', { 
+                                currentOrder: undefined, 
+                                occupiedTime: undefined, 
+                                server: undefined 
+                            });
+                            setConfirmModal(prev => ({ ...prev, isOpen: false }));
+                        }
+                    });
+                    return;
+                }
+                newStatus = 'Free';
+                updateData = { currentOrder: undefined, occupiedTime: undefined, server: undefined };
+                break;
+            case 'edit':
+                handleOpenModal(selectedTable);
+                setIsStatusModalOpen(false);
+                return;
+            case 'delete':
+                handleDelete(selectedTable._id);
+                setIsStatusModalOpen(false);
+                return;
+        }
+
+        await performStatusUpdate(selectedTable._id, newStatus, updateData);
     };
 
     const counts = {
@@ -371,57 +427,53 @@ const AdminTables = () => {
         if (activeFilter === "Bill Printed") return !!tableServiceState[table._id]?.billPrinted;
         if (activeFilter === "Cleaning") return table.status === "Cleaning";
         return true;
-    });
-
-    return (
+    });    return (
         <AdminLayout title="Tables">
-            <div className="space-y-8 bg-[#f8fafc] min-h-screen -m-6 p-8">
+            <div className="space-y-4 lg:space-y-8 bg-[#f8fafc] min-h-screen -m-4 lg:-m-6 p-4 lg:p-8">
                 {/* Header Section */}
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-                    <div className="flex-1 flex items-center gap-4">
-                        <h1 className="text-3xl font-black text-[#0f172a]">Tables</h1>
-                        <button 
-                            onClick={fetchTables}
-                            className="p-2 hover:bg-neutral-100 rounded-full transition-all active:rotate-180 duration-500"
-                        >
-                            <RefreshCcw className="w-5 h-5 text-neutral-500" />
-                        </button>
-                    </div>
-
-                    <div className="flex-1 flex justify-center">
-                        <div className="flex items-center gap-2">
-                            <Filter className="w-4 h-4 text-neutral-400" />
-                            <div className="flex bg-neutral-100 p-1 rounded-full overflow-x-auto custom-scrollbar no-scrollbar">
-                                {Object.entries(counts).map(([label, count]) => (
-                                    <button
-                                        key={label}
-                                        onClick={() => setActiveFilter(label)}
-                                        className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${
-                                            activeFilter === label 
-                                            ? 'bg-blue-600 text-white shadow-lg' 
-                                            : 'text-neutral-500 hover:text-neutral-700'
-                                        }`}
-                                    >
-                                        {label} ({count})
-                                    </button>
-                                ))}
-                            </div>
+                <div className="flex flex-col gap-4">
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                            <h1 className="text-2xl lg:text-3xl font-black text-[#0f172a]">Tables</h1>
+                            <button 
+                                onClick={fetchTables}
+                                className="p-1.5 hover:bg-neutral-100 rounded-full transition-all active:rotate-180 duration-500"
+                            >
+                                <RefreshCcw className="w-4 h-4 text-neutral-500" />
+                            </button>
                         </div>
-                    </div>
-
-                    <div className="flex-1 flex justify-end">
                         <button
                             onClick={() => handleOpenModal()}
-                            className="flex items-center gap-2 px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold rounded-full shadow-lg shadow-blue-200 transition-all active:scale-95 whitespace-nowrap"
+                            className="flex items-center gap-2 px-4 py-2 lg:px-6 lg:py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs lg:text-sm font-bold rounded-full shadow-lg shadow-blue-200 transition-all active:scale-95"
                         >
-                            <Plus className="w-5 h-5" />
-                            Add Table
+                            <Plus className="w-4 h-4 lg:w-5 lg:h-5" />
+                            <span className="hidden xs:inline">Add Table</span>
+                            <span className="xs:hidden">Add</span>
                         </button>
+                    </div>
+
+                    <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
+                        <Filter className="w-3.5 h-3.5 text-neutral-400 shrink-0" />
+                        <div className="flex bg-neutral-100 p-1 rounded-full shrink-0">
+                            {Object.entries(counts).map(([label, count]) => (
+                                <button
+                                    key={label}
+                                    onClick={() => setActiveFilter(label)}
+                                    className={`px-3 py-1.5 rounded-full text-[10px] font-bold transition-all whitespace-nowrap ${
+                                        activeFilter === label 
+                                        ? 'bg-blue-600 text-white shadow-md' 
+                                        : 'text-neutral-500 hover:text-neutral-700'
+                                    }`}
+                                >
+                                    {label} ({count})
+                                </button>
+                            ))}
+                        </div>
                     </div>
                 </div>
 
                 {/* Grid Section */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 lg:gap-6">
                     {filteredTables.map((table) => (
                         <div 
                             key={table._id}
@@ -429,19 +481,19 @@ const AdminTables = () => {
                                 setSelectedTable(table);
                                 setIsStatusModalOpen(true);
                             }}
-                            className={`group relative cursor-pointer border-2 rounded-[2.5rem] p-6 transition-all hover:scale-[1.02] active:scale-95 ${
+                            className={`group relative cursor-pointer border-2 rounded-[1.5rem] lg:rounded-[2.5rem] p-4 lg:p-6 transition-all hover:scale-[1.02] active:scale-95 ${
                                 table.status === "Free" ? 'bg-[#f0fdf4] border-[#22c55e] text-[#15803d]' :
                                 table.status === "Reserved" ? 'bg-[#f5f3ff] border-[#8b5cf6] text-[#6d28d9]' :
                                 table.status === "Occupied" ? 'bg-[#fff1f2] border-[#f43f5e] text-[#be123c]' :
                                 'bg-[#eff6ff] border-[#3b82f6] text-[#1d4ed8]'
                             }`}
                         >
-                            <div className="flex justify-between items-start">
-                                <div className="space-y-1">
-                                    <h3 className="text-3xl font-black">{table.tableNumber}</h3>
-                                    <div className="flex items-center gap-2 opacity-70">
-                                        <Users className="w-4 h-4" />
-                                        <span className="text-sm font-bold">{table.capacity} seats</span>
+                            <div className="flex flex-col lg:flex-row justify-between lg:items-start gap-2">
+                                <div className="space-y-0.5">
+                                    <h3 className="text-xl lg:text-3xl font-black">{table.tableNumber}</h3>
+                                    <div className="flex items-center gap-1.5 opacity-70">
+                                        <Users className="w-3 h-3 lg:w-4 lg:h-4" />
+                                        <span className="text-[10px] lg:text-sm font-bold">{table.capacity} seats</span>
                                     </div>
                                 </div>
                                 
@@ -453,6 +505,11 @@ const AdminTables = () => {
                                 }`}>
                                     {table.status}
                                 </div>
+                                {table.status === "Occupied" && tableOrderStatuses[table._id] && (
+                                    <div className="mt-1 px-3 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest bg-white/40 text-[#be123c] border border-white/20 self-end">
+                                        {tableOrderStatuses[table._id]}
+                                    </div>
+                                )}
                             </div>
                             
                             {/* KOT / Bill Actions (Only for occupied tables) */}
@@ -607,30 +664,57 @@ const AdminTables = () => {
 
                         {/* Action Buttons */}
                         <div className="space-y-4">
-                            <div className="flex gap-4">
+                            {selectedTable.status === "Occupied" ? (
+                                <div className="space-y-4">
+                                    <div className="flex gap-4">
+                                        <button
+                                            onClick={() => handleStatusAction('addItems')}
+                                            className="flex-1 py-4 bg-[#1d7cf2] hover:bg-[#1a6ed9] text-white font-black rounded-2xl transition-all shadow-lg shadow-blue-100 flex items-center justify-center gap-2 uppercase tracking-widest text-[11px]"
+                                        >
+                                            <Plus className="w-5 h-5" />
+                                            <span>Add Items</span>
+                                        </button>
+                                    </div>
+                                    <button
+                                        onClick={() => {
+                                            if (selectedTable._id) {
+                                                window.location.href = `/admin/pos?table=${selectedTable._id}&checkout=true`;
+                                            } else {
+                                                toast.error("No active order reference found");
+                                            }
+                                        }}
+                                        className="w-full py-4 bg-emerald-600 hover:bg-emerald-700 text-white font-black rounded-2xl transition-all flex items-center justify-center gap-2 uppercase tracking-widest text-[11px] shadow-lg shadow-emerald-100"
+                                    >
+                                        <Receipt className="w-5 h-5" />
+                                        <span>Complete Payment</span>
+                                    </button>
+                                </div>
+                            ) : selectedTable.status === "Cleaning" ? (
                                 <button
-                                    onClick={() => handleStatusAction('newOrder')}
-                                    className="flex-1 py-3.5 bg-[#1d7cf2] hover:bg-[#1a6ed9] text-white font-bold rounded-2xl transition-all shadow-lg shadow-blue-100 flex items-center justify-center gap-2"
+                                    onClick={() => handleStatusAction('markFree')}
+                                    className="w-full py-4 bg-emerald-500 hover:bg-emerald-600 text-white font-black rounded-2xl transition-all flex items-center justify-center gap-2 uppercase tracking-widest text-[11px] shadow-lg shadow-emerald-100"
                                 >
-                                    <Plus className="w-5 h-5" />
-                                    <span>New Order</span>
+                                    <CheckCircle className="w-5 h-5" />
+                                    <span>Mark Free</span>
                                 </button>
-                                <button
-                                    onClick={() => handleStatusAction(selectedTable.status === "Free" ? 'reserve' : 'markFree')}
-                                    className="flex-1 py-3.5 bg-[#e2f3f5] hover:bg-[#d1eaed] text-[#0f172a] font-bold rounded-2xl transition-all flex items-center justify-center gap-2"
-                                >
-                                    {selectedTable.status === "Free" ? <Clock className="w-5 h-5" /> : <CheckCircle className="w-5 h-5" />}
-                                    <span>{selectedTable.status === "Free" ? "Reserve" : "Mark Free"}</span>
-                                </button>
-                            </div>
-
-                            <button
-                                onClick={() => handleStatusAction('markCleaning')}
-                                className="w-full py-4 bg-neutral-50 hover:bg-neutral-100 text-neutral-700 font-bold rounded-[2rem] border border-neutral-300 transition-all flex items-center justify-center gap-2"
-                            >
-                                <Sparkles className="w-5 h-5" />
-                                <span>Mark Cleaning</span>
-                            </button>
+                            ) : (
+                                <div className="flex gap-4">
+                                    <button
+                                        onClick={() => handleStatusAction('newOrder')}
+                                        className="flex-1 py-3.5 bg-[#1d7cf2] hover:bg-[#1a6ed9] text-white font-bold rounded-2xl transition-all shadow-lg shadow-blue-100 flex items-center justify-center gap-2"
+                                    >
+                                        <Plus className="w-5 h-5" />
+                                        <span>New Order</span>
+                                    </button>
+                                    <button
+                                        onClick={() => handleStatusAction(selectedTable.status === "Free" ? 'reserve' : 'markFree')}
+                                        className="flex-1 py-3.5 bg-[#e2f3f5] hover:bg-[#d1eaed] text-[#0f172a] font-bold rounded-2xl transition-all flex items-center justify-center gap-2"
+                                    >
+                                        {selectedTable.status === "Free" ? <Clock className="w-5 h-5" /> : <CheckCircle className="w-5 h-5" />}
+                                        <span>{selectedTable.status === "Free" ? "Reserve" : "Mark Free"}</span>
+                                    </button>
+                                </div>
+                            )}
 
                             <div className="flex gap-4 pt-4 border-t border-neutral-100 items-center">
                                 <button
@@ -656,8 +740,17 @@ const AdminTables = () => {
                 <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
                     <div className="bg-white rounded-[2rem] w-full max-w-sm shadow-2xl overflow-hidden p-8 border border-neutral-100">
                         <div className="flex flex-col items-center text-center">
-                            <div className="w-16 h-16 bg-rose-50 rounded-full flex items-center justify-center mb-6">
-                                <Trash2 className="w-8 h-8 text-rose-500" />
+                            <div className={`w-16 h-16 rounded-full flex items-center justify-center mb-6 ${
+                                confirmModal.variant === 'danger' ? 'bg-rose-50' : 
+                                confirmModal.variant === 'warning' ? 'bg-amber-50' : 'bg-blue-50'
+                            }`}>
+                                {confirmModal.variant === 'danger' ? (
+                                    <Trash2 className="w-8 h-8 text-rose-500" />
+                                ) : confirmModal.variant === 'warning' ? (
+                                    <Clock className="w-8 h-8 text-amber-500" />
+                                ) : (
+                                    <CheckCircle className="w-8 h-8 text-blue-500" />
+                                )}
                             </div>
                             <h3 className="text-xl font-bold text-neutral-900 mb-2">{confirmModal.title}</h3>
                             <p className="text-neutral-500 text-sm mb-8 leading-relaxed">
@@ -672,9 +765,13 @@ const AdminTables = () => {
                                 </button>
                                 <button
                                     onClick={confirmModal.onConfirm}
-                                    className="flex-1 py-3 bg-rose-500 hover:bg-rose-600 text-white font-bold rounded-2xl transition-all shadow-lg shadow-rose-100"
+                                    className={`flex-1 py-3 text-white font-bold rounded-2xl transition-all shadow-lg ${
+                                        confirmModal.variant === 'danger' ? 'bg-rose-500 hover:bg-rose-600 shadow-rose-100' :
+                                        confirmModal.variant === 'warning' ? 'bg-amber-500 hover:bg-amber-600 shadow-amber-100' :
+                                        'bg-blue-500 hover:bg-blue-600 shadow-blue-100'
+                                    }`}
                                 >
-                                    Delete
+                                    {confirmModal.confirmText || "Confirm"}
                                 </button>
                             </div>
                         </div>
