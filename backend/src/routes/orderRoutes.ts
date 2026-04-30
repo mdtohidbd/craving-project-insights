@@ -4,10 +4,52 @@ import axios from 'axios';
 import { Order } from '../models/Order';
 import { Customer } from '../models/Customer';
 import { Message } from '../models/Message';
+import { DeliveryMan } from '../models/DeliveryMan';
 import Notification from '../models/Notification';
 import Table from '../models/Table';
 
 const router = express.Router();
+
+async function sendSmsHelper(phone: string, text: string, orderId: any, customerId?: any) {
+    const apiKey = process.env.MIMSMS_API_KEY;
+    const senderId = process.env.MIMSMS_SENDER_ID;
+    
+    const isValid = apiKey && senderId && 
+        apiKey !== 'your_mimsms_api_key_here' && 
+        senderId !== 'your_sender_id_here' &&
+        phone && phone !== 'N/A';
+
+    let status: 'sent' | 'failed' | 'pending' = 'pending';
+
+    if (isValid) {
+        try {
+            const response = await axios.post('https://api.mimsms.com/api/sendsms/vr2', {
+                api_key: apiKey,
+                senderid: senderId,
+                number: phone,
+                text: text
+            });
+            console.log('MimSMS Response:', response.data);
+            status = 'sent';
+        } catch (error) {
+            console.error('Failed to send SMS:', error);
+            status = 'failed';
+        }
+    } else {
+        console.log('MimSMS credentials not configured or invalid. SMS logged as pending.');
+    }
+
+    await Message.create({
+        recipientNumber: phone,
+        messageContent: text,
+        type: 'automatic',
+        status: status,
+        relatedOrderId: orderId,
+        relatedCustomerId: customerId
+    });
+
+    return status;
+}
 
 router.post('/', async (req, res) => {
     try {
@@ -69,62 +111,15 @@ router.post('/', async (req, res) => {
             }
         }
 
-        // Prepare SMS to admin (or customer depending on preference)
-        // Here we send it to an admin number, or customer number
-        const smsPhone = savedOrder.customerInfo?.phone;
+        const formattedTotal = Number(savedOrder.total || 0).toFixed(2);
         
-        // MIMSMS Integration
-        const apiKey = process.env.MIMSMS_API_KEY;
-        const senderId = process.env.MIMSMS_SENDER_ID;
-        
-        // Check for valid credentials (not placeholder values)
-        const isValidCredentials = apiKey && senderId && 
-            apiKey !== 'your_mimsms_api_key_here' && 
-            senderId !== 'your_sender_id_here' &&
-            smsPhone && smsPhone !== 'N/A';
-        
-        if (isValidCredentials) {
-            const smsMessage = `Thank you for your order! Your order (Total: $${savedOrder.total}) has been received by Craving Insights.`;
-            let smsSuccess = false;
-            
-            try {
-                // According to MimSMS documentation
-                const response = await axios.post('https://api.mimsms.com/api/sendsms/vr2', {
-                    api_key: apiKey,
-                    senderid: senderId,
-                    number: smsPhone,
-                    text: smsMessage
-                });
-                console.log('MimSMS Response:', response.data);
-                savedOrder.smsStatus = 'sent';
-                smsSuccess = true;
-            } catch (smsError) {
-                console.error('Failed to send SMS:', smsError);
-                savedOrder.smsStatus = 'failed';
-            }
-            
-            await Message.create({
-                recipientNumber: smsPhone,
-                messageContent: smsMessage,
-                type: 'automatic',
-                status: smsSuccess ? 'sent' : 'failed',
-                relatedOrderId: savedOrder._id,
-                relatedCustomerId: customer ? customer._id : undefined
-            });
-            
+        // Only send initial SMS if it's NOT an online order
+        if (savedOrder.orderType !== 'online') {
+            const smsMessage = `Thank you for your order! Your order (Total: ৳${formattedTotal}) has been received by Craving Insights.`;
+            savedOrder.smsStatus = await sendSmsHelper(savedOrder.customerInfo?.phone || 'N/A', smsMessage, savedOrder._id, customer ? customer._id : undefined);
         } else {
-            console.log('MimSMS credentials not configured or invalid. SMS not sent.');
+            console.log('Online order detected. Delaying SMS until delivery man assignment.');
             savedOrder.smsStatus = 'pending';
-            
-            const smsMessage = `Thank you for your order! Your order (Total: $${savedOrder.total}) has been received by Craving Insights.`;
-            await Message.create({
-                recipientNumber: smsPhone || 'Unknown',
-                messageContent: smsMessage,
-                type: 'automatic',
-                status: 'pending',
-                relatedOrderId: savedOrder._id,
-                relatedCustomerId: customer ? customer._id : undefined
-            });
         }
         await savedOrder.save();
 
@@ -132,7 +127,7 @@ router.post('/', async (req, res) => {
         await Notification.create({
             type: 'order',
             title: 'New Order Received',
-            message: `Order #${savedOrder._id.toString().slice(-6)}: ৳${savedOrder.total}`,
+            message: `Order #${savedOrder._id.toString().slice(-6)}: ৳${formattedTotal}`,
         });
 
         res.status(201).json({ message: 'Order placed successfully', orderId: savedOrder._id });
@@ -184,9 +179,25 @@ router.get("/:id", async (req: Request, res: Response) => {
 
 router.put('/:id', async (req, res) => {
     try {
+        const oldOrder = await Order.findById(req.params.id);
         const order = await Order.findByIdAndUpdate(req.params.id, req.body, { new: true });
         if (!order) {
             return res.status(404).json({ message: 'Order not found' });
+        }
+
+        // Check if deliveryManId is newly assigned
+        if (req.body.deliveryManId && (!oldOrder || String(oldOrder.deliveryManId) !== String(req.body.deliveryManId))) {
+            const deliveryMan = await DeliveryMan.findById(req.body.deliveryManId);
+            if (deliveryMan && order.customerInfo) {
+                // 1. Message to customer
+                const itemsSummary = order.items.map(i => `${i.quantity}x ${i.title}`).join(', ');
+                const customerMessage = `Your order has been assigned to ${deliveryMan.name} (${deliveryMan.phone}). Total: ৳${order.total.toFixed(2)}. Items: ${itemsSummary}.`;
+                await sendSmsHelper(order.customerInfo.phone, customerMessage, order._id, order.customerId);
+
+                // 2. Message to delivery man
+                const dmMessage = `New order assigned: ${order.customerInfo.name}, ৳${order.total.toFixed(2)}, ${order.customerInfo.address}. Items: ${itemsSummary}.`;
+                await sendSmsHelper(deliveryMan.phone, dmMessage, order._id, order.customerId);
+            }
         }
 
         // Handle table status update on completion
@@ -252,6 +263,16 @@ router.get('/held/all', async (req, res) => {
         res.json(heldOrders);
     } catch (error) {
         res.status(500).json({ message: 'Failed to fetch held orders' });
+    }
+});
+
+// Get served orders
+router.get('/served/all', async (req, res) => {
+    try {
+        const servedOrders = await Order.find({ status: 'served' }).sort({ updatedAt: -1 });
+        res.json(servedOrders);
+    } catch (error) {
+        res.status(500).json({ message: 'Failed to fetch served orders' });
     }
 });
 

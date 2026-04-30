@@ -54,6 +54,14 @@ const AdminDashboard = () => {
 
     const COLORS = ['#eab308', '#3b82f6', '#10b981', '#f59e0b', '#ef4444'];
 
+    const normalizeSmsCurrency = (message: string) => {
+        return message.replace(/\$([0-9]+(?:\.[0-9]+)?)/g, (_, amount: string) => {
+            const parsed = Number(amount);
+            if (Number.isNaN(parsed)) return `৳${amount}`;
+            return `৳${parsed.toFixed(2)}`;
+        });
+    };
+
 
     useEffect(() => {
         const fetchDashboard = async () => {
@@ -121,34 +129,34 @@ const AdminDashboard = () => {
                 {reportType === "overview" && (
                     <>
                         {/* Metrics */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
                             <MetricCard
                                 title="Today's Sales"
                                 value={`৳${Math.round(data.metrics.todaySales || 0)}`}
                                 trend=""
                                 isPositive={true}
-                                icon={<TrendingUp className="w-4 h-4 text-emerald-400" />}
+                                icon={<TrendingUp className="w-3.5 h-3.5 lg:w-4 lg:h-4 text-emerald-400" />}
                             />
                             <MetricCard
                                 title="This Month"
                                 value={`৳${Math.round(data.metrics.monthlySales || 0)}`}
                                 trend=""
                                 isPositive={true}
-                                icon={<TrendingUp className="w-4 h-4 text-emerald-400" />}
+                                icon={<TrendingUp className="w-3.5 h-3.5 lg:w-4 lg:h-4 text-emerald-400" />}
                             />
                             <MetricCard
                                 title="Total Orders"
                                 value={(data.metrics.totalOrders || 0).toString()}
                                 trend=""
                                 isPositive={true}
-                                icon={<Package className="w-4 h-4 text-blue-400" />}
+                                icon={<Package className="w-3.5 h-3.5 lg:w-4 lg:h-4 text-blue-400" />}
                             />
                             <MetricCard
                                 title="Active Orders"
                                 value={data.metrics.activeOrders.toString()}
                                 trend=""
                                 isPositive={true}
-                                icon={<Clock className="w-4 h-4 text-amber-400" />}
+                                icon={<Clock className="w-3.5 h-3.5 lg:w-4 lg:h-4 text-amber-400" />}
                             />
                         </div>
 
@@ -272,7 +280,7 @@ const AdminDashboard = () => {
                                                     </span>
                                                 </div>
                                                 <p className="text-sm text-neutral-600 leading-relaxed">
-                                                    {sms.message}
+                                                    {normalizeSmsCurrency(sms.message)}
                                                 </p>
                                             </div>
                                         ))}
@@ -432,18 +440,18 @@ const AdminDashboard = () => {
 
 // Sub-component for clean metric cards
 const MetricCard = ({ title, value, trend, isPositive, icon }: { title: string, value: string, trend: string, isPositive: boolean, icon: React.ReactNode }) => (
-    <div className="bg-white border border-neutral-200 rounded-xl p-6 shadow-sm flex flex-col justify-between group hover:border-neutral-300 transition-colors">
-        <div className="flex justify-between items-start mb-4">
-            <h3 className="text-sm font-medium text-neutral-600">{title}</h3>
-            <div className="p-2 bg-neutral-100 rounded-lg group-hover:bg-neutral-200 transition-colors">
+    <div className="bg-white border border-neutral-200 rounded-xl p-4 lg:p-6 shadow-sm flex flex-col justify-between group hover:border-neutral-300 transition-colors">
+        <div className="flex justify-between items-start mb-3 lg:mb-4">
+            <h3 className="text-[10px] lg:text-sm font-bold text-neutral-500 uppercase tracking-wider">{title}</h3>
+            <div className="p-1.5 lg:p-2 bg-neutral-100 rounded-lg group-hover:bg-neutral-200 transition-colors shrink-0">
                 {icon}
             </div>
         </div>
-        <div className="flex items-baseline gap-2 mt-auto">
-            <span className="text-3xl font-bold tracking-tight text-neutral-900">{value}</span>
+        <div className="flex flex-col lg:flex-row lg:items-baseline gap-1 lg:gap-2 mt-auto">
+            <span className="text-xl lg:text-3xl font-black tracking-tight text-neutral-900">{value}</span>
             {trend && (
-                <span className={`text-sm font-medium flex items-center gap-1 ${isPositive ? 'text-emerald-600' : 'text-rose-600'}`}>
-                    {isPositive ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
+                <span className={`text-[10px] lg:text-sm font-bold flex items-center gap-0.5 ${isPositive ? 'text-emerald-600' : 'text-rose-600'}`}>
+                    {isPositive ? <ArrowUpRight className="w-2.5 h-2.5 lg:w-3 lg:h-3" /> : <ArrowDownRight className="w-2.5 h-2.5 lg:w-3 lg:h-3" />}
                     {trend}
                 </span>
             )}
