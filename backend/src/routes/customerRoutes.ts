@@ -106,4 +106,72 @@ router.post('/:id/message', async (req, res) => {
     }
 });
 
+// Send bulk SMS
+router.post('/bulk-message', async (req, res) => {
+    try {
+        const { message, customerIds } = req.body;
+        
+        if (!Array.isArray(customerIds) || customerIds.length === 0) {
+            return res.status(400).json({ message: 'No customers selected' });
+        }
+
+        const customers = await Customer.find({ _id: { $in: customerIds } });
+        if (customers.length === 0) {
+            return res.status(404).json({ message: 'No valid customers found' });
+        }
+
+        const apiKey = process.env.MIMSMS_API_KEY;
+        const senderId = process.env.MIMSMS_SENDER_ID;
+
+        if (!apiKey || !senderId) {
+            return res.status(400).json({ message: 'Missing SMS configuration' });
+        }
+
+        // Send individually or bulk if API supports it. MimSMS supports comma separated numbers.
+        // Let's gather all valid phones.
+        const validCustomers = customers.filter(c => c.phone && c.phone !== 'N/A');
+        
+        if (validCustomers.length === 0) {
+            return res.status(400).json({ message: 'Selected customers do not have valid phone numbers' });
+        }
+
+        const numbers = validCustomers.map(c => c.phone).join(',');
+
+        try {
+            const response = await axios.post('https://api.mimsms.com/api/sendsms/vr2', {
+                api_key: apiKey,
+                senderid: senderId,
+                number: numbers,
+                text: message
+            });
+            
+            // Create message records
+            const messageRecords = validCustomers.map(c => ({
+                recipientNumber: c.phone,
+                messageContent: message,
+                type: 'custom',
+                status: 'sent',
+                relatedCustomerId: c._id
+            }));
+            await Message.insertMany(messageRecords);
+            
+            res.json({ message: 'Bulk SMS sent successfully', data: response.data, count: validCustomers.length });
+        } catch (err) {
+            console.error(err);
+            const messageRecords = validCustomers.map(c => ({
+                recipientNumber: c.phone,
+                messageContent: message,
+                type: 'custom',
+                status: 'failed',
+                relatedCustomerId: c._id
+            }));
+            await Message.insertMany(messageRecords);
+            res.status(500).json({ message: 'Failed to send bulk SMS' });
+        }
+    } catch (error) {
+        console.error('Bulk SMS Error:', error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+});
+
 export default router;

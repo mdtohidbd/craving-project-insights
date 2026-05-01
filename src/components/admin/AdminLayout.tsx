@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
     LayoutDashboard, Package, MessageSquare,
     Settings, Bell, Menu, ArrowUpRight, Tag, List, ShoppingCart, Users, Calendar,
-    Table, CreditCard, BarChart3, Truck
-} from "lucide-react";
+    Table, CreditCard, BarChart3, Truck, LogOut, ShieldCheck, Layers, UserCog
+} from "lucide-react"; // Updated to clear Vite cache
 import { toast } from "sonner";
+import { useAuth } from "../../context/AuthContext";
+import { useModules } from "../../context/ModuleContext";
 
 interface AdminLayoutProps {
     children: React.ReactNode;
@@ -16,10 +18,50 @@ const AdminLayout = ({ children, title }: AdminLayoutProps) => {
     const [isNotificationOpen, setIsNotificationOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
     const location = useLocation();
+    const navigate = useNavigate();
+    const { user, logout, isSuperAdmin } = useAuth();
+    const { isModuleActive } = useModules();
+    const [pendingCount, setPendingCount] = useState(0);
+
+    useEffect(() => {
+        if (!isSuperAdmin) return;
+        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+        const fetchPending = async () => {
+            try {
+                const token = localStorage.getItem('craving_auth_token');
+                const res = await fetch(`${apiUrl}/auth/pending-count`, { headers: { Authorization: `Bearer ${token}` } });
+                if (res.ok) { const d = await res.json(); setPendingCount(d.count); }
+            } catch {}
+        };
+        fetchPending();
+        const iv = setInterval(fetchPending, 30000);
+        return () => clearInterval(iv);
+    }, [isSuperAdmin]);
 
     // Notifications State
     const [notifications, setNotifications] = useState<any[]>([]);
     const unreadCount = notifications.filter(n => !n.isRead).length;
+
+    const filterNotificationsByModule = (notifs: any[]) => {
+        if (isSuperAdmin) return notifs;
+        const allowed = user?.allowedModules || [];
+
+        if (user?.staffRole === 'delivery') {
+            return notifs.filter(n => n.targetUserId === user._id);
+        }
+
+        return notifs.filter(n => {
+            if (n.type === 'order' && allowed.includes('orders') && !n.targetUserId) return true;
+            if (n.type === 'reservation' && allowed.includes('reservations')) return true;
+            if (n.type === 'message' && allowed.includes('messages')) return true;
+            if (n.type === 'stock' && allowed.includes('inventory')) return true;
+            if (n.type === 'staff_signup' && allowed.includes('staff')) return true;
+            
+            // Allow if targeted to this specific user
+            if (n.targetUserId === user?._id) return true;
+            return false;
+        });
+    };
 
     const fetchNotifications = async () => {
         try {
@@ -27,7 +69,7 @@ const AdminLayout = ({ children, title }: AdminLayoutProps) => {
             const res = await fetch(`${apiUrl}/notifications`);
             if (res.ok) {
                 const data = await res.json();
-                setNotifications(data);
+                setNotifications(filterNotificationsByModule(data));
             }
         } catch (err) { }
     };
@@ -36,13 +78,19 @@ const AdminLayout = ({ children, title }: AdminLayoutProps) => {
         fetchNotifications();
         const interval = setInterval(fetchNotifications, 10000);
         return () => clearInterval(interval);
-    }, []);
+    }, [user, isSuperAdmin]); // added dependencies to refetch if user changes
 
     const markAllAsRead = async () => {
         try {
+            const unreadIds = notifications.filter(n => !n.isRead).map(n => n._id);
+            if (unreadIds.length === 0) return;
+            setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
             const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
-            const res = await fetch(`${apiUrl}/notifications/read-all`, { method: 'PATCH' });
-            if (res.ok) fetchNotifications();
+            await fetch(`${apiUrl}/notifications/read-all`, { 
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ ids: unreadIds })
+            });
         } catch (err) { }
     };
 
@@ -68,20 +116,38 @@ const AdminLayout = ({ children, title }: AdminLayoutProps) => {
         return date.toLocaleDateString();
     };
 
-    const navItems = [
-        { label: "Dashboard", path: "/admin", icon: <LayoutDashboard className="w-5 h-5" /> },
-        { label: "Tables", path: "/admin/tables", icon: <Table className="w-5 h-5" /> },
-        { label: "POS System", path: "/admin/pos", icon: <CreditCard className="w-5 h-5" /> },
-        { label: "Orders", path: "/admin/orders", icon: <ShoppingCart className="w-5 h-5" /> },
-        { label: "Delivery", path: "/admin/delivery", icon: <Truck className="w-5 h-5" /> },
-        { label: "Customers", path: "/admin/customers", icon: <Users className="w-5 h-5" /> },
-        { label: "Menu Items", path: "/admin/menu", icon: <List className="w-5 h-5" /> },
-        { label: "Inventory", path: "/admin/inventory", icon: <Package className="w-5 h-5" /> },
-        { label: "Reservations", path: "/admin/reservations", icon: <Calendar className="w-5 h-5" /> },
-        { label: "Notifications", path: "/admin/notifications", icon: <Bell className="w-5 h-5" /> },
-        { label: "Messages", path: "/admin/messages", icon: <MessageSquare className="w-5 h-5" /> },
-        { label: "Settings", path: "/admin/settings", icon: <Settings className="w-5 h-5" /> },
+    const handleLogout = () => {
+        logout();
+        navigate('/admin/login');
+        toast.success('Logged out successfully');
+    };
+
+    const allNavItems = [
+        { label: "Dashboard", path: "/admin", icon: <LayoutDashboard className="w-5 h-5" />, module: "dashboard" },
+        { label: "Tables", path: "/admin/tables", icon: <Table className="w-5 h-5" />, module: "tables" },
+        { label: "POS System", path: "/admin/pos", icon: <CreditCard className="w-5 h-5" />, module: "pos" },
+        { label: "Orders", path: "/admin/orders", icon: <ShoppingCart className="w-5 h-5" />, module: "orders" },
+        { label: "Delivery", path: "/admin/delivery", icon: <Truck className="w-5 h-5" />, module: "delivery" },
+        { label: "Customers", path: "/admin/customers", icon: <Users className="w-5 h-5" />, module: "customers" },
+        { label: "Menu Items", path: "/admin/menu", icon: <List className="w-5 h-5" />, module: "menu" },
+        { label: "Inventory", path: "/admin/inventory", icon: <Package className="w-5 h-5" />, module: "inventory" },
+        { label: "Reservations", path: "/admin/reservations", icon: <Calendar className="w-5 h-5" />, module: "reservations" },
+        { label: "Notifications", path: "/admin/notifications", icon: <Bell className="w-5 h-5" />, module: "notifications" },
+        { label: "Messages", path: "/admin/messages", icon: <MessageSquare className="w-5 h-5" />, module: "messages" },
+        { label: "Settings", path: "/admin/settings", icon: <Settings className="w-5 h-5" />, module: "settings" },
+        { label: "Users",       path: "/admin/users",       icon: <ShieldCheck className="w-5 h-5" />, module: "users",       superAdminOnly: true },
+        { label: "Staff",       path: "/admin/staff",       icon: <UserCog className="w-5 h-5" />,   module: "staff",       superAdminOnly: true },
+        { label: "Deliverymen", path: "/admin/deliverymen", icon: <Users className="w-5 h-5" />,       module: "deliverymen", superAdminOnly: true },
+        { label: "Modules",     path: "/admin/modules",     icon: <Layers className="w-5 h-5" />,    module: "modules",     superAdminOnly: true },
     ];
+
+    const navItems = allNavItems.filter((item) => {
+        if ((item as any).superAdminOnly) return isSuperAdmin;
+        // Hide globally disabled modules from non-superadmins
+        if (!isModuleActive(item.module)) return false;
+        if (isSuperAdmin) return true;
+        return (user?.allowedModules ?? []).includes(item.module);
+    });
 
     return (
         <div className="flex h-screen bg-neutral-50 text-neutral-900 overflow-hidden font-sans flex-col">
@@ -91,21 +157,33 @@ const AdminLayout = ({ children, title }: AdminLayoutProps) => {
                     <div className="h-16 flex items-center justify-between">
                         <div className="flex items-center gap-6">
                             <Link to="/admin" className="flex items-center gap-3 group transition-transform active:scale-95">
-                                <div className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center text-primary-foreground font-bold shadow-lg shadow-primary/20 rotate-3 group-hover:rotate-0 transition-transform">
+                                <div className="w-10 h-10 rounded-2xl bg-primary flex items-center justify-center text-primary-foreground font-black shadow-xl shadow-primary/30 rotate-6 group-hover:rotate-0 transition-all duration-500">
                                     S
                                 </div>
                                 <div className="flex flex-col">
-                                    <span className="text-base font-bold tracking-tight leading-none text-neutral-900">Skybridge</span>
-                                    <span className="text-[10px] uppercase font-bold text-primary tracking-widest mt-1">Management</span>
+                                    <span className="text-base font-black tracking-tight leading-none text-neutral-900 group-hover:text-primary transition-colors">Skybridge</span>
+                                    <span className="text-[10px] uppercase font-black text-primary tracking-[0.2em] mt-1.5 opacity-80">Management</span>
                                 </div>
                             </Link>
-                            <div className="h-6 w-px bg-neutral-200 hidden sm:block" />
-                            <h1 className="text-sm font-semibold text-neutral-500 uppercase tracking-widest hidden sm:block">
+                            <div className="h-8 w-px bg-neutral-200/60 hidden sm:block mx-2" />
+                            <h1 className="text-xl font-extrabold text-black uppercase tracking-[0.15em] hidden sm:block">
                                 {title}
                             </h1>
                         </div>
 
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-3">
+                            {/* User Info */}
+                            {user && (
+                                <div className="hidden sm:flex items-center gap-2 border-r border-neutral-200 pr-3">
+                                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary/30 to-primary/60 flex items-center justify-center text-primary font-bold text-sm">
+                                        {user.name.charAt(0).toUpperCase()}
+                                    </div>
+                                    <div className="flex flex-col">
+                                        <span className="text-xs font-bold text-neutral-800 leading-none">{user.name}</span>
+                                        <span className="text-[10px] font-semibold text-neutral-400 capitalize mt-0.5">{user.role}</span>
+                                    </div>
+                                </div>
+                            )}
                             {/* Notification Dropdown Container */}
                             <div className="relative" ref={dropdownRef}>
                                 <button
@@ -158,28 +236,58 @@ const AdminLayout = ({ children, title }: AdminLayoutProps) => {
                                     </div>
                                 )}
                             </div>
+
+                            {/* Logout */}
+                            <button
+                                onClick={handleLogout}
+                                title="Logout"
+                                className="p-2.5 text-neutral-500 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-all"
+                            >
+                                <LogOut className="w-4 h-4" />
+                            </button>
                         </div>
                     </div>
 
-                    {/* Nav Items - Integrated into Header area for slickness */}
-                    <nav className="border-t border-neutral-100/50">
-                        <div className="flex items-center gap-1 py-1.5 overflow-x-auto no-scrollbar scroll-smooth">
+                    {/* Nav Items - Premium Mushy Design */}
+                    <nav className="border-t border-neutral-100/50 bg-neutral-50/30">
+                        <div className="flex items-center gap-2 py-2.5 px-2 overflow-x-auto no-scrollbar scroll-smooth">
                             {navItems.map((item) => {
-                                const isActive = location.pathname === item.path || (item.path !== '/admin' && location.pathname.startsWith(item.path));
+                                const cleanPath = item.path.replace(/\/$/, '');
+                                const cleanCurrent = location.pathname.replace(/\/$/, '') || '/';
+                                const isActive = cleanCurrent === cleanPath || (cleanPath !== '/admin' && cleanCurrent.startsWith(cleanPath));
+                                
+                                const showBadge = item.module === 'staff' && pendingCount > 0;
 
                                 return (
                                     <Link
                                         key={item.path}
                                         to={item.path}
-                                        className={`flex items-center gap-2 px-3.5 py-2.5 rounded-xl transition-all whitespace-nowrap active:scale-95 ${isActive
-                                            ? 'bg-primary/10 text-primary font-bold'
-                                            : 'text-neutral-500 hover:text-neutral-900 hover:bg-neutral-100 font-semibold'
+                                        {...(isActive ? { "data-active": "true" } : {})}
+                                        ref={(el) => {
+                                            if (isActive && el) {
+                                                el.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+                                            }
+                                        }}
+                                        className={`relative flex items-center gap-2.5 px-4 py-2.5 rounded-2xl transition-all duration-300 whitespace-nowrap active:scale-[0.97] group ${isActive
+                                            ? 'bg-white text-primary font-black shadow-[0_4px_12px_rgba(0,0,0,0.08),inset_0_-2px_0_rgba(0,0,0,0.02)] scale-105 z-10'
+                                            : 'text-neutral-500 hover:text-neutral-900 hover:bg-white/60 font-bold hover:shadow-sm'
                                             }`}
                                     >
-                                        <div className={`transition-transform duration-300 ${isActive ? 'scale-110' : 'group-hover:scale-110'}`}>
+                                        <div className={`transition-all duration-500 ${isActive ? 'scale-110 rotate-0 text-primary' : 'group-hover:scale-110 group-hover:rotate-3 opacity-70 group-hover:opacity-100'}`}>
                                             {item.icon}
                                         </div>
-                                        <span className="text-[13px] tracking-tight">{item.label}</span>
+                                        <span className={`text-[13px] tracking-tight transition-colors ${isActive ? 'text-neutral-900' : ''}`}>{item.label}</span>
+                                        
+                                        {/* Active Indicator Line */}
+                                        {isActive && (
+                                            <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-6 h-1 bg-primary rounded-full shadow-[0_0_8px_rgba(var(--primary-rgb),0.4)]" />
+                                        )}
+
+                                        {showBadge && (
+                                            <span className="absolute -top-1 -right-1 min-w-[20px] h-[20px] px-1 rounded-full bg-rose-500 text-white text-[10px] font-black flex items-center justify-center shadow-lg border-2 border-white animate-bounce">
+                                                {pendingCount}
+                                            </span>
+                                        )}
                                     </Link>
                                 )
                             })}

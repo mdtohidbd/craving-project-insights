@@ -1,3 +1,4 @@
+import React, { Suspense, lazy } from 'react';
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -6,6 +7,13 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { SmoothScroll } from "./components/SmoothScroll";
 import { ScrollToTop } from "./components/ScrollToTop";
 import { CartProvider } from "./context/CartContext";
+import { AuthProvider } from "./context/AuthContext";
+import { ModuleProvider } from "./context/ModuleContext";
+import ProtectedRoute from "./components/admin/ProtectedRoute";
+import ModuleGuard from "./components/admin/ModuleGuard";
+import { Loader2 } from "lucide-react";
+
+// ─── Public pages (eager) ─────────────────────────────────────────────────────
 import Index from "./pages/Index";
 import About from "./pages/About";
 import Menu from "./pages/Menu";
@@ -15,61 +23,109 @@ import BlogDetail from "./pages/BlogDetail";
 import Contact from "./pages/Contact";
 import Checkout from "./pages/Checkout";
 import BookTable from "./pages/BookTable";
-import AdminDashboard from "./pages/admin/AdminDashboard";
-import AdminOrders from "./pages/admin/AdminOrders";
-import AdminCustomers from "./pages/admin/AdminCustomers";
-import AdminMenu from "./pages/admin/AdminMenu";
-import AdminCategories from "./pages/admin/AdminCategories";
-import AdminInventory from "./pages/admin/AdminInventory";
-import AdminMessages from "./pages/admin/AdminMessages";
-import AdminSettings from "./pages/admin/AdminSettings";
-import AdminReservations from "./pages/admin/AdminReservations";
-import AdminPOS from "./pages/admin/AdminPOS";
-import AdminTables from "./pages/admin/AdminTables";
-import AdminDelivery from "./pages/admin/AdminDelivery";
-import AdminNotifications from "./pages/admin/AdminNotifications";
 import OrderTracking from "@/pages/OrderTracking";
 import NotFound from "./pages/NotFound";
 
+// ─── Admin pages (lazy — only loaded when the route is visited) ───────────────
+const AdminLogin        = lazy(() => import('./pages/admin/AdminLogin'));
+const AdminDashboard    = lazy(() => import('./pages/admin/AdminDashboard'));
+const AdminOrders       = lazy(() => import('./pages/admin/AdminOrders'));
+const AdminCustomers    = lazy(() => import('./pages/admin/AdminCustomers'));
+const AdminMenu         = lazy(() => import('./pages/admin/AdminMenu'));
+const AdminCategories   = lazy(() => import('./pages/admin/AdminCategories'));
+const AdminInventory    = lazy(() => import('./pages/admin/AdminInventory'));
+const AdminMessages     = lazy(() => import('./pages/admin/AdminMessages'));
+const AdminSettings     = lazy(() => import('./pages/admin/AdminSettings'));
+const AdminReservations = lazy(() => import('./pages/admin/AdminReservations'));
+const AdminPOS          = lazy(() => import('./pages/admin/AdminPOS'));
+const AdminTables       = lazy(() => import('./pages/admin/AdminTables'));
+const AdminDelivery     = lazy(() => import('./pages/admin/AdminDelivery'));
+const AdminNotifications = lazy(() => import('./pages/admin/AdminNotifications'));
+const AdminUsers        = lazy(() => import('./pages/admin/AdminUsers'));
+const AdminModules      = lazy(() => import('./pages/admin/AdminModules'));
+const AdminStaff        = lazy(() => import('./pages/admin/AdminStaff'));
+const AdminDeliverymen  = lazy(() => import('./pages/admin/AdminDeliverymen'));
+
 const queryClient = new QueryClient();
+
+// Fallback spinner shown while lazy chunks are loading
+const PageLoader = () => (
+  <div className="min-h-screen flex items-center justify-center bg-neutral-50">
+    <Loader2 className="w-8 h-8 animate-spin text-primary" />
+  </div>
+);
+
+// Convenience wrapper: ProtectedRoute + ModuleGuard + Suspense in one
+const AdminRoute = ({
+  moduleId,
+  children,
+  requireSuperAdmin = false,
+}: {
+  moduleId: string;
+  children: React.ReactNode;
+  requireSuperAdmin?: boolean;
+}) => (
+  <ProtectedRoute requireSuperAdmin={requireSuperAdmin}>
+    <Suspense fallback={<PageLoader />}>
+      <ModuleGuard moduleId={moduleId}>{children}</ModuleGuard>
+    </Suspense>
+  </ProtectedRoute>
+);
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <CartProvider>
-        <Toaster />
-        <Sonner />
-        <SmoothScroll />
-        <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-          <ScrollToTop />
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/menu" element={<Menu />} />
-            <Route path="/menu/:slug" element={<MenuDetail />} />
-            <Route path="/blog" element={<Blog />} />
-            <Route path="/blog/:id" element={<BlogDetail />} />
-            <Route path="/contact" element={<Contact />} />
-            <Route path="/checkout" element={<Checkout />} />
-            <Route path="/book-table" element={<BookTable />} />
-            <Route path="/track-order" element={<OrderTracking />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="/admin" element={<AdminDashboard />} />
-            <Route path="/admin/tables" element={<AdminTables />} />
-            <Route path="/admin/orders" element={<AdminOrders />} />
-            <Route path="/admin/customers" element={<AdminCustomers />} />
-            <Route path="/admin/menu" element={<AdminMenu />} />
-            <Route path="/admin/categories" element={<AdminCategories />} />
-            <Route path="/admin/inventory" element={<AdminInventory />} />
-            <Route path="/admin/messages" element={<AdminMessages />} />
-            <Route path="/admin/notifications" element={<AdminNotifications />} />
-            <Route path="/admin/settings" element={<AdminSettings />} />
-            <Route path="/admin/reservations" element={<AdminReservations />} />
-            <Route path="/admin/delivery" element={<AdminDelivery />} />
-            <Route path="/admin/pos" element={<AdminPOS />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
+        <AuthProvider>
+          <ModuleProvider>
+            <Toaster />
+            <Sonner />
+            <SmoothScroll />
+            <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+              <ScrollToTop />
+              <Routes>
+                {/* ── Public Routes ─────────────────────────────────────── */}
+                <Route path="/"            element={<Index />} />
+                <Route path="/about"       element={<About />} />
+                <Route path="/menu"        element={<Menu />} />
+                <Route path="/menu/:slug"  element={<MenuDetail />} />
+                <Route path="/blog"        element={<Blog />} />
+                <Route path="/blog/:id"    element={<BlogDetail />} />
+                <Route path="/contact"     element={<Contact />} />
+                <Route path="/checkout"    element={<Checkout />} />
+                <Route path="/book-table"  element={<BookTable />} />
+                <Route path="/track-order" element={<OrderTracking />} />
+
+                {/* ── Admin Auth (no guard) ──────────────────────────────── */}
+                <Route path="/admin/login" element={<Suspense fallback={<PageLoader />}><AdminLogin /></Suspense>} />
+
+                {/* ── Protected + Module-Guarded Admin Routes ────────────── */}
+                <Route path="/admin"                element={<AdminRoute moduleId="dashboard"><AdminDashboard /></AdminRoute>} />
+                <Route path="/admin/tables"         element={<AdminRoute moduleId="tables"><AdminTables /></AdminRoute>} />
+                <Route path="/admin/orders"         element={<AdminRoute moduleId="orders"><AdminOrders /></AdminRoute>} />
+                <Route path="/admin/customers"      element={<AdminRoute moduleId="customers"><AdminCustomers /></AdminRoute>} />
+                <Route path="/admin/menu"           element={<AdminRoute moduleId="menu"><AdminMenu /></AdminRoute>} />
+                <Route path="/admin/categories"     element={<AdminRoute moduleId="menu"><AdminCategories /></AdminRoute>} />
+                <Route path="/admin/inventory"      element={<AdminRoute moduleId="inventory"><AdminInventory /></AdminRoute>} />
+                <Route path="/admin/messages"       element={<AdminRoute moduleId="messages"><AdminMessages /></AdminRoute>} />
+                <Route path="/admin/notifications"  element={<AdminRoute moduleId="notifications"><AdminNotifications /></AdminRoute>} />
+                <Route path="/admin/settings"       element={<AdminRoute moduleId="settings"><AdminSettings /></AdminRoute>} />
+                <Route path="/admin/reservations"   element={<AdminRoute moduleId="reservations"><AdminReservations /></AdminRoute>} />
+                <Route path="/admin/delivery"       element={<AdminRoute moduleId="delivery"><AdminDelivery /></AdminRoute>} />
+                <Route path="/admin/pos"            element={<AdminRoute moduleId="pos"><AdminPOS /></AdminRoute>} />
+
+                {/* ── Superadmin-only Routes ─────────────────────────────── */}
+                <Route path="/admin/users"       element={<AdminRoute moduleId="users"       requireSuperAdmin><AdminUsers /></AdminRoute>} />
+                <Route path="/admin/modules"     element={<AdminRoute moduleId="modules"     requireSuperAdmin><AdminModules /></AdminRoute>} />
+                <Route path="/admin/staff"       element={<AdminRoute moduleId="staff"       requireSuperAdmin><AdminStaff /></AdminRoute>} />
+                <Route path="/admin/deliverymen" element={<AdminRoute moduleId="deliverymen" requireSuperAdmin><AdminDeliverymen /></AdminRoute>} />
+
+                {/* ── 404 ────────────────────────────────────────────────── */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </BrowserRouter>
+          </ModuleProvider>
+        </AuthProvider>
       </CartProvider>
     </TooltipProvider>
   </QueryClientProvider>

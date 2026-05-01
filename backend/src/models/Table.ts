@@ -56,7 +56,7 @@ const TableSchema: Schema = new Schema({
 });
 
 // Index for better query performance
-TableSchema.index({ tableNumber: 1 });
+
 TableSchema.index({ status: 1 });
 TableSchema.index({ sortOrder: 1 });
 

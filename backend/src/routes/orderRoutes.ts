@@ -113,13 +113,17 @@ router.post('/', async (req, res) => {
 
         const formattedTotal = Number(savedOrder.total || 0).toFixed(2);
         
-        // Only send initial SMS if it's NOT an online order
-        if (savedOrder.orderType !== 'online') {
-            const smsMessage = `Thank you for your order! Your order (Total: ৳${formattedTotal}) has been received by Craving Insights.`;
-            savedOrder.smsStatus = await sendSmsHelper(savedOrder.customerInfo?.phone || 'N/A', smsMessage, savedOrder._id, customer ? customer._id : undefined);
-        } else {
+        // Handle SMS notifications based on order type
+        if (savedOrder.orderType === 'online') {
             console.log('Online order detected. Delaying SMS until delivery man assignment.');
             savedOrder.smsStatus = 'pending';
+        } else if (savedOrder.orderType === 'dine-in' || savedOrder.orderType === 'takeaway') {
+            console.log(`${savedOrder.orderType} order detected. Skipping automatic SMS per request.`);
+            savedOrder.smsStatus = 'pending';
+        } else {
+            // This handles any other non-online, non-dine-in, non-takeaway orders if they exist
+            const smsMessage = `Thank you for your order! Your order (Total: ৳${formattedTotal}) has been received by Craving Insights.`;
+            savedOrder.smsStatus = await sendSmsHelper(savedOrder.customerInfo?.phone || 'N/A', smsMessage, savedOrder._id, customer ? customer._id : undefined);
         }
         await savedOrder.save();
 
@@ -139,7 +143,12 @@ router.post('/', async (req, res) => {
 
 router.get('/', async (req, res) => {
     try {
-        const orders = await Order.find().sort({ createdAt: -1 });
+        const filter: any = {};
+        const { deliveryManId, orderType, deliveryStatus } = req.query;
+        if (deliveryManId) filter.deliveryManId = deliveryManId;
+        if (orderType)     filter.orderType     = orderType;
+        if (deliveryStatus) filter.deliveryStatus = deliveryStatus;
+        const orders = await Order.find(filter).sort({ createdAt: -1 });
         res.json(orders);
     } catch (error) {
         res.status(500).json({ message: 'Failed to fetch orders' });
@@ -189,14 +198,26 @@ router.put('/:id', async (req, res) => {
         if (req.body.deliveryManId && (!oldOrder || String(oldOrder.deliveryManId) !== String(req.body.deliveryManId))) {
             const deliveryMan = await DeliveryMan.findById(req.body.deliveryManId);
             if (deliveryMan && order.customerInfo) {
-                // 1. Message to customer
                 const itemsSummary = order.items.map(i => `${i.quantity}x ${i.title}`).join(', ');
-                const customerMessage = `Your order has been assigned to ${deliveryMan.name} (${deliveryMan.phone}). Total: ৳${order.total.toFixed(2)}. Items: ${itemsSummary}.`;
-                await sendSmsHelper(order.customerInfo.phone, customerMessage, order._id, order.customerId);
+
+                // 1. Message to customer (Only for online/delivery orders)
+                if (order.orderType !== 'dine-in' && order.orderType !== 'takeaway') {
+                    const customerMessage = `Your order has been assigned to ${deliveryMan.name} (${deliveryMan.phone}). Total: ৳${order.total.toFixed(2)}. Items: ${itemsSummary}.`;
+                    await sendSmsHelper(order.customerInfo.phone, customerMessage, order._id, order.customerId);
+                }
 
                 // 2. Message to delivery man
                 const dmMessage = `New order assigned: ${order.customerInfo.name}, ৳${order.total.toFixed(2)}, ${order.customerInfo.address}. Items: ${itemsSummary}.`;
                 await sendSmsHelper(deliveryMan.phone, dmMessage, order._id, order.customerId);
+
+                if (deliveryMan.userId) {
+                    await Notification.create({
+                        type: 'order',
+                        title: 'New Delivery Assigned',
+                        message: `You have been assigned to deliver Order #${order._id.toString().slice(-6)} to ${order.customerInfo.name}.`,
+                        targetUserId: deliveryMan.userId
+                    });
+                }
             }
         }
 
@@ -327,6 +348,23 @@ router.post('/:id/payment', async (req, res) => {
         res.json(order);
     } catch (error) {
         res.status(500).json({ message: 'Failed to process payment' });
+    }
+});
+
+// Mark bill as printed
+router.patch('/:id/print-bill', async (req, res) => {
+    try {
+        const order = await Order.findByIdAndUpdate(
+            req.params.id,
+            { isBillPrinted: true },
+            { new: true }
+        );
+        if (!order) {
+            return res.status(404).json({ message: 'Order not found' });
+        }
+        res.json(order);
+    } catch (error) {
+        res.status(500).json({ message: 'Failed to mark bill as printed' });
     }
 });
 

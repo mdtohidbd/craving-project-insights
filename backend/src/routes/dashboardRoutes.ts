@@ -2,13 +2,15 @@ import express from 'express';
 import { Order } from '../models/Order';
 import { InventoryItem } from '../models/InventoryItem';
 import { Message } from '../models/Message';
+import { User } from '../models/User';
+import { DeliveryMan } from '../models/DeliveryMan';
 
 const router = express.Router();
 
 router.get('/', async (req, res) => {
     try {
-        // 1. Calculate Total Sales (completed orders or all paid orders)
-        const completedOrders = await Order.find({ status: { $ne: 'cancelled' } });
+        // 1. Calculate Total Sales (completed or delivered orders only)
+        const completedOrders = await Order.find({ status: { $in: ['completed', 'delivered'] } });
         const totalSales = completedOrders.reduce((sum, order) => sum + order.total, 0);
         const totalOrders = completedOrders.length;
         
@@ -44,7 +46,7 @@ router.get('/', async (req, res) => {
             nextDay.setDate(nextDay.getDate() + 1);
 
             const dailyOrders = await Order.find({
-                status: { $ne: 'cancelled' },
+                status: { $in: ['completed', 'delivered'] },
                 createdAt: { $gte: date, $lt: nextDay }
             });
             
@@ -88,6 +90,36 @@ router.get('/', async (req, res) => {
             };
         });
 
+        // 7. Staff Analysis Data
+        const activeStaff = await User.find({ role: 'staff', status: 'approved' });
+        const activeStaffCount = activeStaff.length;
+
+        const staffRoleCounts: Record<string, number> = {};
+        activeStaff.forEach(staff => {
+            const role = staff.staffRole || 'unassigned';
+            staffRoleCounts[role] = (staffRoleCounts[role] || 0) + 1;
+        });
+        const staffRoleBreakdown = Object.entries(staffRoleCounts).map(([role, count]) => ({ role, count }));
+
+        const activeDeliveryMen = await DeliveryMan.find({ status: 'active' });
+        const activeDeliveryManCount = activeDeliveryMen.length;
+
+        const deliveryManPerformance = await Promise.all(activeDeliveryMen.map(async (dm) => {
+            const completedOrders = await Order.countDocuments({ 
+                deliveryManId: dm._id, 
+                deliveryStatus: 'delivered' 
+            });
+            return {
+                id: dm._id,
+                name: dm.name,
+                phone: dm.phone,
+                completedOrders
+            };
+        }));
+        
+        deliveryManPerformance.sort((a, b) => b.completedOrders - a.completedOrders);
+        const topDeliveryMen = deliveryManPerformance.slice(0, 5);
+
         res.json({
             metrics: {
                 totalSales,
@@ -99,7 +131,13 @@ router.get('/', async (req, res) => {
             },
             salesData,
             inventoryData: formattedInventory,
-            smsNotifications: formattedMessages
+            smsNotifications: formattedMessages,
+            staffData: {
+                activeStaffCount,
+                activeDeliveryManCount,
+                staffRoleBreakdown,
+                deliveryManPerformance: topDeliveryMen
+            }
         });
     } catch (error) {
         console.error('Dashboard Error:', error);

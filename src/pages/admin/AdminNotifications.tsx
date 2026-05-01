@@ -1,23 +1,47 @@
 import React, { useState, useEffect } from "react";
+import { useAuth } from "../../context/AuthContext";
 import AdminLayout from "../../components/admin/AdminLayout";
 import {
     Bell, ShoppingCart, MessageSquare, AlertCircle,
-    CheckCircle2, Clock, Trash2, Filter, Search, Calendar
+    CheckCircle2, Clock, Trash2, Filter, Search, Calendar, Users
 } from "lucide-react";
 
 interface Notification {
     _id: string;
-    type: 'order' | 'reservation' | 'message' | 'stock';
+    type: 'order' | 'reservation' | 'message' | 'stock' | 'staff_signup';
     title: string;
     message: string;
     createdAt: string;
     isRead: boolean;
+    targetUserId?: string;
 }
 
 const AdminNotifications = () => {
+    const { user, isSuperAdmin } = useAuth();
     const [notifications, setNotifications] = useState<Notification[]>([]);
     const [loading, setLoading] = useState(true);
     const [filter, setFilter] = useState('all');
+
+    const filterNotificationsByModule = (notifs: any[]) => {
+        if (isSuperAdmin) return notifs;
+        const allowed = user?.allowedModules || [];
+
+        if (user?.staffRole === 'delivery') {
+            return notifs.filter(n => n.targetUserId === user._id);
+        }
+
+        return notifs.filter(n => {
+            if (n.type === 'order' && allowed.includes('orders') && !n.targetUserId) return true;
+            if (n.type === 'reservation' && allowed.includes('reservations')) return true;
+            if (n.type === 'message' && allowed.includes('messages')) return true;
+            if (n.type === 'stock' && allowed.includes('inventory')) return true;
+            if (n.type === 'staff_signup' && allowed.includes('staff')) return true;
+            
+            // Allow if targeted to this specific user
+            if (n.targetUserId === user?._id) return true;
+            return false;
+        });
+    };
 
     const fetchNotifications = async () => {
         try {
@@ -25,7 +49,7 @@ const AdminNotifications = () => {
             const res = await fetch(`${apiUrl}/notifications`);
             if (res.ok) {
                 const data = await res.json();
-                setNotifications(data);
+                setNotifications(filterNotificationsByModule(data));
             }
         } catch (error) {
             console.error("Failed to fetch notifications:", error);
@@ -38,7 +62,7 @@ const AdminNotifications = () => {
         fetchNotifications();
         const interval = setInterval(fetchNotifications, 10000);
         return () => clearInterval(interval);
-    }, []);
+    }, [user, isSuperAdmin]);
 
     const filteredNotifications = notifications.filter(n => {
         if (filter === 'all') return true;
@@ -68,11 +92,15 @@ const AdminNotifications = () => {
 
     const markAllAsRead = async () => {
         try {
+            const unreadIds = notifications.filter(n => !n.isRead).map(n => n._id);
+            if (unreadIds.length === 0) return;
+            setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
             const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
-            const res = await fetch(`${apiUrl}/notifications/read-all`, { method: 'PATCH' });
-            if (res.ok) {
-                setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
-            }
+            await fetch(`${apiUrl}/notifications/read-all`, { 
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ ids: unreadIds })
+            });
         } catch (err) { }
     };
 
@@ -91,18 +119,18 @@ const AdminNotifications = () => {
         <AdminLayout title="Notifications">
             <div className="max-w-4xl mx-auto space-y-6 pb-20">
                 {/* Header Actions */}
-                <div className="flex flex-col sm:flex-row gap-4 items-center justify-between bg-white p-4 rounded-xl border border-neutral-200 shadow-sm sticky top-0 z-10">
-                    <div className="flex gap-2 p-1 bg-neutral-100 rounded-lg overflow-x-auto no-scrollbar scroll-smooth">
-                        {['all', 'unread', 'order', 'reservation', 'message', 'stock'].map((f) => (
+                <div className="flex flex-col sm:flex-row gap-4 items-center justify-between bg-white p-4 rounded-[8px] border border-neutral-200 shadow-sm sticky top-0 z-10">
+                    <div className="flex gap-2 p-1 bg-neutral-100 rounded-[4px] overflow-x-auto no-scrollbar scroll-smooth">
+                        {['all', 'unread', 'order', 'reservation', 'message', 'stock', 'staff_signup'].map((f) => (
                             <button
                                 key={f}
                                 onClick={() => setFilter(f)}
-                                className={`px-3 py-1.5 rounded-md text-xs font-bold capitalize transition-all whitespace-nowrap ${filter === f
+                                className={`px-3 py-1.5 rounded-[4px] text-xs font-bold capitalize transition-all whitespace-nowrap ${filter === f
                                         ? 'bg-white text-primary shadow-sm'
                                         : 'text-neutral-500 hover:text-neutral-900'
                                     }`}
                             >
-                                {f}
+                                {f.replace('_', ' ')}
                             </button>
                         ))}
                     </div>
@@ -124,19 +152,21 @@ const AdminNotifications = () => {
                     ) : filteredNotifications.map((notif) => (
                         <div
                             key={notif._id}
-                            className={`group relative bg-white border rounded-xl p-5 transition-all hover:shadow-md ${notif.isRead ? 'border-neutral-200 opacity-80' : 'border-primary/20 bg-primary/[0.02] shadow-sm shadow-primary/5'
+                            className={`group relative bg-white border rounded-[8px] p-5 transition-all hover:shadow-md ${notif.isRead ? 'border-neutral-200 opacity-80' : 'border-primary/20 bg-primary/[0.02] shadow-sm shadow-primary/5'
                                 }`}
                         >
                             <div className="flex items-start gap-4">
-                                <div className={`p-3 rounded-xl ${notif.type === 'order' ? 'bg-emerald-100 text-emerald-600' :
+                                <div className={`p-3 rounded-[8px] ${notif.type === 'order' ? 'bg-emerald-100 text-primary' :
                                         notif.type === 'reservation' ? 'bg-rose-100 text-rose-600' :
                                             notif.type === 'message' ? 'bg-blue-100 text-blue-600' :
-                                                'bg-amber-100 text-amber-600'
+                                                notif.type === 'staff_signup' ? 'bg-purple-100 text-purple-600' :
+                                                    'bg-amber-100 text-amber-600'
                                     }`}>
                                     {notif.type === 'order' ? <ShoppingCart className="w-6 h-6" /> :
                                         notif.type === 'reservation' ? <Calendar className="w-6 h-6" /> :
                                             notif.type === 'message' ? <MessageSquare className="w-6 h-6" /> :
-                                                <AlertCircle className="w-6 h-6" />}
+                                                notif.type === 'staff_signup' ? <Users className="w-6 h-6" /> :
+                                                    <AlertCircle className="w-6 h-6" />}
                                 </div>
                                 <div className="flex-1 min-w-0">
                                     <div className="flex items-center justify-between mb-1">
@@ -176,7 +206,7 @@ const AdminNotifications = () => {
                     ))}
 
                     {!loading && filteredNotifications.length === 0 && (
-                        <div className="text-center py-20 bg-white rounded-2xl border border-dashed border-neutral-300">
+                        <div className="text-center py-20 bg-white rounded-[12px] border border-dashed border-neutral-300">
                             <Bell className="w-12 h-12 text-neutral-200 mx-auto mb-4" />
                             <h3 className="text-lg font-bold text-neutral-400">No notifications found</h3>
                             <p className="text-sm text-neutral-400 mt-1">Status: All caught up</p>

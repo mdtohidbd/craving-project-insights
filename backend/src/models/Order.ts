@@ -38,7 +38,8 @@ const orderSchema = new mongoose.Schema({
     tableId: { type: mongoose.Schema.Types.ObjectId, ref: 'Table' },
     orderType: { type: String, default: 'dine-in' }, // dine-in, takeaway, online
     deliveryManId: { type: mongoose.Schema.Types.ObjectId, ref: 'DeliveryMan' },
-    deliveryStatus: { type: String, enum: ['pending', 'assigned', 'out_for_delivery', 'delivered'], default: 'pending' }
+    deliveryStatus: { type: String, enum: ['pending', 'assigned', 'out_for_delivery', 'delivered'], default: 'pending' },
+    isBillPrinted: { type: Boolean, default: false }
 }, {
     timestamps: true
 });

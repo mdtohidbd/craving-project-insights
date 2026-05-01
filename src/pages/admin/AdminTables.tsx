@@ -521,7 +521,7 @@ const AdminTables = () => {
                                             handleTableServiceAction(table, "kot");
                                         }}
                                         disabled={processingServiceTableId === table._id}
-                                        className={`py-2.5 rounded-xl border text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 ${
+                                        className={`py-2.5 rounded-[8px] border text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 ${
                                             tableServiceState[table._id]?.kotSent
                                                 ? "bg-blue-600 text-white border-blue-600"
                                                 : "bg-white/70 hover:bg-white text-blue-700 border-blue-200"
@@ -536,10 +536,10 @@ const AdminTables = () => {
                                             handleTableServiceAction(table, "bill");
                                         }}
                                         disabled={processingServiceTableId === table._id}
-                                        className={`py-2.5 rounded-xl border text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 ${
+                                        className={`py-2.5 rounded-[8px] border text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 ${
                                             tableServiceState[table._id]?.billPrinted
-                                                ? "bg-emerald-600 text-white border-emerald-600"
-                                                : "bg-white/70 hover:bg-white text-emerald-700 border-emerald-200"
+                                                ? "bg-primary/90 text-white border-emerald-600"
+                                                : "bg-white/70 hover:bg-white text-primary border-primary/30"
                                         } disabled:opacity-60 disabled:cursor-not-allowed`}
                                     >
                                         <Receipt className="w-3.5 h-3.5" />
@@ -594,7 +594,7 @@ const AdminTables = () => {
                                     type="text"
                                     value={formData.tableNumber}
                                     onChange={e => setFormData({ ...formData, tableNumber: e.target.value })}
-                                    className="w-full px-4 py-3 bg-neutral-50 border border-neutral-200 rounded-2xl outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all font-bold"
+                                    className="w-full px-4 py-3 bg-neutral-50 border border-neutral-200 rounded-[12px] outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all font-bold"
                                     placeholder="e.g., T1"
                                 />
                             </div>
@@ -606,7 +606,7 @@ const AdminTables = () => {
                                         type="number"
                                         value={formData.capacity}
                                         onChange={e => setFormData({ ...formData, capacity: parseInt(e.target.value) })}
-                                        className="w-full px-4 py-3 bg-neutral-50 border border-neutral-200 rounded-2xl outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all font-bold"
+                                        className="w-full px-4 py-3 bg-neutral-50 border border-neutral-200 rounded-[12px] outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all font-bold"
                                     />
                                 </div>
                                 <div>
@@ -616,13 +616,13 @@ const AdminTables = () => {
                                         type="number"
                                         value={formData.sortOrder}
                                         onChange={e => setFormData({ ...formData, sortOrder: parseInt(e.target.value) })}
-                                        className="w-full px-4 py-3 bg-neutral-50 border border-neutral-200 rounded-2xl outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all font-bold"
+                                        className="w-full px-4 py-3 bg-neutral-50 border border-neutral-200 rounded-[12px] outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all font-bold"
                                     />
                                 </div>
                             </div>
                             <div className="flex gap-4 pt-4">
-                                <button type="button" onClick={() => setIsModalOpen(false)} className="flex-1 py-4 bg-neutral-100 hover:bg-neutral-200 text-neutral-600 font-bold rounded-2xl transition-colors">Cancel</button>
-                                <button type="submit" className="flex-1 py-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-2xl transition-colors shadow-lg shadow-blue-100">
+                                <button type="button" onClick={() => setIsModalOpen(false)} className="flex-1 py-4 bg-neutral-100 hover:bg-neutral-200 text-neutral-600 font-bold rounded-[12px] transition-colors">Cancel</button>
+                                <button type="submit" className="flex-1 py-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-[12px] transition-colors shadow-lg shadow-blue-100">
                                     {editingTable ? "Update" : "Create"}
                                 </button>
                             </div>
@@ -639,7 +639,7 @@ const AdminTables = () => {
                         <div className="flex justify-between items-center pb-4 border-b border-neutral-100 mb-6">
                             <div className="flex items-center gap-3">
                                 <div className={`w-3 h-3 rounded-full ${
-                                    selectedTable.status === "Free" ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.6)]' :
+                                    selectedTable.status === "Free" ? 'bg-primary shadow-[0_0_8px_rgba(16,185,129,0.6)]' :
                                     selectedTable.status === "Reserved" ? 'bg-purple-500' :
                                     'bg-rose-500'
                                 }`} />
@@ -654,7 +654,7 @@ const AdminTables = () => {
                         <div className="flex justify-between items-center mb-8">
                             <span className="text-neutral-500 font-bold">Status</span>
                             <div className={`px-4 py-1.5 rounded-full text-xs font-black ${
-                                selectedTable.status === "Free" ? 'bg-emerald-50 text-emerald-600' :
+                                selectedTable.status === "Free" ? 'bg-primary/10 text-primary' :
                                 selectedTable.status === "Reserved" ? 'bg-purple-50 text-purple-600' :
                                 'bg-rose-50 text-rose-600'
                             }`}>
@@ -669,7 +669,7 @@ const AdminTables = () => {
                                     <div className="flex gap-4">
                                         <button
                                             onClick={() => handleStatusAction('addItems')}
-                                            className="flex-1 py-4 bg-[#1d7cf2] hover:bg-[#1a6ed9] text-white font-black rounded-2xl transition-all shadow-lg shadow-blue-100 flex items-center justify-center gap-2 uppercase tracking-widest text-[11px]"
+                                            className="flex-1 py-4 bg-[#1d7cf2] hover:bg-[#1a6ed9] text-white font-black rounded-[12px] transition-all shadow-lg shadow-blue-100 flex items-center justify-center gap-2 uppercase tracking-widest text-[11px]"
                                         >
                                             <Plus className="w-5 h-5" />
                                             <span>Add Items</span>
@@ -683,7 +683,7 @@ const AdminTables = () => {
                                                 toast.error("No active order reference found");
                                             }
                                         }}
-                                        className="w-full py-4 bg-emerald-600 hover:bg-emerald-700 text-white font-black rounded-2xl transition-all flex items-center justify-center gap-2 uppercase tracking-widest text-[11px] shadow-lg shadow-emerald-100"
+                                        className="w-full py-4 bg-primary/90 hover:bg-emerald-700 text-white font-black rounded-[12px] transition-all flex items-center justify-center gap-2 uppercase tracking-widest text-[11px] shadow-lg shadow-emerald-100"
                                     >
                                         <Receipt className="w-5 h-5" />
                                         <span>Complete Payment</span>
@@ -692,7 +692,7 @@ const AdminTables = () => {
                             ) : selectedTable.status === "Cleaning" ? (
                                 <button
                                     onClick={() => handleStatusAction('markFree')}
-                                    className="w-full py-4 bg-emerald-500 hover:bg-emerald-600 text-white font-black rounded-2xl transition-all flex items-center justify-center gap-2 uppercase tracking-widest text-[11px] shadow-lg shadow-emerald-100"
+                                    className="w-full py-4 bg-primary hover:bg-primary/90 text-white font-black rounded-[12px] transition-all flex items-center justify-center gap-2 uppercase tracking-widest text-[11px] shadow-lg shadow-emerald-100"
                                 >
                                     <CheckCircle className="w-5 h-5" />
                                     <span>Mark Free</span>
@@ -701,14 +701,14 @@ const AdminTables = () => {
                                 <div className="flex gap-4">
                                     <button
                                         onClick={() => handleStatusAction('newOrder')}
-                                        className="flex-1 py-3.5 bg-[#1d7cf2] hover:bg-[#1a6ed9] text-white font-bold rounded-2xl transition-all shadow-lg shadow-blue-100 flex items-center justify-center gap-2"
+                                        className="flex-1 py-3.5 bg-[#1d7cf2] hover:bg-[#1a6ed9] text-white font-bold rounded-[12px] transition-all shadow-lg shadow-blue-100 flex items-center justify-center gap-2"
                                     >
                                         <Plus className="w-5 h-5" />
                                         <span>New Order</span>
                                     </button>
                                     <button
                                         onClick={() => handleStatusAction(selectedTable.status === "Free" ? 'reserve' : 'markFree')}
-                                        className="flex-1 py-3.5 bg-[#e2f3f5] hover:bg-[#d1eaed] text-[#0f172a] font-bold rounded-2xl transition-all flex items-center justify-center gap-2"
+                                        className="flex-1 py-3.5 bg-[#e2f3f5] hover:bg-[#d1eaed] text-[#0f172a] font-bold rounded-[12px] transition-all flex items-center justify-center gap-2"
                                     >
                                         {selectedTable.status === "Free" ? <Clock className="w-5 h-5" /> : <CheckCircle className="w-5 h-5" />}
                                         <span>{selectedTable.status === "Free" ? "Reserve" : "Mark Free"}</span>
@@ -759,13 +759,13 @@ const AdminTables = () => {
                             <div className="flex gap-3 w-full">
                                 <button
                                     onClick={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
-                                    className="flex-1 py-3 bg-neutral-100 hover:bg-neutral-200 text-neutral-700 font-bold rounded-2xl transition-all"
+                                    className="flex-1 py-3 bg-neutral-100 hover:bg-neutral-200 text-neutral-700 font-bold rounded-[12px] transition-all"
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     onClick={confirmModal.onConfirm}
-                                    className={`flex-1 py-3 text-white font-bold rounded-2xl transition-all shadow-lg ${
+                                    className={`flex-1 py-3 text-white font-bold rounded-[12px] transition-all shadow-lg ${
                                         confirmModal.variant === 'danger' ? 'bg-rose-500 hover:bg-rose-600 shadow-rose-100' :
                                         confirmModal.variant === 'warning' ? 'bg-amber-500 hover:bg-amber-600 shadow-amber-100' :
                                         'bg-blue-500 hover:bg-blue-600 shadow-blue-100'

@@ -116,13 +116,13 @@ const AdminReservations = () => {
             <div className="space-y-6">
                 
                 {/* Header Actions */}
-                <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center bg-white border border-neutral-200 p-4 rounded-xl">
+                <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center bg-white border border-neutral-200 p-4 rounded-[8px]">
                     <div className="relative w-full sm:w-96">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 w-5 h-5" />
                         <input 
                             type="text" 
                             placeholder="Search by Name, Booking ID or Phone..." 
-                            className="w-full bg-white border border-neutral-200 rounded-lg pl-10 pr-4 py-2 text-neutral-900 focus:outline-none focus:border-primary/50 transition-colors placeholder:text-neutral-400"
+                            className="w-full bg-white border border-neutral-200 rounded-[4px] pl-10 pr-4 py-2 text-neutral-900 focus:outline-none focus:border-primary/50 transition-colors placeholder:text-neutral-400"
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
@@ -131,7 +131,7 @@ const AdminReservations = () => {
                     <div className="flex items-center gap-2 w-full sm:w-auto">
                         <Filter className="w-5 h-5 text-neutral-400" />
                         <select 
-                            className="bg-white border border-neutral-200 rounded-lg px-4 py-2 text-neutral-900 focus:outline-none focus:border-primary/50 transition-colors w-full sm:w-auto"
+                            className="bg-white border border-neutral-200 rounded-[4px] px-4 py-2 text-neutral-900 focus:outline-none focus:border-primary/50 transition-colors w-full sm:w-auto"
                             value={statusFilter}
                             onChange={(e) => setStatusFilter(e.target.value)}
                         >
@@ -144,7 +144,7 @@ const AdminReservations = () => {
                 </div>
 
                 {/* Reservations List */}
-                <div className="bg-white border border-neutral-200 rounded-xl overflow-hidden">
+                <div className="bg-white border border-neutral-200 rounded-[8px] overflow-hidden">
                     <div className="overflow-x-auto">
                         <table className="w-full text-left border-collapse">
                             <thead>
@@ -256,13 +256,13 @@ const AdminReservations = () => {
                             <div className="flex gap-3 w-full">
                                 <button
                                     onClick={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
-                                    className="flex-1 py-3 bg-neutral-100 hover:bg-neutral-200 text-neutral-700 font-bold rounded-2xl transition-all"
+                                    className="flex-1 py-3 bg-neutral-100 hover:bg-neutral-200 text-neutral-700 font-bold rounded-[12px] transition-all"
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     onClick={confirmModal.onConfirm}
-                                    className="flex-1 py-3 bg-rose-500 hover:bg-rose-600 text-white font-bold rounded-2xl transition-all shadow-lg shadow-rose-100"
+                                    className="flex-1 py-3 bg-rose-500 hover:bg-rose-600 text-white font-bold rounded-[12px] transition-all shadow-lg shadow-rose-100"
                                 >
                                     Delete
                                 </button>

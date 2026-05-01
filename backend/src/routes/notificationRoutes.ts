@@ -30,8 +30,13 @@ router.patch('/:id/read', async (req, res) => {
 // Mark all as read
 router.patch('/read-all', async (req, res) => {
     try {
-        await Notification.updateMany({ isRead: false }, { isRead: true });
-        res.json({ message: 'All notifications marked as read' });
+        const { ids } = req.body || {};
+        if (ids && Array.isArray(ids) && ids.length > 0) {
+            await Notification.updateMany({ _id: { $in: ids }, isRead: false }, { isRead: true });
+        } else {
+            await Notification.updateMany({ isRead: false }, { isRead: true });
+        }
+        res.json({ message: 'Notifications marked as read' });
     } catch (error) {
         res.status(500).json({ message: 'Error updating notifications' });
     }

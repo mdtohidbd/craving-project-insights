@@ -33,6 +33,7 @@ interface Order {
     tableNumber?: string;
     deliveryManId?: string;
     deliveryStatus?: 'pending' | 'assigned' | 'out_for_delivery' | 'delivered';
+    isBillPrinted?: boolean;
 }
 
 const KDSOrderCard = ({ order, onUpdateStatus, onSelect, onCompleteOrder }: { order: Order, onUpdateStatus: any, onSelect: any, onCompleteOrder: (order: Order) => void }) => {
@@ -50,7 +51,7 @@ const KDSOrderCard = ({ order, onUpdateStatus, onSelect, onCompleteOrder }: { or
     };
 
     return (
-        <div className={`bg-white border border-neutral-200 rounded-xl lg:rounded-2xl p-4 lg:p-5 shadow-sm hover:shadow-xl hover:-translate-y-0.5 lg:hover:-translate-y-1 transition-all duration-300 group relative overflow-hidden ${isUrgent(order.createdAt) && order.status !== 'ready' ? 'border-rose-200 ring-2 lg:ring-4 ring-rose-500/5' : ''}`}>
+        <div className={`bg-white border border-neutral-200 rounded-[8px] lg:rounded-[12px] p-4 lg:p-5 shadow-sm hover:shadow-xl hover:-translate-y-0.5 lg:hover:-translate-y-1 transition-all duration-300 group relative overflow-hidden ${isUrgent(order.createdAt) && order.status !== 'ready' ? 'border-rose-200 ring-2 lg:ring-4 ring-rose-500/5' : ''}`}>
             {/* Urgent Indicator */}
             {isUrgent(order.createdAt) && order.status !== 'ready' && (
                 <div className="absolute top-0 left-0 w-full h-1 bg-rose-500 animate-pulse" />
@@ -58,7 +59,7 @@ const KDSOrderCard = ({ order, onUpdateStatus, onSelect, onCompleteOrder }: { or
 
             <div className="flex justify-between items-start mb-3 lg:mb-4">
                 <div className="flex items-center gap-2 lg:gap-3">
-                    <div className="bg-neutral-50 p-1.5 lg:p-2 rounded-lg lg:rounded-xl border border-neutral-100 group-hover:bg-amber-50 group-hover:border-amber-100 transition-colors shrink-0">
+                    <div className="bg-neutral-50 p-1.5 lg:p-2 rounded-[4px] lg:rounded-[8px] border border-neutral-100 group-hover:bg-amber-50 group-hover:border-amber-100 transition-colors shrink-0">
                         <FileText className="w-3.5 h-3.5 lg:w-4 lg:h-4 text-neutral-600 group-hover:text-amber-600" />
                     </div>
                     <div className="min-w-0">
@@ -66,13 +67,18 @@ const KDSOrderCard = ({ order, onUpdateStatus, onSelect, onCompleteOrder }: { or
                             <h4 className="font-serif font-bold text-base lg:text-lg text-neutral-900 leading-none">#{order._id.slice(-6).toUpperCase()}</h4>
                             <span className={`px-1.5 py-0.5 rounded text-[7px] lg:text-[8px] font-black uppercase tracking-tighter border ${order.orderType === 'online' ? 'bg-indigo-50 text-indigo-600 border-indigo-100' :
                                 order.orderType === 'takeaway' ? 'bg-amber-50 text-amber-600 border-amber-100' :
-                                    'bg-emerald-50 text-emerald-600 border-emerald-100'
+                                    'bg-primary/10 text-primary border-emerald-100'
                                 }`}>
                                 {order.orderType}
                             </span>
                             {order.orderType === 'dine-in' && order.tableNumber && (
                                 <span className="px-1.5 py-0.5 rounded bg-blue-50 text-blue-600 border border-blue-100 text-[7px] lg:text-[8px] font-black uppercase tracking-tighter flex items-center gap-1">
                                     <Users className="w-2 h-2" /> T-{order.tableNumber}
+                                </span>
+                            )}
+                            {order.isBillPrinted && (
+                                <span className="px-1.5 py-0.5 rounded bg-primary/10 text-primary border border-emerald-100 text-[7px] lg:text-[8px] font-black uppercase tracking-tighter flex items-center gap-1">
+                                    <Printer className="w-2 h-2" /> Bill Printed
                                 </span>
                             )}
                         </div>
@@ -91,7 +97,7 @@ const KDSOrderCard = ({ order, onUpdateStatus, onSelect, onCompleteOrder }: { or
 
             <div className="mb-3 lg:mb-4">
                 <p className="text-[9px] lg:text-[10px] font-bold text-neutral-400 uppercase tracking-widest mb-1.5 lg:mb-2 px-1">Items</p>
-                <div className="bg-neutral-50/50 rounded-lg lg:rounded-xl p-2.5 lg:p-3 border border-neutral-100 space-y-1.5 lg:space-y-2.5">
+                <div className="bg-neutral-50/50 rounded-[4px] lg:rounded-[8px] p-2.5 lg:p-3 border border-neutral-100 space-y-1.5 lg:space-y-2.5">
                     {order.items.map((item, idx) => (
                         <div key={idx} className="flex justify-between items-center text-xs lg:text-sm">
                             <div className="flex items-center gap-2">
@@ -105,7 +111,7 @@ const KDSOrderCard = ({ order, onUpdateStatus, onSelect, onCompleteOrder }: { or
 
             <div className="border-t border-neutral-100 pt-3 lg:pt-4 mt-auto">
                 <div className="flex items-center gap-2 lg:gap-3 mb-3 lg:mb-4 px-1">
-                    <div className="w-1 lg:w-1.5 h-1 lg:h-1.5 rounded-full bg-emerald-500 shrink-0" />
+                    <div className="w-1 lg:w-1.5 h-1 lg:h-1.5 rounded-full bg-primary shrink-0" />
                     <p className="text-[10px] lg:text-xs font-semibold text-neutral-600 truncate">{order.customerInfo?.name || "Walk-in Guest"}</p>
                 </div>
 
@@ -113,7 +119,7 @@ const KDSOrderCard = ({ order, onUpdateStatus, onSelect, onCompleteOrder }: { or
                     {order.status === 'pending' && (
                         <button
                             onClick={() => onUpdateStatus(order._id, 'preparing')}
-                            className="flex-1 py-2 lg:py-3 bg-neutral-900 hover:bg-black text-white text-[9px] lg:text-[11px] font-bold uppercase tracking-widest rounded-lg lg:rounded-xl transition-all flex items-center justify-center gap-1.5 lg:gap-2 active:scale-95 shadow-sm lg:shadow-lg"
+                            className="flex-1 py-2 lg:py-3 bg-neutral-900 hover:bg-black text-white text-[9px] lg:text-[11px] font-bold uppercase tracking-widest rounded-[4px] lg:rounded-[8px] transition-all flex items-center justify-center gap-1.5 lg:gap-2 active:scale-95 shadow-sm lg:shadow-lg"
                         >
                             <Clock className="w-3 h-3 lg:w-3.5 lg:h-3.5" /> <span className="truncate">Start cooking</span>
                         </button>
@@ -121,7 +127,7 @@ const KDSOrderCard = ({ order, onUpdateStatus, onSelect, onCompleteOrder }: { or
                     {order.status === 'preparing' && (
                         <button
                             onClick={() => onUpdateStatus(order._id, 'ready')}
-                            className="flex-1 py-2 lg:py-3 bg-blue-600 hover:bg-blue-700 text-white text-[9px] lg:text-[11px] font-bold uppercase tracking-widest rounded-lg lg:rounded-xl transition-all flex items-center justify-center gap-1.5 lg:gap-2 active:scale-95 shadow-sm lg:shadow-lg"
+                            className="flex-1 py-2 lg:py-3 bg-blue-600 hover:bg-blue-700 text-white text-[9px] lg:text-[11px] font-bold uppercase tracking-widest rounded-[4px] lg:rounded-[8px] transition-all flex items-center justify-center gap-1.5 lg:gap-2 active:scale-95 shadow-sm lg:shadow-lg"
                         >
                             <CheckCircle className="w-3 h-3 lg:w-3.5 lg:h-3.5" /> <span className="truncate">Mark Ready</span>
                         </button>
@@ -129,7 +135,7 @@ const KDSOrderCard = ({ order, onUpdateStatus, onSelect, onCompleteOrder }: { or
                     {order.status === 'ready' && (
                         <button
                             onClick={() => onCompleteOrder(order)}
-                            className="flex-1 py-2 lg:py-3 bg-emerald-600 hover:bg-emerald-700 text-white text-[9px] lg:text-[11px] font-bold uppercase tracking-widest rounded-lg lg:rounded-xl transition-all flex items-center justify-center gap-1.5 lg:gap-2 active:scale-95 shadow-sm lg:shadow-lg"
+                            className="flex-1 py-2 lg:py-3 bg-primary/90 hover:bg-emerald-700 text-white text-[9px] lg:text-[11px] font-bold uppercase tracking-widest rounded-[4px] lg:rounded-[8px] transition-all flex items-center justify-center gap-1.5 lg:gap-2 active:scale-95 shadow-sm lg:shadow-lg"
                         >
                             <CheckCheck className="w-3 h-3 lg:w-3.5 lg:h-3.5" />
                             <span className="truncate">{order.orderType === 'online' ? 'Deliver' : 'Serve'}</span>
@@ -138,7 +144,7 @@ const KDSOrderCard = ({ order, onUpdateStatus, onSelect, onCompleteOrder }: { or
                     {order.status === 'served' && (
                         <button
                             onClick={() => onSelect(order, true)}
-                            className="flex-1 py-2 lg:py-3 bg-indigo-600 hover:bg-indigo-700 text-white text-[9px] lg:text-[11px] font-bold uppercase tracking-widest rounded-lg lg:rounded-xl transition-all flex items-center justify-center gap-1.5 lg:gap-2 active:scale-95 shadow-sm lg:shadow-lg"
+                            className="flex-1 py-2 lg:py-3 bg-indigo-600 hover:bg-indigo-700 text-white text-[9px] lg:text-[11px] font-bold uppercase tracking-widest rounded-[4px] lg:rounded-[8px] transition-all flex items-center justify-center gap-1.5 lg:gap-2 active:scale-95 shadow-sm lg:shadow-lg"
                         >
                             <Receipt className="w-3 h-3 lg:w-3.5 lg:h-3.5" /> <span className="truncate">Bill</span>
                         </button>
@@ -344,16 +350,16 @@ const AdminOrders = () => {
         <AdminLayout title="Kitchen Display System">
             <div className="space-y-6 print:hidden h-full flex flex-col">
                 <div className="flex flex-col sm:flex-row justify-between gap-6 items-center mb-6">
-                    <div className="flex bg-white border border-neutral-200 p-1.5 rounded-2xl shrink-0 shadow-sm">
+                    <div className="flex bg-white border border-neutral-200 p-1.5 rounded-[12px] shrink-0 shadow-sm">
                         <button
                             onClick={() => setViewMode('kds')}
-                            className={`px-6 py-3 text-[11px] font-bold uppercase tracking-widest rounded-xl transition-all flex items-center gap-2.5 ${viewMode === 'kds' ? 'bg-neutral-900 text-white shadow-lg' : 'text-neutral-500 hover:text-neutral-900 hover:bg-neutral-50'}`}
+                            className={`px-6 py-3 text-[11px] font-bold uppercase tracking-widest rounded-[8px] transition-all flex items-center gap-2.5 ${viewMode === 'kds' ? 'bg-neutral-900 text-white shadow-lg' : 'text-neutral-500 hover:text-neutral-900 hover:bg-neutral-50'}`}
                         >
                             <LayoutGrid className="w-4 h-4" /> KDS BOARD
                         </button>
                         <button
                             onClick={() => setViewMode('list')}
-                            className={`px-6 py-3 text-[11px] font-bold uppercase tracking-widest rounded-xl transition-all flex items-center gap-2.5 ${viewMode === 'list' ? 'bg-neutral-900 text-white shadow-lg' : 'text-neutral-500 hover:text-neutral-900 hover:bg-neutral-50'}`}
+                            className={`px-6 py-3 text-[11px] font-bold uppercase tracking-widest rounded-[8px] transition-all flex items-center gap-2.5 ${viewMode === 'list' ? 'bg-neutral-900 text-white shadow-lg' : 'text-neutral-500 hover:text-neutral-900 hover:bg-neutral-50'}`}
                         >
                             <ListIcon className="w-4 h-4" /> LIST VIEW
                         </button>
@@ -366,7 +372,7 @@ const AdminOrders = () => {
                             placeholder="Search orders..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full bg-neutral-100/50 border border-neutral-200 text-neutral-900 rounded-2xl pl-11 pr-4 py-3.5 focus:outline-none focus:bg-white focus:border-amber-500 focus:ring-4 focus:ring-amber-500/10 transition-all placeholder:text-neutral-400 text-[13px] font-medium"
+                            className="w-full bg-neutral-100/50 border border-neutral-200 text-neutral-900 rounded-[12px] pl-11 pr-4 py-3.5 focus:outline-none focus:bg-white focus:border-amber-500 focus:ring-4 focus:ring-amber-500/10 transition-all placeholder:text-neutral-400 text-[13px] font-medium"
                         />
                     </div>
                 </div>
@@ -381,7 +387,7 @@ const AdminOrders = () => {
                             <div className="flex-1 overflow-y-auto custom-scrollbar pr-2">
                                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6 pb-6">
                                     {filteredListOrders.map((order) => (
-                                        <div key={order._id} className="bg-white border border-neutral-200 rounded-2xl p-6 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col group relative overflow-hidden">
+                                        <div key={order._id} className="bg-white border border-neutral-200 rounded-[12px] p-6 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col group relative overflow-hidden">
                                             <div className="absolute top-0 left-0 w-1.5 h-full bg-neutral-200 group-hover:bg-amber-500 transition-colors"></div>
 
                                             <div className="flex justify-between items-start mb-5">
@@ -393,19 +399,32 @@ const AdminOrders = () => {
                                                     <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-400">
                                                         {new Date(order.createdAt).toLocaleString('en-GB', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
                                                     </p>
+                                                    <div className="flex gap-2 mt-2">
+                                                        <span className={`px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest border ${order.orderType === 'online' ? 'bg-indigo-50 text-indigo-600 border-indigo-100' :
+                                                            order.orderType === 'takeaway' ? 'bg-amber-50 text-amber-600 border-amber-100' :
+                                                                'bg-primary/10 text-primary border-emerald-100'
+                                                            }`}>
+                                                            {order.orderType}
+                                                        </span>
+                                                        {order.isBillPrinted && (
+                                                            <span className="px-2 py-0.5 rounded bg-primary/10 text-primary border border-emerald-100 text-[8px] font-black uppercase tracking-widest flex items-center gap-1">
+                                                                <Printer className="w-2 h-2" /> Printed
+                                                            </span>
+                                                        )}
+                                                    </div>
                                                 </div>
                                                 <div className="text-right">
                                                     <span className="font-serif font-bold text-xl text-amber-600">৳{Math.round(order.total)}</span>
                                                 </div>
                                             </div>
 
-                                            <div className="bg-neutral-50 rounded-xl p-4 mb-5 border border-neutral-100 flex-1 group-hover:bg-white transition-colors">
+                                            <div className="bg-neutral-50 rounded-[8px] p-4 mb-5 border border-neutral-100 flex-1 group-hover:bg-white transition-colors">
                                                 <p className="font-bold text-neutral-900 text-sm leading-tight mb-1">{order.customerInfo.name || "Walk-in Guest"}</p>
                                                 <p className="text-[11px] font-medium text-neutral-500">{order.customerInfo.phone || "No phone provided"}</p>
                                             </div>
 
                                             <div className="flex items-center justify-between mb-5">
-                                                <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[9px] font-bold uppercase tracking-wider border transition-all ${order.smsStatus === 'sent' ? 'bg-emerald-50 text-emerald-600 border-emerald-200/50 shadow-sm shadow-emerald-50' :
+                                                <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[4px] text-[9px] font-bold uppercase tracking-wider border transition-all ${order.smsStatus === 'sent' ? 'bg-primary/10 text-primary border-primary/30/50 shadow-sm shadow-emerald-50' :
                                                     order.smsStatus === 'failed' ? 'bg-rose-50 text-rose-600 border-rose-200/50 shadow-sm shadow-rose-50' :
                                                         'bg-amber-50 text-amber-600 border-amber-200/50 shadow-sm shadow-amber-50'
                                                     }`}>
@@ -418,10 +437,10 @@ const AdminOrders = () => {
                                                 <select
                                                     value={order.status}
                                                     onChange={(e) => updateOrderStatus(order._id, e.target.value)}
-                                                    className={`bg-white border text-[11px] rounded-lg px-2.5 py-2 font-bold uppercase tracking-tighter focus:outline-none focus:ring-4 focus:ring-amber-500/10 transition-all cursor-pointer ${order.status === 'completed' ? 'border-emerald-200 text-emerald-600 bg-emerald-50/10' :
+                                                    className={`bg-white border text-[11px] rounded-[4px] px-2.5 py-2 font-bold uppercase tracking-tighter focus:outline-none focus:ring-4 focus:ring-amber-500/10 transition-all cursor-pointer ${order.status === 'completed' ? 'border-primary/30 text-primary bg-primary/10/10' :
                                                         order.status === 'pending' ? 'border-amber-200 text-amber-600 bg-amber-50/10' :
                                                             order.status === 'preparing' ? 'border-blue-200 text-blue-600 bg-blue-50/10' :
-                                                                order.status === 'ready' ? 'border-emerald-200 text-emerald-600 bg-emerald-50/10' :
+                                                                order.status === 'ready' ? 'border-primary/30 text-primary bg-primary/10/10' :
                                                                     order.status === 'served' ? 'border-amber-200 text-amber-600 bg-amber-50/10' :
                                                                         order.status === 'assigned' ? 'border-indigo-200 text-indigo-600 bg-indigo-50/10' :
                                                                             order.status === 'cancelled' ? 'border-rose-200 text-rose-600 bg-rose-50/10' :
@@ -443,7 +462,7 @@ const AdminOrders = () => {
                                                     setSelectedOrder(order);
                                                     setViewType(order.status === 'completed' ? 'bill' : 'kot');
                                                 }}
-                                                className="w-full py-3 bg-neutral-900 group-hover:bg-amber-600 text-white text-[11px] font-bold uppercase tracking-widest rounded-xl transition-all flex items-center justify-center gap-2 active:scale-95 shadow-lg shadow-neutral-100 group-hover:shadow-amber-200"
+                                                className="w-full py-3 bg-neutral-900 group-hover:bg-amber-600 text-white text-[11px] font-bold uppercase tracking-widest rounded-[8px] transition-all flex items-center justify-center gap-2 active:scale-95 shadow-lg shadow-neutral-100 group-hover:shadow-amber-200"
                                             >
                                                 View Details
                                                 <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
@@ -451,7 +470,7 @@ const AdminOrders = () => {
                                         </div>
                                     ))}
                                     {filteredListOrders.length === 0 && (
-                                        <div className="col-span-full py-16 flex flex-col items-center justify-center text-neutral-500 bg-neutral-50 rounded-xl border border-neutral-200 border-dashed">
+                                        <div className="col-span-full py-16 flex flex-col items-center justify-center text-neutral-500 bg-neutral-50 rounded-[8px] border border-neutral-200 border-dashed">
                                             <Search className="w-12 h-12 mb-4 opacity-50" />
                                             <p>No orders found matching "{searchTerm}"</p>
                                         </div>
@@ -461,7 +480,7 @@ const AdminOrders = () => {
                         ) : (
                             <div className="flex-1 flex flex-col md:flex-row gap-4 md:gap-6 overflow-y-auto md:overflow-y-hidden pb-6 md:pb-0 custom-scrollbar min-h-0">
                                 {/* Column 1: New Orders (Pending) */}
-                                <div className="w-full md:flex-1 shrink-0 md:shrink flex flex-col bg-white/40 rounded-3xl border border-neutral-200 overflow-hidden backdrop-blur-xl md:min-w-0">
+                                <div className="w-full md:flex-1 shrink-0 md:shrink flex flex-col bg-white/40 rounded-[16px] border border-neutral-200 overflow-hidden backdrop-blur-xl md:min-w-0">
                                     <div className="p-4 md:p-6 border-b border-neutral-100 flex justify-between items-center bg-white/50 shrink-0">
                                         <div className="flex items-center gap-2 md:gap-3">
                                             <div className="w-2 h-2 rounded-full bg-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.5)]" />
@@ -493,7 +512,7 @@ const AdminOrders = () => {
                                 </div>
 
                                 {/* Column 2: Cooking (Preparing) */}
-                                <div className="w-full md:flex-1 shrink-0 md:shrink flex flex-col bg-white/40 rounded-3xl border border-neutral-200 overflow-hidden backdrop-blur-xl md:min-w-0">
+                                <div className="w-full md:flex-1 shrink-0 md:shrink flex flex-col bg-white/40 rounded-[16px] border border-neutral-200 overflow-hidden backdrop-blur-xl md:min-w-0">
                                     <div className="p-4 md:p-6 border-b border-neutral-100 flex justify-between items-center bg-white/50 shrink-0">
                                         <div className="flex items-center gap-2 md:gap-3">
                                             <div className="w-2 h-2 rounded-full bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.5)]" />
@@ -525,13 +544,13 @@ const AdminOrders = () => {
                                 </div>
 
                                 {/* Column 3: Ready for Serve */}
-                                <div className="w-full md:flex-1 shrink-0 md:shrink flex flex-col bg-white/40 rounded-3xl border border-neutral-200 overflow-hidden backdrop-blur-xl md:min-w-0">
+                                <div className="w-full md:flex-1 shrink-0 md:shrink flex flex-col bg-white/40 rounded-[16px] border border-neutral-200 overflow-hidden backdrop-blur-xl md:min-w-0">
                                     <div className="p-4 md:p-6 border-b border-neutral-100 flex justify-between items-center bg-white/50 shrink-0">
                                         <div className="flex items-center gap-2 md:gap-3">
-                                            <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]" />
+                                            <div className="w-2 h-2 rounded-full bg-primary shadow-[0_0_10px_rgba(16,185,129,0.5)]" />
                                             <h3 className="font-serif font-bold text-lg md:text-xl text-neutral-900 tracking-tight">Ready for Serve</h3>
                                         </div>
-                                        <span className="bg-emerald-100 text-emerald-700 px-2 md:px-3 py-1 rounded-full text-[10px] md:text-[11px] font-bold border border-emerald-200">
+                                        <span className="bg-emerald-100 text-primary px-2 md:px-3 py-1 rounded-full text-[10px] md:text-[11px] font-bold border border-primary/30">
                                             {readyOrders.length} {readyOrders.length === 1 ? 'Order' : 'Orders'}
                                         </span>
                                     </div>
@@ -582,7 +601,7 @@ const AdminOrders = () => {
                                 </div>
                                 <button 
                                     onClick={() => { setShowAssignmentModal(false); setSelectedOrder(null); }} 
-                                    className="p-3 bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-2xl transition-all hover:scale-110 active:scale-95 border border-white/10 group"
+                                    className="p-3 bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-[12px] transition-all hover:scale-110 active:scale-95 border border-white/10 group"
                                 >
                                     <X className="w-5 h-5 text-white group-hover:rotate-90 transition-transform duration-300" />
                                 </button>
@@ -590,11 +609,11 @@ const AdminOrders = () => {
 
                             {/* Order Quick Stats */}
                             <div className="relative mt-8 flex gap-4">
-                                <div className="px-4 py-2 bg-black/20 rounded-xl backdrop-blur-md border border-white/5">
+                                <div className="px-4 py-2 bg-black/20 rounded-[8px] backdrop-blur-md border border-white/5">
                                     <p className="text-[9px] font-bold text-indigo-200 uppercase tracking-widest mb-0.5">Order Type</p>
                                     <p className="text-xs font-black uppercase">{selectedOrder.orderType}</p>
                                 </div>
-                                <div className="px-4 py-2 bg-black/20 rounded-xl backdrop-blur-md border border-white/5">
+                                <div className="px-4 py-2 bg-black/20 rounded-[8px] backdrop-blur-md border border-white/5">
                                     <p className="text-[9px] font-bold text-indigo-200 uppercase tracking-widest mb-0.5">Address</p>
                                     <p className="text-xs font-black truncate max-w-[150px]">{selectedOrder.customerInfo?.address || "N/A"}</p>
                                 </div>
@@ -604,7 +623,7 @@ const AdminOrders = () => {
                         <div className="p-8 overflow-y-auto custom-scrollbar flex-1 bg-neutral-50/50">
                             {deliveryMen.length === 0 ? (
                                 <div className="text-center py-16 px-4">
-                                    <div className="w-20 h-20 bg-neutral-100 rounded-3xl flex items-center justify-center mx-auto mb-6 text-neutral-300">
+                                    <div className="w-20 h-20 bg-neutral-100 rounded-[16px] flex items-center justify-center mx-auto mb-6 text-neutral-300">
                                         <Users className="w-10 h-10" />
                                     </div>
                                     <h4 className="text-xl font-bold text-neutral-900 mb-2">No Couriers Available</h4>
@@ -624,7 +643,7 @@ const AdminOrders = () => {
                                                     <div className="w-16 h-16 bg-gradient-to-br from-indigo-50 to-blue-50 rounded-[1.5rem] flex items-center justify-center text-indigo-600 font-black text-2xl border border-indigo-100 group-hover:from-indigo-600 group-hover:to-indigo-700 group-hover:text-white group-hover:border-transparent transition-all duration-500 shadow-inner">
                                                         {dm.name.charAt(0).toUpperCase()}
                                                     </div>
-                                                    <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-emerald-500 border-4 border-white rounded-full shadow-sm" />
+                                                    <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-primary border-4 border-white rounded-full shadow-sm" />
                                                 </div>
                                                 <div>
                                                     <p className="font-black text-neutral-900 text-lg group-hover:text-indigo-900 transition-colors leading-tight mb-1">{dm.name}</p>
@@ -642,7 +661,7 @@ const AdminOrders = () => {
                                             </div>
                                             
                                             <div className="flex flex-col items-end gap-3">
-                                                <div className="w-12 h-12 rounded-2xl bg-neutral-50 flex items-center justify-center border border-neutral-100 group-hover:bg-indigo-600 group-hover:border-indigo-500 group-hover:shadow-[0_8px_20px_-4px_rgba(79,70,229,0.4)] transition-all duration-300">
+                                                <div className="w-12 h-12 rounded-[12px] bg-neutral-50 flex items-center justify-center border border-neutral-100 group-hover:bg-indigo-600 group-hover:border-indigo-500 group-hover:shadow-[0_8px_20px_-4px_rgba(79,70,229,0.4)] transition-all duration-300">
                                                     <ArrowRight className="w-5 h-5 text-neutral-300 group-hover:text-white group-hover:translate-x-1 transition-all" />
                                                 </div>
                                             </div>
@@ -676,14 +695,27 @@ const AdminOrders = () => {
                                 </div>
                                 <div className="flex gap-2">
                                     <button 
-                                        onClick={() => window.print()} 
-                                        className="w-10 h-10 flex items-center justify-center bg-white text-neutral-900 rounded-xl shadow-sm hover:shadow-md hover:bg-neutral-50 transition-all active:scale-95 border border-neutral-100"
+                                        onClick={async () => {
+                                            if (selectedOrder && viewType === 'bill') {
+                                                try {
+                                                    const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+                                                    await fetch(`${apiUrl}/orders/${selectedOrder._id}/print-bill`, {
+                                                        method: "PATCH"
+                                                    });
+                                                    fetchOrders();
+                                                } catch (err) {
+                                                    console.error("Failed to mark bill as printed:", err);
+                                                }
+                                            }
+                                            window.print();
+                                        }} 
+                                        className="w-10 h-10 flex items-center justify-center bg-white text-neutral-900 rounded-[8px] shadow-sm hover:shadow-md hover:bg-neutral-50 transition-all active:scale-95 border border-neutral-100"
                                     >
                                         <Printer className="w-4 h-4" />
                                     </button>
                                     <button 
                                         onClick={() => setSelectedOrder(null)} 
-                                        className="w-10 h-10 flex items-center justify-center bg-white text-rose-500 rounded-xl shadow-sm hover:shadow-md hover:bg-rose-50 transition-all active:scale-95 border border-neutral-100"
+                                        className="w-10 h-10 flex items-center justify-center bg-white text-rose-500 rounded-[8px] shadow-sm hover:shadow-md hover:bg-rose-50 transition-all active:scale-95 border border-neutral-100"
                                     >
                                         <X className="w-4 h-4" />
                                     </button>
@@ -691,16 +723,16 @@ const AdminOrders = () => {
                             </div>
                             
                             {/* View Switcher Tabs */}
-                            <div className="flex p-1 bg-neutral-100 mx-6 mb-4 rounded-xl">
+                            <div className="flex p-1 bg-neutral-100 mx-6 mb-4 rounded-[8px]">
                                 <button 
                                     onClick={() => setViewType('kot')}
-                                    className={`flex-1 py-2 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all ${viewType === 'kot' ? 'bg-white text-orange-600 shadow-sm' : 'text-neutral-500'}`}
+                                    className={`flex-1 py-2 text-[10px] font-black uppercase tracking-widest rounded-[4px] transition-all ${viewType === 'kot' ? 'bg-white text-orange-600 shadow-sm' : 'text-neutral-500'}`}
                                 >
                                     Kitchen Ticket
                                 </button>
                                 <button 
                                     onClick={() => setViewType('bill')}
-                                    className={`flex-1 py-2 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all ${viewType === 'bill' ? 'bg-white text-emerald-600 shadow-sm' : 'text-neutral-500'}`}
+                                    className={`flex-1 py-2 text-[10px] font-black uppercase tracking-widest rounded-[4px] transition-all ${viewType === 'bill' ? 'bg-white text-primary shadow-sm' : 'text-neutral-500'}`}
                                 >
                                     Customer Bill
                                 </button>
@@ -731,7 +763,7 @@ const AdminOrders = () => {
                                     <div className="space-y-4 mb-8 text-left">
                                         {selectedOrder.items.map((item, idx) => (
                                             <div key={idx} className="flex items-start gap-4">
-                                                <div className="bg-neutral-900 text-white w-8 h-8 rounded-lg flex items-center justify-center font-black shrink-0">
+                                                <div className="bg-neutral-900 text-white w-8 h-8 rounded-[4px] flex items-center justify-center font-black shrink-0">
                                                     {item.quantity}
                                                 </div>
                                                 <div className="flex-1 pt-0.5">
@@ -742,7 +774,7 @@ const AdminOrders = () => {
                                     </div>
 
                                     {selectedOrder.customerInfo?.notes && (
-                                        <div className="mb-6 p-4 bg-amber-50 rounded-2xl border border-amber-100 text-left">
+                                        <div className="mb-6 p-4 bg-amber-50 rounded-[12px] border border-amber-100 text-left">
                                             <p className="text-[9px] font-black text-amber-600 uppercase tracking-widest mb-1">Kitchen Notes:</p>
                                             <p className="text-xs font-bold text-neutral-800 italic">"{selectedOrder.customerInfo.notes}"</p>
                                         </div>
@@ -803,7 +835,7 @@ const AdminOrders = () => {
                                         </div>
                                     </div>
 
-                                    <div className="bg-neutral-50 rounded-2xl p-4 border border-neutral-100 space-y-2 mb-6">
+                                    <div className="bg-neutral-50 rounded-[12px] p-4 border border-neutral-100 space-y-2 mb-6">
                                         <div className="flex justify-between text-[10px] font-black text-neutral-400 uppercase tracking-widest">
                                             <span>Payment Details</span>
                                             <span>{selectedOrder.paymentMethod || 'CASH'}</span>
@@ -814,7 +846,7 @@ const AdminOrders = () => {
                                                     <span>Paid Amount</span>
                                                     <span>৳{selectedOrder.amountReceived.toFixed(2)}</span>
                                                 </div>
-                                                <div className="flex justify-between text-xs font-bold text-emerald-600">
+                                                <div className="flex justify-between text-xs font-bold text-primary">
                                                     <span>Change Returned</span>
                                                     <span>৳{selectedOrder.changeAmount?.toFixed(2) || '0.00'}</span>
                                                 </div>
@@ -832,7 +864,7 @@ const AdminOrders = () => {
                                             <button 
                                                 onClick={() => processDineInPayment(selectedOrder)}
                                                 disabled={processingId === selectedOrder._id}
-                                                className="w-full py-4 bg-emerald-600 hover:bg-emerald-700 disabled:bg-neutral-300 text-white font-black rounded-2xl transition-all flex items-center justify-center gap-3 uppercase tracking-widest text-xs shadow-xl shadow-emerald-200"
+                                                className="w-full py-4 bg-primary/90 hover:bg-emerald-700 disabled:bg-neutral-300 text-white font-black rounded-[12px] transition-all flex items-center justify-center gap-3 uppercase tracking-widest text-xs shadow-xl shadow-emerald-200"
                                             >
                                                 {processingId === selectedOrder._id ? (
                                                     <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />

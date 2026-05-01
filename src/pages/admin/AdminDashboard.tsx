@@ -22,6 +22,12 @@ interface DashboardData {
     salesData: { name: string; sales: number }[];
     inventoryData: { id: string; name: string; category: string; stock: number; status: string }[];
     smsNotifications: { id: string; from: string; message: string; time: string; unread: boolean }[];
+    staffData: {
+        activeStaffCount: number;
+        activeDeliveryManCount: number;
+        staffRoleBreakdown: { role: string; count: number }[];
+        deliveryManPerformance: { id: string; name: string; phone: string; completedOrders: number }[];
+    };
 }
 
 const AdminDashboard = () => {
@@ -95,34 +101,43 @@ const AdminDashboard = () => {
     return (
         <AdminLayout title="Overview">
             <div className="space-y-8 pb-10">
-                {/* Pills Navigation */}
-                <div className="flex gap-2 mb-6">
+                {/* Pills Navigation - Premium Mushy Design */}
+                <div className="flex gap-2.5 p-1.5 bg-neutral-100/50 rounded-[12px] w-fit">
                     <button
                         onClick={() => setReportType("overview")}
-                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${reportType === "overview"
-                                ? "bg-primary text-primary-foreground shadow-sm"
-                                : "bg-white border border-neutral-200 text-neutral-600 hover:text-neutral-900 hover:bg-neutral-50"
+                        className={`px-6 py-2.5 rounded-[8px] text-xs font-black transition-all duration-300 active:scale-95 ${reportType === "overview"
+                                ? "bg-white text-primary shadow-[0_4px_12px_rgba(0,0,0,0.08)] scale-105"
+                                : "text-neutral-500 hover:text-neutral-900 hover:bg-white/40"
                             }`}
                     >
-                        Overview
+                        OVERVIEW
                     </button>
                     <button
                         onClick={() => setReportType("sales")}
-                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${reportType === "sales"
-                                ? "bg-primary text-primary-foreground shadow-sm"
-                                : "bg-white border border-neutral-200 text-neutral-600 hover:text-neutral-900 hover:bg-neutral-50"
+                        className={`px-6 py-2.5 rounded-[8px] text-xs font-black transition-all duration-300 active:scale-95 ${reportType === "sales"
+                                ? "bg-white text-primary shadow-[0_4px_12px_rgba(0,0,0,0.08)] scale-105"
+                                : "text-neutral-500 hover:text-neutral-900 hover:bg-white/40"
                             }`}
                     >
-                        Sales Report
+                        SALES REPORT
                     </button>
                     <button
                         onClick={() => setReportType("items")}
-                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${reportType === "items"
-                                ? "bg-primary text-primary-foreground shadow-sm"
-                                : "bg-white border border-neutral-200 text-neutral-600 hover:text-neutral-900 hover:bg-neutral-50"
+                        className={`px-6 py-2.5 rounded-[8px] text-xs font-black transition-all duration-300 active:scale-95 ${reportType === "items"
+                                ? "bg-white text-primary shadow-[0_4px_12px_rgba(0,0,0,0.08)] scale-105"
+                                : "text-neutral-500 hover:text-neutral-900 hover:bg-white/40"
                             }`}
                     >
-                        Item Analysis
+                        ITEM ANALYSIS
+                    </button>
+                    <button
+                        onClick={() => setReportType("staff")}
+                        className={`px-6 py-2.5 rounded-[8px] text-xs font-black transition-all duration-300 active:scale-95 ${reportType === "staff"
+                                ? "bg-white text-primary shadow-[0_4px_12px_rgba(0,0,0,0.08)] scale-105"
+                                : "text-neutral-500 hover:text-neutral-900 hover:bg-white/40"
+                            }`}
+                    >
+                        STAFF ANALYSIS
                     </button>
                 </div>
 
@@ -164,11 +179,11 @@ const AdminDashboard = () => {
                             {/* Sales Chart & Inventory */}
                             <div className="lg:col-span-2 space-y-8">
                                 {/* Chart Section */}
-                                <div className="bg-white border border-neutral-200 rounded-xl p-6 shadow-sm">
-                                    <div className="flex items-center justify-between mb-6">
+                                <div className="bg-white border border-neutral-200/60 rounded-[16px] p-8 shadow-sm hover:shadow-md transition-shadow duration-500">
+                                    <div className="flex items-center justify-between mb-8">
                                         <div>
-                                            <h2 className="text-lg font-semibold text-neutral-900">Daily Sales</h2>
-                                            <p className="text-sm text-neutral-500">Revenue overview for the last 7 days</p>
+                                            <h2 className="text-lg font-black text-neutral-900 tracking-tight">Daily Sales</h2>
+                                            <p className="text-[11px] font-bold text-neutral-400 uppercase tracking-widest mt-1">Revenue overview for the last 7 days</p>
                                         </div>
                                     </div>
                                     <div className="h-[300px] w-full">
@@ -209,11 +224,11 @@ const AdminDashboard = () => {
                                 </div>
 
                                 {/* Inventory Table */}
-                                <div className="bg-white border border-neutral-200 rounded-xl overflow-hidden shadow-sm">
-                                    <div className="p-6 border-b border-neutral-200 flex items-center justify-between">
+                                <div className="bg-white border border-neutral-200/60 rounded-[16px] overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-500">
+                                    <div className="p-8 border-b border-neutral-100 bg-neutral-50/30 flex items-center justify-between">
                                         <div>
-                                            <h2 className="text-lg font-semibold text-neutral-900">Inventory Preview</h2>
-                                            <p className="text-sm text-neutral-500">Manage your product stock levels</p>
+                                            <h2 className="text-lg font-black text-neutral-900 tracking-tight">Inventory Preview</h2>
+                                            <p className="text-[11px] font-bold text-neutral-400 uppercase tracking-widest mt-1">Manage your product stock levels</p>
                                         </div>
                                     </div>
                                     <div className="overflow-x-auto">
@@ -234,7 +249,7 @@ const AdminDashboard = () => {
                                                         <td className="px-6 py-4 font-medium">{item.stock}</td>
                                                         <td className="px-6 py-4">
                                                             <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${item.status === 'In Stock'
-                                                                ? 'bg-emerald-100 text-emerald-700 border border-emerald-200'
+                                                                ? 'bg-emerald-100 text-primary border border-primary/30'
                                                                 : 'bg-rose-100 text-rose-700 border border-rose-200'
                                                                 }`}>
                                                                 {item.status}
@@ -253,13 +268,16 @@ const AdminDashboard = () => {
 
                             {/* SMS Sidebar */}
                             <div className="space-y-6">
-                                <div className="bg-white border border-neutral-200 rounded-xl p-6 shadow-sm flex flex-col h-full min-h-[500px]">
-                                    <div className="flex items-center justify-between mb-6">
-                                        <div className="flex items-center gap-2">
-                                            <div className="p-2 bg-primary/10 rounded-lg">
-                                                <Phone className="w-5 h-5 text-primary" />
+                                <div className="bg-white border border-neutral-200/60 rounded-[16px] p-8 shadow-sm hover:shadow-md transition-shadow duration-500 flex flex-col h-full min-h-[500px]">
+                                    <div className="flex items-center justify-between mb-8">
+                                        <div className="flex items-center gap-4">
+                                            <div className="w-12 h-12 bg-rose-50 rounded-[12px] flex items-center justify-center shadow-inner">
+                                                <Phone className="w-6 h-6 text-rose-500" />
                                             </div>
-                                            <h2 className="text-lg font-semibold text-neutral-900">SMS Logs</h2>
+                                            <div>
+                                                <h2 className="text-lg font-black text-neutral-900 tracking-tight">SMS Logs</h2>
+                                                <p className="text-[10px] font-bold text-rose-400 uppercase tracking-widest mt-0.5">Real-time alerts</p>
+                                            </div>
                                         </div>
                                     </div>
 
@@ -267,7 +285,7 @@ const AdminDashboard = () => {
                                         {data.smsNotifications.map((sms) => (
                                             <div
                                                 key={sms.id}
-                                                className={`p-4 rounded-xl border transition-all ${sms.unread
+                                                className={`p-4 rounded-[8px] border transition-all ${sms.unread
                                                     ? 'bg-primary/5 border-primary/30'
                                                     : 'bg-neutral-50 border-neutral-200'
                                                     }`}
@@ -297,7 +315,7 @@ const AdminDashboard = () => {
                 {reportType === "sales" && (
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         {/* Category Sales Pie Chart (Consolidated from reports) */}
-                        <div className="bg-white border border-neutral-200 rounded-xl p-6 shadow-sm">
+                        <div className="bg-white border border-neutral-200 rounded-[8px] p-6 shadow-sm">
                             <div className="flex items-center justify-between mb-6">
                                 <div>
                                     <h2 className="text-lg font-semibold text-neutral-900">Sales Distribution</h2>
@@ -331,13 +349,13 @@ const AdminDashboard = () => {
                         </div>
 
                         {/* Payment Methods */}
-                        <div className="bg-white border border-neutral-200 rounded-xl p-6 shadow-sm">
+                        <div className="bg-white border border-neutral-200 rounded-[8px] p-6 shadow-sm">
                             <h2 className="text-lg font-semibold text-neutral-900 mb-6">Payment Methods</h2>
                             <div className="space-y-4">
                                 {reportData.paymentMethods.map((method) => (
-                                    <div key={method.method} className="flex items-center justify-between p-3 rounded-lg hover:bg-neutral-50 transition-colors">
+                                    <div key={method.method} className="flex items-center justify-between p-3 rounded-[4px] hover:bg-neutral-50 transition-colors">
                                         <div className="flex items-center gap-3">
-                                            <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
+                                            <div className="w-10 h-10 bg-primary/10 rounded-[4px] flex items-center justify-center">
                                                 <DollarSign className="w-5 h-5 text-primary" />
                                             </div>
                                             <div>
@@ -354,7 +372,7 @@ const AdminDashboard = () => {
                         </div>
 
                         {/* Sales by Category Table */}
-                        <div className="lg:col-span-2 bg-white border border-neutral-200 rounded-xl p-6 shadow-sm">
+                        <div className="lg:col-span-2 bg-white border border-neutral-200 rounded-[8px] p-6 shadow-sm">
                             <h2 className="text-lg font-semibold text-neutral-900 mb-6">Category Breakdown</h2>
                             <div className="overflow-x-auto">
                                 <table className="w-full text-sm">
@@ -393,9 +411,9 @@ const AdminDashboard = () => {
                 )}
 
                 {reportType === "items" && (
-                    <div className="bg-white border border-neutral-200 rounded-xl p-6 shadow-sm">
+                    <div className="bg-white border border-neutral-200 rounded-[8px] p-6 shadow-sm">
                         <div className="flex items-center gap-3 mb-8">
-                            <div className="p-2 bg-primary/10 rounded-lg">
+                            <div className="p-2 bg-primary/10 rounded-[4px]">
                                 <Package className="w-5 h-5 text-primary" />
                             </div>
                             <div>
@@ -432,26 +450,116 @@ const AdminDashboard = () => {
                         </div>
                     </div>
                 )}
+
+                {reportType === "staff" && (
+                    <div className="space-y-6">
+                        {/* Staff Metrics */}
+                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
+                            <MetricCard
+                                title="Active Staff"
+                                value={(data.staffData?.activeStaffCount || 0).toString()}
+                                trend=""
+                                isPositive={true}
+                                icon={<Users className="w-3.5 h-3.5 lg:w-4 lg:h-4 text-blue-500" />}
+                            />
+                            <MetricCard
+                                title="Active Deliverymen"
+                                value={(data.staffData?.activeDeliveryManCount || 0).toString()}
+                                trend=""
+                                isPositive={true}
+                                icon={<Package className="w-3.5 h-3.5 lg:w-4 lg:h-4 text-emerald-500" />}
+                            />
+                        </div>
+
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            {/* Staff Role Breakdown */}
+                            <div className="bg-white border border-neutral-200 rounded-[8px] p-6 shadow-sm">
+                                <h2 className="text-lg font-semibold text-neutral-900 mb-6">Staff Distribution</h2>
+                                <div className="space-y-4">
+                                    {data.staffData?.staffRoleBreakdown.map((role) => (
+                                        <div key={role.role} className="flex items-center justify-between p-3 rounded-[4px] hover:bg-neutral-50 transition-colors">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-10 h-10 bg-primary/10 rounded-[4px] flex items-center justify-center">
+                                                    <Users className="w-5 h-5 text-primary" />
+                                                </div>
+                                                <div>
+                                                    <p className="text-neutral-900 font-medium capitalize">{role.role}</p>
+                                                    <p className="text-sm text-neutral-500">{role.count} members</p>
+                                                </div>
+                                            </div>
+                                            <div className="text-right">
+                                                <p className="text-neutral-900 font-semibold">{role.count}</p>
+                                            </div>
+                                        </div>
+                                    ))}
+                                    {(!data.staffData?.staffRoleBreakdown || data.staffData.staffRoleBreakdown.length === 0) && (
+                                        <p className="text-neutral-500 text-sm text-center">No staff role data available.</p>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Deliveryman Performance */}
+                            <div className="bg-white border border-neutral-200 rounded-[8px] p-6 shadow-sm">
+                                <div className="flex items-center gap-3 mb-6">
+                                    <h2 className="text-lg font-semibold text-neutral-900">Delivery Performance</h2>
+                                </div>
+                                <div className="overflow-x-auto">
+                                    <table className="w-full text-sm">
+                                        <thead>
+                                            <tr className="border-b border-neutral-200">
+                                                <th className="text-left py-4 text-neutral-500 font-medium uppercase text-xs">Name</th>
+                                                <th className="text-left py-4 text-neutral-500 font-medium uppercase text-xs">Phone</th>
+                                                <th className="text-right py-4 text-neutral-500 font-medium uppercase text-xs">Completed Orders</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {data.staffData?.deliveryManPerformance.map((dm) => (
+                                                <tr key={dm.id} className="border-b border-neutral-100 hover:bg-neutral-50 transition-colors">
+                                                    <td className="py-4 text-neutral-900 font-medium">{dm.name}</td>
+                                                    <td className="py-4 text-neutral-600">{dm.phone}</td>
+                                                    <td className="text-right py-4">
+                                                        <span className="inline-flex items-center justify-center px-2.5 py-1 rounded-full text-xs font-bold bg-primary/10 text-primary">
+                                                            {dm.completedOrders} orders
+                                                        </span>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                            {(!data.staffData?.deliveryManPerformance || data.staffData.deliveryManPerformance.length === 0) && (
+                                                <tr>
+                                                    <td colSpan={3} className="py-8 text-center text-neutral-500">No deliveryman data available.</td>
+                                                </tr>
+                                            )}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
         </AdminLayout>
-
     );
 };
 
 // Sub-component for clean metric cards
 const MetricCard = ({ title, value, trend, isPositive, icon }: { title: string, value: string, trend: string, isPositive: boolean, icon: React.ReactNode }) => (
-    <div className="bg-white border border-neutral-200 rounded-xl p-4 lg:p-6 shadow-sm flex flex-col justify-between group hover:border-neutral-300 transition-colors">
-        <div className="flex justify-between items-start mb-3 lg:mb-4">
-            <h3 className="text-[10px] lg:text-sm font-bold text-neutral-500 uppercase tracking-wider">{title}</h3>
-            <div className="p-1.5 lg:p-2 bg-neutral-100 rounded-lg group-hover:bg-neutral-200 transition-colors shrink-0">
+    <div className="bg-white border border-neutral-200/60 rounded-[2rem] p-6 lg:p-8 shadow-[0_4px_20px_rgba(0,0,0,0.03)] flex flex-col justify-between group hover:shadow-xl hover:shadow-primary/5 hover:border-primary/20 transition-all duration-500 hover:-translate-y-1">
+        <div className="flex justify-between items-start mb-6">
+            <div className="flex flex-col gap-1">
+                <h3 className="text-[10px] lg:text-[11px] font-black text-neutral-400 uppercase tracking-[0.15em]">{title}</h3>
+                <div className="h-1 w-6 bg-primary/20 rounded-full group-hover:w-12 transition-all duration-500" />
+            </div>
+            <div className="w-10 h-10 lg:w-12 lg:h-12 bg-neutral-50 rounded-[12px] flex items-center justify-center group-hover:bg-primary/10 group-hover:rotate-6 transition-all duration-500 shrink-0 shadow-inner">
                 {icon}
             </div>
         </div>
-        <div className="flex flex-col lg:flex-row lg:items-baseline gap-1 lg:gap-2 mt-auto">
-            <span className="text-xl lg:text-3xl font-black tracking-tight text-neutral-900">{value}</span>
+        <div className="flex flex-col lg:flex-row lg:items-end gap-1.5 mt-auto">
+            <span className="text-2xl lg:text-4xl font-black tracking-tighter text-neutral-900 group-hover:text-primary transition-colors">{value}</span>
             {trend && (
-                <span className={`text-[10px] lg:text-sm font-bold flex items-center gap-0.5 ${isPositive ? 'text-emerald-600' : 'text-rose-600'}`}>
-                    {isPositive ? <ArrowUpRight className="w-2.5 h-2.5 lg:w-3 lg:h-3" /> : <ArrowDownRight className="w-2.5 h-2.5 lg:w-3 lg:h-3" />}
+                <span className={`text-[10px] lg:text-xs font-black flex items-center gap-1 mb-1 ${isPositive ? 'text-primary' : 'text-rose-500'}`}>
+                    <div className={`p-0.5 rounded-[4px] ${isPositive ? 'bg-primary/10' : 'bg-rose-50'}`}>
+                        {isPositive ? <ArrowUpRight className="w-2.5 h-2.5 lg:w-3.5 lg:h-3.5" /> : <ArrowDownRight className="w-2.5 h-2.5 lg:w-3.5 lg:h-3.5" />}
+                    </div>
                     {trend}
                 </span>
             )}

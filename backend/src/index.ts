@@ -14,6 +14,7 @@ import reservationRoutes from './routes/reservationRoutes';
 import tableRoutes from './routes/tables';
 import notificationRoutes from './routes/notificationRoutes';
 import deliveryManRoutes from './routes/deliveryManRoutes';
+import authRoutes from './routes/authRoutes';
 
 dotenv.config();
 
@@ -41,6 +42,7 @@ app.use('/api/reservations', reservationRoutes);
 app.use('/api/tables', tableRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/delivery-men', deliveryManRoutes);
+app.use('/api/auth', authRoutes);
 
 const PORT = process.env.PORT || 5000;
 

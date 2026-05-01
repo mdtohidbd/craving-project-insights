@@ -107,7 +107,7 @@ const AdminReports = () => {
                     <div className="flex gap-2">
                         <button
                             onClick={() => setReportType("overview")}
-                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                            className={`px-4 py-2 rounded-[4px] text-sm font-medium transition-colors ${
                                 reportType === "overview"
                                     ? "bg-primary text-primary-foreground"
                                     : "bg-white border border-neutral-200 text-neutral-600 hover:text-neutral-900"
@@ -117,7 +117,7 @@ const AdminReports = () => {
                         </button>
                         <button
                             onClick={() => setReportType("sales")}
-                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                            className={`px-4 py-2 rounded-[4px] text-sm font-medium transition-colors ${
                                 reportType === "sales"
                                     ? "bg-primary text-primary-foreground"
                                     : "bg-white border border-neutral-200 text-neutral-600 hover:text-neutral-900"
@@ -127,7 +127,7 @@ const AdminReports = () => {
                         </button>
                         <button
                             onClick={() => setReportType("items")}
-                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                            className={`px-4 py-2 rounded-[4px] text-sm font-medium transition-colors ${
                                 reportType === "items"
                                     ? "bg-primary text-primary-foreground"
                                     : "bg-white border border-neutral-200 text-neutral-600 hover:text-neutral-900"
@@ -141,14 +141,14 @@ const AdminReports = () => {
                         <select
                             value={dateRange}
                             onChange={(e) => setDateRange(e.target.value)}
-                            className="bg-white border border-neutral-200 text-neutral-900 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary"
+                            className="bg-white border border-neutral-200 text-neutral-900 rounded-[4px] px-3 py-2 text-sm focus:outline-none focus:border-primary"
                         >
                             <option value="7days">Last 7 Days</option>
                             <option value="30days">Last 30 Days</option>
                             <option value="90days">Last 90 Days</option>
                             <option value="1year">Last Year</option>
                         </select>
-                        <button className="p-2 bg-white border border-neutral-200 text-neutral-600 rounded-lg hover:text-neutral-900 transition-colors">
+                        <button className="p-2 bg-white border border-neutral-200 text-neutral-600 rounded-[4px] hover:text-neutral-900 transition-colors">
                             <Download className="w-4 h-4" />
                         </button>
                     </div>
@@ -189,7 +189,7 @@ const AdminReports = () => {
                 {reportType === "overview" && (
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         {/* Sales Chart */}
-                        <div className="bg-white border border-neutral-200 rounded-xl p-6">
+                        <div className="bg-white border border-neutral-200 rounded-[8px] p-6">
                             <div className="flex items-center justify-between mb-6">
                                 <h2 className="text-lg font-semibold text-neutral-900">Daily Sales Trend</h2>
                                 <BarChart3 className="w-5 h-5 text-neutral-500" />
@@ -230,7 +230,7 @@ const AdminReports = () => {
                         </div>
 
                         {/* Category Sales Pie Chart */}
-                        <div className="bg-white border border-neutral-200 rounded-xl p-6">
+                        <div className="bg-white border border-neutral-200 rounded-[8px] p-6">
                             <div className="flex items-center justify-between mb-6">
                                 <h2 className="text-lg font-semibold text-neutral-900">Sales by Category</h2>
                                 <PieChart className="w-5 h-5 text-neutral-400" />
@@ -266,7 +266,7 @@ const AdminReports = () => {
                 {reportType === "sales" && (
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         {/* Sales by Category Table */}
-                        <div className="bg-white border border-neutral-200 rounded-xl p-6">
+                        <div className="bg-white border border-neutral-200 rounded-[8px] p-6">
                             <h2 className="text-lg font-semibold text-neutral-900 mb-6">Sales by Category</h2>
                             <div className="overflow-x-auto">
                                 <table className="w-full text-sm">
@@ -295,13 +295,13 @@ const AdminReports = () => {
                         </div>
 
                         {/* Payment Methods */}
-                        <div className="bg-white border border-neutral-200 rounded-xl p-6">
+                        <div className="bg-white border border-neutral-200 rounded-[8px] p-6">
                             <h2 className="text-lg font-semibold text-neutral-900 mb-6">Payment Methods</h2>
                             <div className="space-y-4">
                                 {reportData.paymentMethods.map((method) => (
                                     <div key={method.method} className="flex items-center justify-between">
                                         <div className="flex items-center gap-3">
-                                            <div className="w-10 h-10 bg-neutral-100 rounded-lg flex items-center justify-center">
+                                            <div className="w-10 h-10 bg-neutral-100 rounded-[4px] flex items-center justify-center">
                                                 <DollarSign className="w-5 h-5 text-neutral-600" />
                                             </div>
                                             <div>
@@ -320,7 +320,7 @@ const AdminReports = () => {
                 )}
 
                 {reportType === "items" && (
-                    <div className="bg-white border border-neutral-200 rounded-xl p-6">
+                    <div className="bg-white border border-neutral-200 rounded-[8px] p-6">
                         <h2 className="text-lg font-semibold text-neutral-900 mb-6">Top Selling Items</h2>
                         <div className="overflow-x-auto">
                             <table className="w-full text-sm">
@@ -370,10 +370,10 @@ const MetricCard = ({
     isPositive: boolean; 
     icon: React.ReactNode;
 }) => (
-    <div className="bg-white border border-neutral-200 rounded-xl p-6">
+    <div className="bg-white border border-neutral-200 rounded-[8px] p-6">
         <div className="flex items-center justify-between mb-4">
             <h3 className="text-sm font-medium text-neutral-600">{title}</h3>
-            <div className="p-2 bg-neutral-100 rounded-lg">
+            <div className="p-2 bg-neutral-100 rounded-[4px]">
                 {icon}
             </div>
         </div>
@@ -381,7 +381,7 @@ const MetricCard = ({
             <span className="text-2xl font-bold text-neutral-900">{value}</span>
             {change !== 0 && (
                 <span className={`text-sm font-medium flex items-center gap-1 ${
-                    isPositive ? 'text-emerald-600' : 'text-rose-600'
+                    isPositive ? 'text-primary' : 'text-rose-600'
                 }`}>
                     {isPositive ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
                     {Math.abs(change)}%

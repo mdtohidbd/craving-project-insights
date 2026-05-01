@@ -122,13 +122,13 @@ const AdminCategories = () => {
     return (
         <AdminLayout title="Categories">
             <div className="max-w-md mx-auto">
-                <div className="bg-white border border-neutral-200 rounded-xl shadow-sm overflow-hidden">
+                <div className="bg-white border border-neutral-200 rounded-[8px] shadow-sm overflow-hidden">
                     {/* Header */}
                     <div className="flex items-center justify-between px-4 py-3 border-b border-neutral-200">
                         <h2 className="text-lg font-semibold text-neutral-900">Categories</h2>
                         <button
                             onClick={() => handleOpenModal()}
-                            className="flex items-center justify-center gap-1.5 px-3 py-1.5 bg-primary text-primary-foreground text-sm font-medium rounded-lg hover:bg-primary/90 transition-colors"
+                            className="flex items-center justify-center gap-1.5 px-3 py-1.5 bg-primary text-primary-foreground text-sm font-medium rounded-[4px] hover:bg-primary/90 transition-colors"
                         >
                             <Plus className="w-4 h-4" />
                             Add
@@ -153,13 +153,13 @@ const AdminCategories = () => {
                                     <div className="flex items-center gap-1">
                                         <button
                                             onClick={() => handleOpenModal(cat)}
-                                            className="p-1.5 text-neutral-400 hover:text-primary transition-colors hover:bg-primary/10 rounded-md"
+                                            className="p-1.5 text-neutral-400 hover:text-primary transition-colors hover:bg-primary/10 rounded-[4px]"
                                         >
                                             <Edit className="w-4 h-4" />
                                         </button>
                                         <button
                                             onClick={() => handleDelete(cat._id)}
-                                            className="p-1.5 text-neutral-400 hover:text-rose-500 transition-colors hover:bg-rose-50 rounded-md"
+                                            className="p-1.5 text-neutral-400 hover:text-rose-500 transition-colors hover:bg-rose-50 rounded-[4px]"
                                         >
                                             <Trash2 className="w-4 h-4" />
                                         </button>
@@ -172,7 +172,7 @@ const AdminCategories = () => {
 
                 {isModalOpen && (
                     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-                        <div className="bg-white border border-neutral-200 rounded-xl shadow-xl w-full max-w-sm overflow-hidden">
+                        <div className="bg-white border border-neutral-200 rounded-[8px] shadow-xl w-full max-w-sm overflow-hidden">
                             <div className="flex items-center justify-between p-4 border-b border-neutral-200">
                                 <h3 className="text-lg font-medium text-neutral-900">{editingCategory ? "Edit Category" : "Add Category"}</h3>
                                 <button onClick={() => setIsModalOpen(false)} className="text-neutral-400 hover:text-neutral-900 transition-colors">
@@ -182,15 +182,15 @@ const AdminCategories = () => {
                             <form onSubmit={handleSave} className="p-4 space-y-4">
                                 <div>
                                     <label className="block text-sm font-medium text-neutral-600 mb-1">Name</label>
-                                    <input required type="text" value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} className="w-full bg-white border border-neutral-200 rounded-lg px-3 py-2 text-neutral-900 focus:outline-none focus:border-primary" />
+                                    <input required type="text" value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} className="w-full bg-white border border-neutral-200 rounded-[4px] px-3 py-2 text-neutral-900 focus:outline-none focus:border-primary" />
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium text-neutral-600 mb-1">Display Order</label>
-                                    <input required type="number" value={formData.order} onChange={e => setFormData({ ...formData, order: parseInt(e.target.value) || 0 })} className="w-full bg-white border border-neutral-200 rounded-lg px-3 py-2 text-neutral-900 focus:outline-none focus:border-primary" />
+                                    <input required type="number" value={formData.order} onChange={e => setFormData({ ...formData, order: parseInt(e.target.value) || 0 })} className="w-full bg-white border border-neutral-200 rounded-[4px] px-3 py-2 text-neutral-900 focus:outline-none focus:border-primary" />
                                 </div>
                                 <div className="pt-4 flex justify-end gap-3 border-t border-neutral-200">
                                     <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 text-sm font-medium text-neutral-600 hover:text-neutral-900 transition-colors">Cancel</button>
-                                    <button type="submit" className="px-4 py-2 bg-primary text-primary-foreground text-sm font-medium rounded-lg hover:bg-primary/90 transition-colors">{editingCategory ? "Save Changes" : "Add Category"}</button>
+                                    <button type="submit" className="px-4 py-2 bg-primary text-primary-foreground text-sm font-medium rounded-[4px] hover:bg-primary/90 transition-colors">{editingCategory ? "Save Changes" : "Add Category"}</button>
                                 </div>
                             </form>
                         </div>
@@ -212,13 +212,13 @@ const AdminCategories = () => {
                             <div className="flex gap-3 w-full">
                                 <button
                                     onClick={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
-                                    className="flex-1 py-3 bg-neutral-100 hover:bg-neutral-200 text-neutral-700 font-bold rounded-2xl transition-all"
+                                    className="flex-1 py-3 bg-neutral-100 hover:bg-neutral-200 text-neutral-700 font-bold rounded-[12px] transition-all"
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     onClick={confirmModal.onConfirm}
-                                    className="flex-1 py-3 bg-rose-500 hover:bg-rose-600 text-white font-bold rounded-2xl transition-all shadow-lg shadow-rose-100"
+                                    className="flex-1 py-3 bg-rose-500 hover:bg-rose-600 text-white font-bold rounded-[12px] transition-all shadow-lg shadow-rose-100"
                                 >
                                     Delete
                                 </button>

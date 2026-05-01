@@ -68,7 +68,7 @@ const AdminMessages = () => {
                             placeholder="Search by phone, name, or content..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full bg-white border border-neutral-200 text-neutral-900 rounded-lg pl-10 pr-4 py-2 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all placeholder:text-neutral-400"
+                            className="w-full bg-white border border-neutral-200 text-neutral-900 rounded-[4px] pl-10 pr-4 py-2 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all placeholder:text-neutral-400"
                         />
                     </div>
                 </div>
@@ -78,7 +78,7 @@ const AdminMessages = () => {
                         <div className="w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
                     </div>
                 ) : (
-                    <div className="bg-white border border-neutral-200 rounded-xl overflow-hidden shadow-sm">
+                    <div className="bg-white border border-neutral-200 rounded-[8px] overflow-hidden shadow-sm">
                         <div className="overflow-x-auto">
                             <table className="w-full text-left text-sm text-neutral-600">
                                 <thead className="bg-neutral-50 text-xs uppercase text-neutral-500 border-b border-neutral-200">
@@ -133,7 +133,7 @@ const AdminMessages = () => {
                                             </td>
                                             <td className="px-6 py-4">
                                                 <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${msg.status === 'sent'
-                                                        ? 'bg-emerald-100 text-emerald-700 border-emerald-200'
+                                                        ? 'bg-emerald-100 text-primary border-primary/30'
                                                         : msg.status === 'failed'
                                                             ? 'bg-red-100 text-red-700 border-red-200'
                                                             : 'bg-amber-100 text-amber-700 border-amber-200'

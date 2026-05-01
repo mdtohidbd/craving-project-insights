@@ -6,6 +6,7 @@ const deliveryManSchema = new mongoose.Schema({
     email: { type: String },
     vehicleDetails: { type: String },
     status: { type: String, enum: ['active', 'inactive'], default: 'active' },
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     orders: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Order' }]
 }, {
     timestamps: true
