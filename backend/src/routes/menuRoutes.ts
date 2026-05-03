@@ -28,11 +28,13 @@ router.get('/', async (req, res) => {
             category: item.category,
             description: item.description,
             tags: item.tags,
-            image: item.imageUrl,
+            image: item.imageUrls && item.imageUrls.length > 0 ? item.imageUrls[0] : '',
+            images: item.imageUrls || [],
             sku: item.sku,
             discountPrice: item.discountPrice,
             taxIncluded: item.taxIncluded,
-            available: item.available
+            available: item.available,
+            addOns: item.addOns
         }));
         res.json(mappedItems);
     } catch (error) {
@@ -41,27 +43,35 @@ router.get('/', async (req, res) => {
     }
 });
 
-router.post('/', upload.single('image'), async (req, res) => {
+router.post('/', upload.array('images', 3), async (req, res) => {
     try {
-        const { title, price, category, description, tags, originalId, sku, discountPrice, taxIncluded, available } = req.body;
-        
-        // Wait, what if there's no image?
-        if (!req.file) {
-             res.status(400).json({ message: 'Image is required' });
-             return; // Add return to avoid falling through
+        const { title, price, category, description, tags, originalId, sku, discountPrice, taxIncluded, available, addOns } = req.body;
+
+        // Expect up to 3 images
+        const files = req.files as Express.Multer.File[] || [];
+        if (files.length === 0) {
+            res.status(400).json({ message: 'At least one image is required' });
+            return;
         }
 
-        // Upload to Cloudinary using a buffer
-        const b64 = Buffer.from(req.file.buffer).toString('base64');
-        const dataURI = 'data:' + req.file.mimetype + ';base64,' + b64;
-        const result = await cloudinary.uploader.upload(dataURI, {
-            folder: 'craving-menu',
+        // Upload each file to Cloudinary
+        const uploadPromises = files.map(file => {
+            const b64 = Buffer.from(file.buffer).toString('base64');
+            const dataURI = 'data:' + file.mimetype + ';base64,' + b64;
+            return cloudinary.uploader.upload(dataURI, { folder: 'craving-menu' });
         });
+        const results = await Promise.all(uploadPromises);
+        const imageUrls = results.map(r => r.secure_url);
 
         // Parse tags if it's sent as a string
         let tagsArray: string[] = [];
         if (tags) {
             tagsArray = typeof tags === 'string' ? JSON.parse(tags) : tags;
+        }
+
+        let addOnsArray: any[] = [];
+        if (addOns) {
+            addOnsArray = typeof addOns === 'string' ? JSON.parse(addOns) : addOns;
         }
 
         const newMenuItem = new MenuItem({
@@ -71,11 +81,12 @@ router.post('/', upload.single('image'), async (req, res) => {
             category,
             description,
             tags: tagsArray,
-            imageUrl: result.secure_url,
+            imageUrls,
             sku,
             discountPrice,
             taxIncluded: taxIncluded === 'true' || taxIncluded === true,
-            available: available !== 'false' && available !== false
+            available: available !== 'false' && available !== false,
+            addOns: addOnsArray
         });
 
         const savedItem = await newMenuItem.save();
@@ -86,9 +97,9 @@ router.post('/', upload.single('image'), async (req, res) => {
     }
 });
 
-router.put('/:id', upload.single('image'), async (req, res) => {
+router.put('/:id', upload.array('images', 3), async (req, res) => {
     try {
-        const { title, price, category, description, tags, sku, discountPrice, taxIncluded, available } = req.body;
+        const { title, price, category, description, tags, sku, discountPrice, taxIncluded, available, addOns, existingImages } = req.body;
         
         let updateData: any = { 
             title, price, category, description, sku, discountPrice,
@@ -98,14 +109,30 @@ router.put('/:id', upload.single('image'), async (req, res) => {
         if (tags) {
             updateData.tags = typeof tags === 'string' ? JSON.parse(tags) : tags;
         }
+        
+        if (addOns) {
+            updateData.addOns = typeof addOns === 'string' ? JSON.parse(addOns) : addOns;
+        }
 
-        if (req.file) {
-            const b64 = Buffer.from(req.file.buffer).toString('base64');
-            const dataURI = 'data:' + req.file.mimetype + ';base64,' + b64;
-            const result = await cloudinary.uploader.upload(dataURI, {
-                folder: 'craving-menu',
+        let imageUrls: string[] = [];
+        if (existingImages) {
+            imageUrls = typeof existingImages === 'string' ? JSON.parse(existingImages) : existingImages;
+        }
+
+        const files = req.files as Express.Multer.File[] || [];
+        if (files.length > 0) {
+            const uploadPromises = files.map(file => {
+                const b64 = Buffer.from(file.buffer).toString('base64');
+                const dataURI = 'data:' + file.mimetype + ';base64,' + b64;
+                return cloudinary.uploader.upload(dataURI, { folder: 'craving-menu' });
             });
-            updateData.imageUrl = result.secure_url;
+            const results = await Promise.all(uploadPromises);
+            const newImageUrls = results.map(r => r.secure_url);
+            imageUrls = [...imageUrls, ...newImageUrls].slice(0, 3);
+        }
+
+        if (imageUrls.length > 0) {
+            updateData.imageUrls = imageUrls;
         }
 
         const updatedItem = await MenuItem.findByIdAndUpdate(req.params.id, updateData, { new: true });

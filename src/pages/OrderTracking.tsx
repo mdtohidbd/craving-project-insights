@@ -306,20 +306,28 @@ const OrderTracking = () => {
                                                 </div>
                                                 <div className="mt-8 pt-6 border-t border-neutral-100 flex justify-between items-end">
                                                     <div>
-                                                        <p className="text-[10px] font-bold uppercase text-muted-foreground tracking-widest mb-1">Total Paid</p>
+                                                        <p className="text-[10px] font-bold uppercase text-muted-foreground tracking-widest mb-1">
+                                                            {(order.paymentMethod === 'cod' && order.status !== 'completed' && order.status !== 'delivered') ? 'Total Payable' : 'Total Paid'}
+                                                        </p>
                                                         <div className="flex items-baseline gap-1">
                                                             <span className="text-primary font-serif text-3xl font-bold">৳{Math.round(order.total)}</span>
                                                         </div>
                                                     </div>
-                                                    <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-100 flex items-center gap-1.5">
+                                                    <span className={`text-xs font-bold px-3 py-1 rounded-full border flex items-center gap-1.5 ${
+                                                        (order.status === 'completed' || order.status === 'delivered')
+                                                            ? 'text-emerald-600 bg-emerald-50 border-emerald-100'
+                                                            : (order.paymentMethod === 'cod' ? 'text-amber-600 bg-amber-50 border-amber-100' : 'text-emerald-600 bg-emerald-50 border-emerald-100')
+                                                    }`}>
                                                         <AnimatePresence mode="wait">
                                                             <motion.span
-                                                                key={order.paymentMethod}
+                                                                key={order.status + order.paymentMethod}
                                                                 initial={{ opacity: 0, scale: 0.8 }}
                                                                 animate={{ opacity: 1, scale: 1 }}
                                                                 className="capitalize"
                                                             >
-                                                                {order.paymentMethod === 'cod' ? 'Cash on Delivery' : order.paymentMethod || 'Paid'}
+                                                                {order.status === 'completed' || order.status === 'delivered' 
+                                                                    ? 'Delivered' 
+                                                                    : (order.paymentMethod === 'cod' ? 'COD' : (order.paymentMethod || 'Paid'))}
                                                             </motion.span>
                                                         </AnimatePresence>
                                                     </span>

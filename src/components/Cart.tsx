@@ -81,6 +81,11 @@ export const Cart = ({ className }: { className?: string }) => {
                 <img src={item.image} alt={item.title} className="w-20 h-20 object-cover rounded-xl shadow-sm" />
                 <div className="flex-1 min-w-0">
                   <h4 className="font-bold text-primary truncate text-lg">{item.title}</h4>
+                  {item.addOns && item.addOns.length > 0 && (
+                    <div className="text-xs text-neutral-500 mt-0.5 mb-1 truncate">
+                      + {item.addOns.map(a => a.name).join(', ')}
+                    </div>
+                  )}
                   <p className="text-xl font-bold mt-1 text-accent">{item.priceStr?.replace('$', '৳')}</p>
                 </div>
                 <div className="flex flex-col items-end gap-3 shrink-0">

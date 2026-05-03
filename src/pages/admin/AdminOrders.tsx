@@ -8,6 +8,7 @@ interface OrderItem {
     title: string;
     price: number;
     quantity: number;
+    addOns?: { name: string; price: number }[];
 }
 
 interface Order {
@@ -102,7 +103,12 @@ const KDSOrderCard = ({ order, onUpdateStatus, onSelect, onCompleteOrder }: { or
                         <div key={idx} className="flex justify-between items-center text-xs lg:text-sm">
                             <div className="flex items-center gap-2">
                                 <span className="bg-amber-100 text-amber-700 text-[9px] lg:text-[10px] font-bold w-4 h-4 lg:w-5 lg:h-5 rounded flex items-center justify-center shrink-0">{item.quantity}</span>
-                                <span className="text-neutral-800 font-medium line-clamp-1">{item.title}</span>
+                                <div className="flex flex-col">
+                                    <span className="text-neutral-800 font-medium line-clamp-1">{item.title}</span>
+                                    {item.addOns && item.addOns.length > 0 && (
+                                        <span className="text-[10px] text-neutral-500 leading-tight truncate">+ {item.addOns.map(a => a.name).join(', ')}</span>
+                                    )}
+                                </div>
                             </div>
                         </div>
                     ))}
@@ -768,6 +774,9 @@ const AdminOrders = () => {
                                                 </div>
                                                 <div className="flex-1 pt-0.5">
                                                     <span className="font-black text-xl text-neutral-900 uppercase tracking-tight leading-tight block">{item.title}</span>
+                                                    {item.addOns && item.addOns.length > 0 && (
+                                                        <span className="text-sm font-bold text-neutral-500 block mt-1">+ {item.addOns.map(a => a.name).join(', ')}</span>
+                                                    )}
                                                 </div>
                                             </div>
                                         ))}
@@ -807,9 +816,14 @@ const AdminOrders = () => {
                                             <div key={idx} className="flex justify-between items-start gap-4">
                                                 <div className="flex-1">
                                                     <div className="text-sm font-bold text-neutral-900 leading-tight">{item.title}</div>
+                                                    {item.addOns && item.addOns.length > 0 && (
+                                                        <div className="text-[11px] text-neutral-500 mt-0.5">+ {item.addOns.map(a => a.name).join(', ')}</div>
+                                                    )}
                                                     <div className="text-[11px] text-neutral-500">{item.quantity} x ৳{item.price.toFixed(2)}</div>
                                                 </div>
-                                                <div className="text-sm font-bold text-neutral-900">৳{(item.quantity * item.price).toFixed(2)}</div>
+                                                <div className="text-sm font-bold text-neutral-900">
+                                                    ৳{((item.price + (item.addOns?.reduce((s, a) => s + a.price, 0) || 0)) * item.quantity).toFixed(2)}
+                                                </div>
                                             </div>
                                         ))}
                                     </div>

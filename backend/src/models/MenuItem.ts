@@ -8,11 +8,15 @@ const menuItemSchema = new mongoose.Schema({
     category: { type: String, required: true },
     description: { type: String, required: false },
     tags: { type: [String], required: false, default: [] },
-    imageUrl: { type: String, required: true },
+    imageUrls: { type: [String], required: true },
     sku: { type: String, required: false },
     discountPrice: { type: String, required: false },
     taxIncluded: { type: Boolean, default: false },
-    available: { type: Boolean, default: true }
+    available: { type: Boolean, default: true },
+    addOns: [{
+        name: { type: String, required: true },
+        price: { type: Number, required: true }
+    }]
 }, {
     timestamps: true
 });

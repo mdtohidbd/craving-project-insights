@@ -8,8 +8,17 @@ const imageOverrides: Record<string, string> = {
 };
 
 export const applyCustomImages = (menuItems: MenuItem[]): MenuItem[] => {
-  return menuItems.map(item => ({
-    ...item,
-    image: imageOverrides[item.title] || item.image
-  }));
+  return menuItems.map(item => {
+    const customImage = imageOverrides[item.title];
+    if (!customImage) return item;
+
+    // If there's a custom image override, update both 'image' and 'images' array
+    return {
+      ...item,
+      image: customImage,
+      images: item.images && item.images.length > 0 
+        ? [customImage, ...item.images.slice(1)]
+        : [customImage]
+    };
+  });
 };

@@ -11,10 +11,12 @@ interface MenuItem {
     category: string;
     description: string;
     image: string;
+    images?: string[];
     sku?: string;
     discountPrice?: string;
     taxIncluded?: boolean;
     available?: boolean;
+    addOns?: { name: string, price: number }[];
 }
 
 const AdminMenu = () => {
@@ -27,9 +29,9 @@ const AdminMenu = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingItem, setEditingItem] = useState<MenuItem | null>(null);
     const [formData, setFormData] = useState({
-        title: "", price: "", category: "", description: "", sku: "", discountPrice: "", taxIncluded: false, available: true
+        title: "", price: "", category: "", description: "", sku: "", discountPrice: "", taxIncluded: false, available: true, addOns: [] as { name: string, price: number }[], images: [] as string[]
     });
-    const [imageFile, setImageFile] = useState<File | null>(null);
+    const [imageFiles, setImageFiles] = useState<File[]>([]);
 
     // Category management states
     const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
@@ -171,13 +173,15 @@ const AdminMenu = () => {
                 title: item.title, price: item.price,
                 category: item.category, description: item.description || "",
                 sku: item.sku || "", discountPrice: item.discountPrice || "",
-                taxIncluded: item.taxIncluded || false, available: item.available ?? true
+                taxIncluded: item.taxIncluded || false, available: item.available ?? true,
+                addOns: item.addOns || [],
+                images: item.images || (item.image ? [item.image] : [])
             });
         } else {
             setEditingItem(null);
-            setFormData({ title: "", price: "", category: "", description: "", sku: "", discountPrice: "", taxIncluded: false, available: true });
+            setFormData({ title: "", price: "", category: "", description: "", sku: "", discountPrice: "", taxIncluded: false, available: true, addOns: [], images: [] });
         }
-        setImageFile(null);
+        setImageFiles([]);
         setIsModalOpen(true);
     };
 
@@ -195,9 +199,15 @@ const AdminMenu = () => {
             data.append("discountPrice", formData.discountPrice);
             data.append("taxIncluded", String(formData.taxIncluded));
             data.append("available", String(formData.available));
-            if (imageFile) {
-                data.append("image", imageFile);
+            data.append("addOns", JSON.stringify(formData.addOns));
+            
+            if (editingItem) {
+                data.append("existingImages", JSON.stringify(formData.images));
             }
+
+            imageFiles.forEach(file => {
+                data.append("images", file);
+            });
 
             const url = editingItem ? `${apiUrl}/menu/${editingItem._id}` : `${apiUrl}/menu`;
             const method = editingItem ? "PUT" : "POST";
@@ -421,27 +431,106 @@ const AdminMenu = () => {
                                 <textarea rows={4} value={formData.description} onChange={e => setFormData({ ...formData, description: e.target.value })} className="w-full bg-[#f8f9fa] border border-neutral-200 rounded-[16px] px-5 py-4 text-neutral-900 focus:outline-none focus:border-blue-500 resize-none font-medium" />
                             </div>
                             <div>
-                                <label className="flex items-center gap-2 text-sm font-semibold text-neutral-700 tracking-wide mb-2">
-                                    <ImageIcon className="w-4 h-4" />
-                                    Image (Optional)
-                                </label>
-                                <div className="relative w-full border border-neutral-400 rounded-[16px] p-1.5 flex items-center bg-[#f8f9fa] overflow-hidden">
-                                    <button type="button" onClick={() => document.getElementById('imageUpload')?.click()} className="px-6 py-2.5 bg-[#1a73e8] text-white font-medium rounded-full text-sm hover:bg-blue-700 transition-colors shrink-0">
-                                        Choose File
+                                <div className="flex items-center justify-between mb-2">
+                                    <label className="block text-sm font-semibold text-neutral-700 tracking-wide">Add-ons (Optional)</label>
+                                    <button type="button" onClick={() => setFormData({ ...formData, addOns: [...formData.addOns, { name: "", price: 0 }] })} className="text-sm text-blue-600 font-medium hover:text-blue-700 flex items-center gap-1">
+                                        <Plus className="w-4 h-4" /> Add Option
                                     </button>
-                                    <span className="px-4 text-sm text-neutral-700 truncate font-medium">
-                                        {imageFile ? imageFile.name : "No file chosen"}
-                                    </span>
-                                    <input
-                                        id="imageUpload"
-                                        type="file"
-                                        accept="image/*"
-                                        onChange={e => {
-                                            if (e.target.files && e.target.files[0]) setImageFile(e.target.files[0]);
-                                        }}
-                                        className="hidden"
-                                        required={!editingItem}
-                                    />
+                                </div>
+                                <div className="space-y-3">
+                                    {formData.addOns.map((addon, index) => (
+                                        <div key={index} className="flex gap-3 items-center">
+                                            <input type="text" placeholder="Name (e.g. Extra Cheese)" value={addon.name} onChange={e => {
+                                                const newAddons = [...formData.addOns];
+                                                newAddons[index].name = e.target.value;
+                                                setFormData({ ...formData, addOns: newAddons });
+                                            }} className="flex-1 bg-white border border-neutral-400 rounded-[12px] px-4 py-2.5 text-neutral-900 focus:outline-none focus:border-blue-500 font-medium text-sm" />
+                                            <input type="number" placeholder="Price" value={addon.price === 0 ? '' : addon.price} onChange={e => {
+                                                const newAddons = [...formData.addOns];
+                                                newAddons[index].price = parseFloat(e.target.value) || 0;
+                                                setFormData({ ...formData, addOns: newAddons });
+                                            }} className="w-28 bg-white border border-neutral-400 rounded-[12px] px-4 py-2.5 text-neutral-900 focus:outline-none focus:border-blue-500 font-medium text-sm" />
+                                            <button type="button" onClick={() => {
+                                                const newAddons = [...formData.addOns];
+                                                newAddons.splice(index, 1);
+                                                setFormData({ ...formData, addOns: newAddons });
+                                            }} className="p-2 text-rose-500 hover:bg-rose-50 rounded-full transition-colors">
+                                                <Trash2 className="w-4 h-4" />
+                                            </button>
+                                        </div>
+                                    ))}
+                                    {formData.addOns.length === 0 && (
+                                        <p className="text-sm text-neutral-500 italic">No add-ons configured.</p>
+                                    )}
+                                </div>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-semibold text-neutral-700 tracking-wide mb-3">
+                                    Images (Max 3)
+                                </label>
+                                
+                                <div className="grid grid-cols-3 gap-4">
+                                    {/* Existing Images */}
+                                    {formData.images.map((img, idx) => (
+                                        <div key={`existing-${idx}`} className="relative group aspect-square rounded-2xl overflow-hidden border border-neutral-200 bg-neutral-50">
+                                            <img src={img} alt="Preview" className="w-full h-full object-cover" />
+                                            <button 
+                                                type="button"
+                                                onClick={() => {
+                                                    const newImages = [...formData.images];
+                                                    newImages.splice(idx, 1);
+                                                    setFormData({ ...formData, images: newImages });
+                                                }}
+                                                className="absolute top-2 right-2 p-1.5 bg-rose-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
+                                            >
+                                                <X className="w-3 h-3" />
+                                            </button>
+                                        </div>
+                                    ))}
+
+                                    {/* New Image Previews */}
+                                    {imageFiles.map((file, idx) => (
+                                        <div key={`new-${idx}`} className="relative group aspect-square rounded-2xl overflow-hidden border border-blue-200 bg-blue-50">
+                                            <img src={URL.createObjectURL(file)} alt="New Preview" className="w-full h-full object-cover" />
+                                            <button 
+                                                type="button"
+                                                onClick={() => {
+                                                    const newFiles = [...imageFiles];
+                                                    newFiles.splice(idx, 1);
+                                                    setImageFiles(newFiles);
+                                                }}
+                                                className="absolute top-2 right-2 p-1.5 bg-rose-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
+                                            >
+                                                <X className="w-3 h-3" />
+                                            </button>
+                                        </div>
+                                    ))}
+
+                                    {/* Upload Button */}
+                                    {(formData.images.length + imageFiles.length) < 3 && (
+                                        <button 
+                                            type="button"
+                                            onClick={() => document.getElementById('imagesUpload')?.click()}
+                                            className="aspect-square rounded-2xl border-2 border-dashed border-neutral-300 flex flex-col items-center justify-center gap-2 hover:border-blue-500 hover:bg-blue-50 transition-all text-neutral-500 hover:text-blue-600 group"
+                                        >
+                                            <Upload className="w-6 h-6 group-hover:scale-110 transition-transform" />
+                                            <span className="text-[10px] font-bold uppercase tracking-wider">Upload</span>
+                                            <input
+                                                id="imagesUpload"
+                                                type="file"
+                                                accept="image/*"
+                                                multiple
+                                                onChange={e => {
+                                                    if (e.target.files) {
+                                                        const remaining = 3 - (formData.images.length + imageFiles.length);
+                                                        const newFiles = Array.from(e.target.files).slice(0, remaining);
+                                                        setImageFiles([...imageFiles, ...newFiles]);
+                                                    }
+                                                }}
+                                                className="hidden"
+                                            />
+                                        </button>
+                                    )}
                                 </div>
                             </div>
                             <div className="flex items-center gap-8 pt-2">

@@ -11,11 +11,14 @@ interface MenuItem {
     originalPrice?: string | number;
     category: string;
     image: string;
+    addOns?: { name: string; price: number }[];
 }
 
 interface CartItem {
+    id?: string;
     menuItem: MenuItem;
     quantity: number;
+    addOns?: { name: string; price: number }[];
 }
 
 interface OrderItem {
@@ -23,6 +26,7 @@ interface OrderItem {
     title: string;
     price: number;
     quantity: number;
+    addOns?: { name: string; price: number }[];
 }
 
 interface Table {
@@ -103,6 +107,11 @@ const AdminPOS = () => {
 
     // Mobile drawer state
     const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
+
+    // AddOn Modal state
+    const [showAddOnModal, setShowAddOnModal] = useState(false);
+    const [selectedItemForAddOn, setSelectedItemForAddOn] = useState<MenuItem | null>(null);
+    const [selectedAddOns, setSelectedAddOns] = useState<{name: string, price: number}[]>([]);
 
     // Print preview states
     const [showKOTPreview, setShowKOTPreview] = useState(false);
@@ -206,13 +215,30 @@ const AdminPOS = () => {
                                         const order = await orderRes.json();
                                         const existingCart: CartItem[] = order.items.map((item: any) => {
                                             const menuItem = parsedMenuData.find(m => m._id === item.menuItemId);
-                                            return menuItem ? { menuItem, quantity: item.quantity } : null;
-                                        }).filter((item): item is CartItem => item !== null);
-                                        
+                                            // Fallback to item data if menuItem not found in current list
+                                            const finalMenuItem = menuItem || {
+                                                _id: item.menuItemId,
+                                                id: 0,
+                                                title: item.title,
+                                                price: item.price,
+                                                category: "Restored",
+                                                imageUrls: []
+                                            };
+                                            return { 
+                                                id: item.menuItemId,
+                                                menuItem: finalMenuItem, 
+                                                quantity: item.quantity,
+                                                addOns: item.addOns || []
+                                            };
+                                        });
+
                                         setCart(existingCart);
                                         setCurrentOrderId(order._id);
-                                        setSelectedCustomer(order.customerInfo?.name || "Walk-in");
+                                        setSelectedTable(order.tableNumber || "Takeaway");
+                                        setSelectedTableId(order.tableId || null);
+                                        setSelectedCustomer(order.customerInfo.name || "Walk-in");
                                         setDiscount(order.discount || 0);
+                                        setOrderType(order.orderType === 'dine-in' ? 'dine-in' : 'takeaway');
                                         toast.info(`Loaded existing order for Table ${table.tableNumber}`);
 
                                         // Auto-open payment modal if requested
@@ -295,23 +321,48 @@ const AdminPOS = () => {
     };
 
     const addToCart = (item: MenuItem) => {
+        if (item.addOns && item.addOns.length > 0) {
+            setSelectedItemForAddOn(item);
+            setSelectedAddOns([]);
+            setShowAddOnModal(true);
+            return;
+        }
+        
         setCart(prev => {
-            const existing = prev.find(c => c.menuItem._id === item._id);
+            const existing = prev.find(c => (c.id || c.menuItem._id) === item._id);
             if (existing) {
                 return prev.map(c =>
-                    c.menuItem._id === item._id
+                    (c.id || c.menuItem._id) === item._id
                         ? { ...c, quantity: c.quantity + 1 }
                         : c
                 );
             }
-            return [...prev, { menuItem: item, quantity: 1 }];
+            return [...prev, { id: item._id, menuItem: item, quantity: 1 }];
         });
+    };
+
+    const confirmAddToCartWithAddOns = () => {
+        if (!selectedItemForAddOn) return;
+        const addonStr = selectedAddOns.map(a => a.name).join('-');
+        const customId = addonStr ? `${selectedItemForAddOn._id}-${addonStr}` : selectedItemForAddOn._id;
+
+        setCart(prev => {
+            const existing = prev.find(c => c.id === customId);
+            if (existing) {
+                return prev.map(c => c.id === customId ? { ...c, quantity: c.quantity + 1 } : c);
+            }
+            return [...prev, { id: customId, menuItem: selectedItemForAddOn, quantity: 1, addOns: selectedAddOns }];
+        });
+        
+        setShowAddOnModal(false);
+        setSelectedItemForAddOn(null);
+        setSelectedAddOns([]);
     };
 
     const updateQuantity = (itemId: string, delta: number) => {
         setCart(prev => {
             return prev.map(c => {
-                if (c.menuItem._id === itemId) {
+                if ((c.id || c.menuItem._id) === itemId) {
                     const newQ = c.quantity + delta;
                     return newQ > 0 ? { ...c, quantity: newQ } : c;
                 }
@@ -321,7 +372,7 @@ const AdminPOS = () => {
     };
 
     const removeFromCart = (itemId: string) => {
-        setCart(prev => prev.filter(c => c.menuItem._id !== itemId));
+        setCart(prev => prev.filter(c => (c.id || c.menuItem._id) !== itemId));
     };
 
     const clearCart = () => {
@@ -344,8 +395,9 @@ const AdminPOS = () => {
     };
 
     const subtotal = cart.reduce((acc, curr) => {
-        const price = getPrice(curr.menuItem);
-        return acc + (price || 0) * curr.quantity;
+        const basePrice = getPrice(curr.menuItem) || 0;
+        const addOnsPrice = curr.addOns?.reduce((sum, a) => sum + a.price, 0) || 0;
+        return acc + (basePrice + addOnsPrice) * curr.quantity;
     }, 0);
 
     const vatAmount = (subtotal * vatRate) / 100;
@@ -366,8 +418,11 @@ const AdminPOS = () => {
     const printBillReceipt = (details: typeof lastOrderDetails) => {
         if (!details) return;
         const itemsHtml = details.items.map(c => {
-            const p = getPrice(c.menuItem);
-            return `<div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span>${c.menuItem.title} x${c.quantity}</span><span>BDT ${(p * c.quantity).toFixed(2)}</span></div>`;
+            const basePrice = getPrice(c.menuItem) || 0;
+            const addOnsPrice = c.addOns?.reduce((sum, a) => sum + a.price, 0) || 0;
+            const p = basePrice + addOnsPrice;
+            const addonText = c.addOns?.length ? `<div style="font-size:11px;color:#555;margin-left:10px;">+ ${c.addOns.map(a=>a.name).join(', ')}</div>` : '';
+            return `<div style="display:flex;justify-content:space-between;margin-bottom:2px;"><span>${c.menuItem.title} x${c.quantity}</span><span>BDT ${(p * c.quantity).toFixed(2)}</span></div>${addonText}<div style="margin-bottom:6px;"></div>`;
         }).join('');
         const paymentMethodsHtml = details.paymentMethods.map(pm =>
             `<div style="display:flex;justify-content:space-between;"><span>${pm.method.toUpperCase()}</span><span>BDT ${pm.amount.toFixed(2)}</span></div>`
@@ -431,9 +486,10 @@ const AdminPOS = () => {
 
     const printKOTReceipt = (details: typeof lastOrderDetails) => {
         if (!details) return;
-        const itemsHtml = details.items.map(c =>
-            `<div style="font-weight:bold;font-size:16px;margin-bottom:10px;">${c.quantity}x ${c.menuItem.title}</div>`
-        ).join('');
+        const itemsHtml = details.items.map(c => {
+            const addonText = c.addOns?.length ? `<div style="font-size:12px;margin-left:15px;margin-bottom:10px;">+ ${c.addOns.map(a=>a.name).join(', ')}</div>` : '';
+            return `<div style="font-weight:bold;font-size:16px;margin-bottom:${c.addOns?.length?'2px':'10px'};">${c.quantity}x ${c.menuItem.title}</div>${addonText}`;
+        }).join('');
         const orderNum = `${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${details.orderId.slice(-4).toUpperCase()}`;
 
         const html = `<!DOCTYPE html><html><head><title>KOT</title><style>
@@ -500,12 +556,7 @@ const AdminPOS = () => {
                     address: selectedTable || "Takeaway",
                     notes: "KOT Order"
                 },
-                items: cart.map(c => ({
-                    menuItemId: c.menuItem._id,
-                    title: c.menuItem.title,
-                    price: getPrice(c.menuItem),
-                    quantity: c.quantity
-                })),
+                items: cart.map(c => ({ menuItemId: c.menuItem._id, title: c.menuItem.title, price: getPrice(c.menuItem), quantity: c.quantity, addOns: c.addOns })),
                 subtotal: subtotal || 0,
                 tax: vatAmount || 0,
                 discount: discount || 0,
@@ -605,12 +656,7 @@ const AdminPOS = () => {
                     address: selectedTable || "Takeaway",
                     notes: "Bill Print"
                 },
-                items: cart.map(c => ({
-                    menuItemId: c.menuItem._id,
-                    title: c.menuItem.title,
-                    price: getPrice(c.menuItem),
-                    quantity: c.quantity
-                })),
+                items: cart.map(c => ({ menuItemId: c.menuItem._id, title: c.menuItem.title, price: getPrice(c.menuItem), quantity: c.quantity, addOns: c.addOns })),
                 subtotal: subtotal || 0,
                 tax: vatAmount || 0,
                 discount: discount || 0,
@@ -713,12 +759,7 @@ const AdminPOS = () => {
                     address: selectedTable || "Takeaway",
                     notes: "Held order"
                 },
-                items: cart.map(c => ({
-                    menuItemId: c.menuItem._id,
-                    title: c.menuItem.title,
-                    price: getPrice(c.menuItem),
-                    quantity: c.quantity
-                })),
+                items: cart.map(c => ({ menuItemId: c.menuItem._id, title: c.menuItem.title, price: getPrice(c.menuItem), quantity: c.quantity, addOns: c.addOns })),
                 subtotal: subtotal || 0,
                 tax: vatAmount || 0,
                 discount: discount || 0,
@@ -796,12 +837,7 @@ const AdminPOS = () => {
                     address: selectedTable || "Takeaway",
                     notes: "Served order"
                 },
-                items: cart.map(c => ({
-                    menuItemId: c.menuItem._id,
-                    title: c.menuItem.title,
-                    price: getPrice(c.menuItem),
-                    quantity: c.quantity
-                })),
+                items: cart.map(c => ({ menuItemId: c.menuItem._id, title: c.menuItem.title, price: getPrice(c.menuItem), quantity: c.quantity, addOns: c.addOns })),
                 subtotal: subtotal || 0,
                 tax: vatAmount || 0,
                 discount: discount || 0,
@@ -874,12 +910,7 @@ const AdminPOS = () => {
                     address: selectedTable || "Takeaway",
                     notes: `Payment method: ${selectedPaymentMethod}`
                 },
-                items: cart.map(c => ({
-                    menuItemId: c.menuItem._id,
-                    title: c.menuItem.title,
-                    price: getPrice(c.menuItem),
-                    quantity: c.quantity
-                })),
+                items: cart.map(c => ({ menuItemId: c.menuItem._id, title: c.menuItem.title, price: getPrice(c.menuItem), quantity: c.quantity, addOns: c.addOns })),
                 subtotal: subtotal || 0,
                 tax: vatAmount || 0,
                 discount: discount || 0,
@@ -1002,12 +1033,7 @@ const AdminPOS = () => {
                     address: selectedTable || "Takeaway",
                     notes: "Split payment"
                 },
-                items: cart.map(c => ({
-                    menuItemId: c.menuItem._id,
-                    title: c.menuItem.title,
-                    price: getPrice(c.menuItem),
-                    quantity: c.quantity
-                })),
+                items: cart.map(c => ({ menuItemId: c.menuItem._id, title: c.menuItem.title, price: getPrice(c.menuItem), quantity: c.quantity, addOns: c.addOns })),
                 subtotal: subtotal || 0,
                 tax: vatAmount || 0,
                 discount: discount || 0,
@@ -1102,16 +1128,29 @@ const AdminPOS = () => {
                 // Load items back into cart
                 const newCart: CartItem[] = order.items.map((item: OrderItem) => {
                     const menuItem = menuItems.find(m => m._id === item.menuItemId);
-                    if (menuItem) {
-                        return { menuItem, quantity: item.quantity };
-                    }
-                    return null;
-                }).filter((item): item is CartItem => item !== null);
+                    // Fallback to item data if menuItem not found in current list
+                    const finalMenuItem = menuItem || {
+                        _id: item.menuItemId,
+                        id: 0,
+                        title: item.title,
+                        price: item.price,
+                        category: "Restored",
+                        imageUrls: []
+                    };
+                    return { 
+                        id: item.menuItemId,
+                        menuItem: finalMenuItem, 
+                        quantity: item.quantity,
+                        addOns: item.addOns || []
+                    };
+                });
 
                 setCart(newCart);
                 setSelectedTable(order.tableNumber || "Takeaway");
+                setSelectedTableId(order.tableId || null);
                 setSelectedCustomer(order.customerInfo.name || "Walk-in");
                 setDiscount(order.discount || 0);
+                setOrderType(order.orderType === 'dine-in' ? 'dine-in' : 'takeaway');
 
                 toast.success("Order released to cart!");
                 setShowHeldOrdersModal(false);
@@ -1140,11 +1179,22 @@ const AdminPOS = () => {
                 // Load items back into cart
                 const newCart: CartItem[] = order.items.map((item: OrderItem) => {
                     const menuItem = menuItems.find(m => m._id === item.menuItemId);
-                    if (menuItem) {
-                        return { menuItem, quantity: item.quantity };
-                    }
-                    return null;
-                }).filter((item): item is CartItem => item !== null);
+                    // Fallback to item data if menuItem not found in current list
+                    const finalMenuItem = menuItem || {
+                        _id: item.menuItemId,
+                        id: 0,
+                        title: item.title,
+                        price: item.price,
+                        category: "Restored",
+                        imageUrls: []
+                    };
+                    return { 
+                        id: item.menuItemId,
+                        menuItem: finalMenuItem, 
+                        quantity: item.quantity,
+                        addOns: item.addOns || []
+                    };
+                });
 
                 setCart(newCart);
                 setCurrentOrderId(order._id);
@@ -1152,6 +1202,7 @@ const AdminPOS = () => {
                 setSelectedTableId(order.tableId || null);
                 setSelectedCustomer(order.customerInfo.name || "Walk-in");
                 setDiscount(order.discount || 0);
+                setOrderType(order.orderType === 'dine-in' ? 'dine-in' : 'takeaway');
                 
                 // Pre-fill amount received
                 setAmountReceived(order.total.toString());
@@ -1381,6 +1432,59 @@ const AdminPOS = () => {
                     </div>
                 </div>
 
+                {/* AddOn Modal */}
+                {showAddOnModal && selectedItemForAddOn && (
+                    <div className="fixed inset-0 z-[60] flex items-center justify-center">
+                        <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setShowAddOnModal(false)} />
+                        <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-md p-6 m-4 animate-in fade-in zoom-in-95 duration-200">
+                            <div className="flex justify-between items-center mb-6">
+                                <h3 className="text-xl font-bold text-primary">Customize: {selectedItemForAddOn.title}</h3>
+                                <button onClick={() => setShowAddOnModal(false)} className="p-2 hover:bg-neutral-100 rounded-full">
+                                    <X className="w-5 h-5 text-neutral-500" />
+                                </button>
+                            </div>
+                            
+                            <div className="space-y-3 mb-6 max-h-[60vh] overflow-y-auto custom-scrollbar pr-2">
+                                {selectedItemForAddOn.addOns?.map((addon, idx) => {
+                                    const isSelected = selectedAddOns.some(a => a.name === addon.name);
+                                    return (
+                                        <label key={idx} className={`flex items-center justify-between p-4 rounded-xl border-2 cursor-pointer transition-all ${isSelected ? 'border-[hsl(43_74%_48%)] bg-[hsl(43_74%_48%)]/5' : 'border-neutral-100 hover:border-neutral-200'}`}>
+                                            <div className="flex items-center gap-3">
+                                                <div className={`w-6 h-6 rounded border-2 flex items-center justify-center ${isSelected ? 'border-[hsl(43_74%_48%)] bg-[hsl(43_74%_48%)]' : 'border-neutral-300'}`}>
+                                                    {isSelected && <svg className="w-4 h-4 text-[hsl(195_30%_8%)]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>}
+                                                </div>
+                                                <span className="font-semibold text-primary">{addon.name}</span>
+                                            </div>
+                                            <span className="font-bold text-accent">
+                                                {addon.price === 0 || Number(addon.price) === 0 ? 'Free' : `+BDT ${addon.price}`}
+                                            </span>
+                                            <input
+                                                type="checkbox"
+                                                className="hidden"
+                                                checked={isSelected}
+                                                onChange={() => {
+                                                    if (isSelected) {
+                                                        setSelectedAddOns(prev => prev.filter(a => a.name !== addon.name));
+                                                    } else {
+                                                        setSelectedAddOns(prev => [...prev, addon]);
+                                                    }
+                                                }}
+                                            />
+                                        </label>
+                                    );
+                                })}
+                            </div>
+
+                            <button
+                                onClick={confirmAddToCartWithAddOns}
+                                className="w-full bg-[hsl(43_74%_48%)] text-[hsl(195_30%_8%)] font-bold py-4 rounded-xl shadow-md hover:shadow-lg hover:-translate-y-0.5 active:scale-95 transition-all uppercase tracking-widest"
+                            >
+                                Add to Order
+                            </button>
+                        </div>
+                    </div>
+                )}
+
                 {/* Mobile Full Drawer Overlay */}
                 {mobileDrawerOpen && (
                     <div className="lg:hidden fixed inset-0 z-50 flex flex-col">
@@ -1490,7 +1594,7 @@ const AdminPOS = () => {
                                         {cart.map(c => {
                                             const priceVal = getPrice(c.menuItem);
                                             return (
-                                                <div key={c.menuItem._id} className="flex items-center gap-3 bg-neutral-50 p-3 rounded-[4px]">
+                                                <div key={c.id || c.menuItem._id} className="flex items-center gap-3 bg-neutral-50 p-3 rounded-[4px]">
                                                     <div className="w-12 h-12 bg-neutral-200 rounded-[4px] overflow-hidden flex-shrink-0">
                                                         {c.menuItem.image ? (
                                                             <img src={c.menuItem.image} alt={c.menuItem.title} className="w-full h-full object-cover" />
@@ -1502,20 +1606,25 @@ const AdminPOS = () => {
                                                     </div>
                                                     <div className="flex-1 min-w-0">
                                                         <h4 className="text-xs font-bold text-neutral-900 truncate">{c.menuItem.title}</h4>
+                                                        {c.addOns && c.addOns.length > 0 && (
+                                                            <div className="text-[10px] text-neutral-500 leading-tight truncate">
+                                                                + {c.addOns.map(a => a.name).join(', ')}
+                                                            </div>
+                                                        )}
                                                         <p className="text-[10px] text-neutral-500">৳{priceVal.toFixed(0)} each</p>
                                                     </div>
                                                     <div className="flex items-center gap-1 bg-white border border-[#E5E5E5] rounded-[4px] shadow-sm p-0.5">
-                                                        <button onClick={() => updateQuantity(c.menuItem._id, -1)} className="w-7 h-7 flex items-center justify-center hover:bg-neutral-100 rounded text-neutral-600">
+                                                        <button onClick={() => updateQuantity(c.id || c.menuItem._id, -1)} className="w-7 h-7 flex items-center justify-center hover:bg-neutral-100 rounded text-neutral-600">
                                                             <Minus className="w-3 h-3" />
                                                         </button>
                                                         <span className="text-xs font-black w-6 text-center">{c.quantity}</span>
-                                                        <button onClick={() => updateQuantity(c.menuItem._id, 1)} className="w-7 h-7 flex items-center justify-center hover:bg-neutral-100 rounded text-neutral-600">
+                                                        <button onClick={() => updateQuantity(c.id || c.menuItem._id, 1)} className="w-7 h-7 flex items-center justify-center hover:bg-neutral-100 rounded text-neutral-600">
                                                             <Plus className="w-3 h-3" />
                                                         </button>
                                                     </div>
                                                     <div className="text-right">
                                                         <p className="text-xs font-black text-neutral-900">৳{(priceVal * c.quantity).toFixed(0)}</p>
-                                                        <button onClick={() => removeFromCart(c.menuItem._id)} className="mt-0.5 p-1 hover:bg-rose-100 rounded text-rose-400">
+                                                        <button onClick={() => removeFromCart(c.id || c.menuItem._id)} className="mt-0.5 p-1 hover:bg-rose-100 rounded text-rose-400">
                                                             <X className="w-3 h-3" />
                                                         </button>
                                                     </div>
@@ -1687,7 +1796,7 @@ const AdminPOS = () => {
                                 {cart.map(c => {
                                     const priceVal = getPrice(c.menuItem);
                                     return (
-                                        <div key={c.menuItem._id} className="flex items-center gap-2.5 bg-white border border-neutral-200 p-2.5 rounded-[4px] shadow-sm hover:shadow-md transition-shadow">
+                                        <div key={c.id || c.menuItem._id} className="flex items-center gap-2.5 bg-white border border-neutral-200 p-2.5 rounded-[4px] shadow-sm hover:shadow-md transition-shadow">
                                             {/* Item Image */}
                                             <div className="w-14 h-14 bg-neutral-100 rounded-[4px] overflow-hidden flex-shrink-0">
                                                 {c.menuItem.image ? (
@@ -1716,11 +1825,11 @@ const AdminPOS = () => {
 
                                             {/* Quantity Controls */}
                                             <div className="flex items-center gap-0.5 bg-neutral-100 rounded-md p-0.5">
-                                                <button onClick={() => updateQuantity(c.menuItem._id, -1)} className="p-1 hover:bg-white rounded text-neutral-600 transition-colors">
+                                                <button onClick={() => updateQuantity(c.id || c.menuItem._id, -1)} className="p-1 hover:bg-white rounded text-neutral-600 transition-colors">
                                                     <Minus className="w-3.5 h-3.5" />
                                                 </button>
                                                 <span className="text-xs font-semibold w-5 text-center text-neutral-900">{c.quantity}</span>
-                                                <button onClick={() => updateQuantity(c.menuItem._id, 1)} className="p-1 hover:bg-white rounded text-neutral-600 transition-colors">
+                                                <button onClick={() => updateQuantity(c.id || c.menuItem._id, 1)} className="p-1 hover:bg-white rounded text-neutral-600 transition-colors">
                                                     <Plus className="w-3.5 h-3.5" />
                                                 </button>
                                             </div>
@@ -1728,7 +1837,7 @@ const AdminPOS = () => {
                                             {/* Price and Remove */}
                                             <div className="flex flex-col items-end gap-0.5">
                                                 <div className="text-xs font-bold text-neutral-900">BDT {(priceVal * c.quantity).toFixed(2)}</div>
-                                                <button onClick={() => removeFromCart(c.menuItem._id)} className="p-0.5 hover:bg-rose-100 rounded text-rose-500 transition-colors">
+                                                <button onClick={() => removeFromCart(c.id || c.menuItem._id)} className="p-0.5 hover:bg-rose-100 rounded text-rose-500 transition-colors">
                                                     <X className="w-3.5 h-3.5" />
                                                 </button>
                                             </div>

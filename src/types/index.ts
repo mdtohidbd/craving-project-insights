@@ -5,5 +5,7 @@ export interface MenuItem {
   category: string;
   description?: string;
   image: string;
+  images?: string[];
   tags?: string[];
+  addOns?: { name: string, price: number }[];
 }

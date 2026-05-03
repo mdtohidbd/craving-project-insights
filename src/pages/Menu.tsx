@@ -439,6 +439,7 @@ const Menu = () => {
                                         price: isNaN(numericPrice) ? 0 : numericPrice,
                                         priceStr: item.price?.replace('$', '৳').replace('.00', ''),
                                         image: resolveImage(item.image),
+                                        availableAddOns: item.addOns
                                       });
                                       setAddedItems(prev => ({ ...prev, [item.id]: true }));
                                       setTimeout(() => { setAddedItems(prev => ({ ...prev, [item.id]: false })); }, 1500);

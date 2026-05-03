@@ -2,19 +2,22 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import { toast } from "sonner";
 
 export interface CartItem {
-  id: number;
+  id: number | string;
   title: string;
   price: number;
   priceStr: string;
   image: string;
   quantity: number;
+  addOns?: { name: string, price: number }[];
+  availableAddOns?: { name: string, price: number }[];
 }
 
 interface CartContextType {
   cart: CartItem[];
   addToCart: (item: Omit<CartItem, "quantity"> & { quantity?: number }) => void;
-  removeFromCart: (id: number) => void;
-  updateQuantity: (id: number, quantity: number) => void;
+  removeFromCart: (id: number | string) => void;
+  updateQuantity: (id: number | string, quantity: number) => void;
+  toggleAddOn: (itemId: number | string, addon: { name: string, price: number }) => void;
   clearCart: () => void;
   totalItems: number;
   totalAmount: number;
@@ -59,17 +62,39 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     });
   };
 
-  const removeFromCart = (id: number) => {
+  const removeFromCart = (id: number | string) => {
     setCart((prev) => prev.filter((i) => i.id !== id));
   };
 
-  const updateQuantity = (id: number, quantity: number) => {
+  const updateQuantity = (id: number | string, quantity: number) => {
     setCart((prev) => {
       if (quantity <= 0) {
         return prev.filter((i) => i.id !== id);
       }
-      return prev.map((i) => (i.id === id ? { ...i, quantity } : i));
+      return prev.map((i) => (String(i.id) === String(id) ? { ...i, quantity } : i));
     });
+  };
+
+  const toggleAddOn = (itemId: number | string, addon: { name: string, price: number }) => {
+    setCart((prev) => prev.map((item) => {
+      if (String(item.id) !== String(itemId)) return item;
+
+      const currentAddOns = item.addOns || [];
+      const hasAddon = currentAddOns.some(a => a.name === addon.name);
+
+      let newAddOns;
+      let newPrice = item.price;
+
+      if (hasAddon) {
+        newAddOns = currentAddOns.filter(a => a.name !== addon.name);
+        newPrice -= addon.price;
+      } else {
+        newAddOns = [...currentAddOns, addon];
+        newPrice += addon.price;
+      }
+
+      return { ...item, addOns: newAddOns, price: newPrice };
+    }));
   };
 
   const clearCart = () => setCart([]);
@@ -79,7 +104,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
 
   return (
     <CartContext.Provider
-      value={{ cart, addToCart, removeFromCart, updateQuantity, clearCart, totalItems, totalAmount }}
+      value={{ cart, addToCart, removeFromCart, updateQuantity, toggleAddOn, clearCart, totalItems, totalAmount }}
     >
       {children}
     </CartContext.Provider>

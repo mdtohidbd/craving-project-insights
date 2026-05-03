@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams, Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, ArrowUpRight, ShoppingCart, Minus, Plus, Check } from "lucide-react";
+import { ArrowLeft, ArrowUpRight, ShoppingCart, Minus, Plus, Check, Sparkles, Maximize2, ChevronLeft, ChevronRight, X } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { useCart } from "@/context/CartContext";
@@ -34,7 +34,10 @@ const MenuDetail = () => {
   const [item, setItem] = useState<MenuItem | null>(null);
   const [relatedItems, setRelatedItems] = useState<MenuItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedAddOns, setSelectedAddOns] = useState<{name: string, price: number}[]>([]);
   const [addedRelated, setAddedRelated] = useState<Record<string, boolean>>({});
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const [isFullScreen, setIsFullScreen] = useState(false);
   const timeoutRef = useRef<Record<string, NodeJS.Timeout>>({});
 
   const getCartItem = (itemId: string) => cart.find(c => String(c.id) === String(itemId));
@@ -57,9 +60,36 @@ const MenuDetail = () => {
           return;
         }
         const processedData = applyCustomImages(data);
-        const found = processedData.find((m: MenuItem) => generateSlug(m.title) === slug);
+        const found = processedData.find((m: MenuItem) => m.title && generateSlug(m.title) === slug);
         setItem(found || null);
-        setRelatedItems(processedData.filter((m: MenuItem) => generateSlug(m.title) !== slug).slice(0, 3));
+        
+        if (found) {
+            const getComplementaryCategories = (category?: string) => {
+                if (!category) return [];
+                const lowerCat = category.toLowerCase();
+                if (lowerCat.includes('burger') || lowerCat.includes('pizza') || lowerCat.includes('main')) return ['drinks', 'beverage', 'dessert', 'sides'];
+                if (lowerCat.includes('drink') || lowerCat.includes('beverage')) return ['appetizer', 'dessert', 'burger', 'pizza', 'main'];
+                if (lowerCat.includes('dessert')) return ['drinks', 'beverage', 'coffee'];
+                return [];
+            };
+            const compCategories = getComplementaryCategories(found.category);
+            const scoredItems = processedData
+                .filter((item: MenuItem) => item.id !== found.id)
+                .map((item: MenuItem) => {
+                    let score = 0;
+                    const lowerItemCat = item.category ? item.category.toLowerCase() : '';
+                    if (compCategories.some(c => lowerItemCat.includes(c))) score += 10;
+                    else if (item.category !== found.category) score += 5;
+                    score += Math.random() * 2;
+                    return { item, score };
+                })
+                .sort((a: any, b: any) => b.score - a.score);
+            
+            setRelatedItems(scoredItems.slice(0, 3).map((s: any) => s.item));
+        } else {
+            setRelatedItems([]);
+        }
+        
         setLoading(false);
       })
       .catch(err => {
@@ -126,23 +156,82 @@ const MenuDetail = () => {
               initial={{ opacity: 0, x: -30 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-              className="relative w-full max-w-lg mx-auto lg:mx-0 sticky top-32"
+              className="relative w-full max-w-lg mx-auto lg:mx-0 lg:sticky lg:top-32"
             >
-              {/* Premium geometric frame */}
-              <div className="relative aspect-[4/5] rounded-[2rem] overflow-hidden shadow-2xl bg-white border border-black/5 p-2 md:p-3">
-                <div className="w-full h-full rounded-[1.5rem] overflow-hidden relative">
-                  <img
-                    src={resolveImage(item.image)}
-                    alt={item.title}
-                    className="w-full h-full object-cover transition-transform duration-700 hover:scale-[1.03]"
-                  />
-                  {/* Inner subtle glow */}
-                  <div className="absolute inset-0 ring-1 ring-inset ring-black/5 rounded-[1.5rem] pointer-events-none"></div>
+              <div className="space-y-6">
+                {/* Main Image View */}
+                <div className="relative aspect-[4/5] rounded-[2rem] overflow-hidden shadow-2xl bg-white border border-black/5 p-2 md:p-3 group">
+                  <div 
+                    className="w-full h-full rounded-[1.5rem] overflow-hidden relative cursor-zoom-in"
+                    onClick={() => setIsFullScreen(true)}
+                  >
+                    <AnimatePresence mode="wait">
+                      <motion.img
+                        key={activeImageIndex}
+                        initial={{ opacity: 0, scale: 1.1 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.9 }}
+                        transition={{ duration: 0.5, ease: "circOut" }}
+                        src={resolveImage(item.images && item.images.length > 0 ? item.images[activeImageIndex] : item.image)}
+                        alt={item.title}
+                        className="w-full h-full object-cover"
+                      />
+                    </AnimatePresence>
+                    
+                    {/* Hover Overlay */}
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors duration-300 pointer-events-none" />
+                    
+                    {/* Expand Icon */}
+                    <div className="absolute top-6 right-6 p-3 rounded-full bg-white/90 backdrop-blur shadow-xl opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
+                      <Maximize2 className="w-5 h-5 text-primary" />
+                    </div>
+
+                    {/* Navigation Arrows for multiple images */}
+                    {item.images && item.images.length > 1 && (
+                      <div className="absolute inset-0 flex items-center justify-between px-4 pointer-events-none">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setActiveImageIndex((prev) => (prev === 0 ? item.images!.length - 1 : prev - 1));
+                          }}
+                          className="w-10 h-10 rounded-full bg-white/90 backdrop-blur shadow-lg flex items-center justify-center text-primary pointer-events-auto opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <ChevronLeft className="w-6 h-6" />
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setActiveImageIndex((prev) => (prev === item.images!.length - 1 ? 0 : prev + 1));
+                          }}
+                          className="w-10 h-10 rounded-full bg-white/90 backdrop-blur shadow-lg flex items-center justify-center text-primary pointer-events-auto opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <ChevronRight className="w-6 h-6" />
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Decorative Elements */}
+                  <DiamondStar className="absolute top-0 left-8 w-4 h-4 text-accent -translate-y-1/2 drop-shadow-sm bg-white" />
+                  <DiamondStar className="absolute bottom-12 right-0 w-5 h-5 text-primary translate-x-1/2 drop-shadow-sm bg-white" />
                 </div>
 
-                {/* Decorative Elements */}
-                <DiamondStar className="absolute top-0 left-8 w-4 h-4 text-accent -translate-y-1/2 drop-shadow-sm bg-white" />
-                <DiamondStar className="absolute bottom-12 right-0 w-5 h-5 text-primary translate-x-1/2 drop-shadow-sm bg-white" />
+                {/* Thumbnails */}
+                {item.images && item.images.length > 1 && (
+                  <div className="flex gap-3 justify-center">
+                    {item.images.map((img, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => setActiveImageIndex(idx)}
+                        className={`relative w-20 h-20 rounded-xl overflow-hidden border-2 transition-all ${
+                          activeImageIndex === idx ? "border-accent scale-105 shadow-md" : "border-transparent opacity-60 hover:opacity-100"
+                        }`}
+                      >
+                        <img src={resolveImage(img)} alt={`${item.title} ${idx + 1}`} className="w-full h-full object-cover" />
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
             </motion.div>
 
@@ -171,6 +260,39 @@ const MenuDetail = () => {
                 <p className="text-muted-foreground leading-[1.8] text-[16px] md:text-[17px] font-medium mb-12 max-w-xl">
                   {item.description}
                 </p>
+
+                {item.addOns && item.addOns.length > 0 && (
+                  <div className="mb-8">
+                    <h3 className="text-lg font-serif font-bold text-primary mb-4">Add-ons</h3>
+                    <div className="space-y-3 max-w-xl">
+                      {item.addOns.map((addon, index) => {
+                        const isSelected = selectedAddOns.some(a => a.name === addon.name);
+                        return (
+                          <label key={index} className="flex items-center justify-between p-3 border border-neutral-200 rounded-xl cursor-pointer hover:bg-neutral-50 transition-colors">
+                            <div className="flex items-center gap-3">
+                              <input 
+                                type="checkbox" 
+                                className="w-5 h-5 accent-accent"
+                                checked={isSelected}
+                                onChange={(e) => {
+                                  if (e.target.checked) {
+                                    setSelectedAddOns([...selectedAddOns, addon]);
+                                  } else {
+                                    setSelectedAddOns(selectedAddOns.filter(a => a.name !== addon.name));
+                                  }
+                                }}
+                              />
+                              <span className="font-medium text-neutral-800">{addon.name}</span>
+                            </div>
+                            <span className="text-accent font-medium">
+                              {addon.price === 0 || Number(addon.price) === 0 ? 'Free' : `+৳${addon.price}`}
+                            </span>
+                          </label>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Add to Cart Actions Block */}
@@ -198,15 +320,24 @@ const MenuDetail = () => {
                   <button
                     onClick={() => {
                       const numericPrice = parseFloat((item.price || '0').replace(/[^0-9.]/g, ''));
+                      const addOnsTotal = selectedAddOns.reduce((sum, addon) => sum + addon.price, 0);
+                      const finalPrice = (isNaN(numericPrice) ? 0 : numericPrice) + addOnsTotal;
+                      
+                      const addOnsString = selectedAddOns.map(a => a.name).sort().join('-');
+                      const cartItemId = addOnsString ? `${item.id}-${addOnsString}` : item.id;
+
                       addToCart({
-                        id: Number(item.id),
+                        id: cartItemId,
                         title: item.title,
-                        price: isNaN(numericPrice) ? 0 : numericPrice,
-                        priceStr: item.price?.replace('$', '৳').replace('.00', ''),
+                        price: finalPrice,
+                        priceStr: `৳${finalPrice}`,
                         image: resolveImage(item.image),
-                        quantity: quantity
+                        quantity: quantity,
+                        addOns: selectedAddOns,
+                        availableAddOns: item.addOns
                       });
                       setQuantity(1);
+                      setSelectedAddOns([]);
                     }}
                     className="w-full bg-primary text-white font-bold py-4 rounded-xl shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all text-[12px] uppercase tracking-wider flex items-center justify-center gap-2 group"
                   >
@@ -215,6 +346,63 @@ const MenuDetail = () => {
                   </button>
                 </div>
               </div>
+
+              {/* Inline Recommended Cross-Sell Component */}
+              {relatedItems.length > 0 && (
+                <div className="mt-8 max-w-xl">
+                  <div className="flex items-center gap-3 mb-4">
+                     <Sparkles className="w-4 h-4 text-accent" />
+                     <h4 className="text-sm font-bold text-primary uppercase tracking-wider">Frequently Bought Together</h4>
+                  </div>
+                  <div className="space-y-3">
+                    {relatedItems.slice(0, 2).map((recItem) => {
+                      const recCartItem = getCartItem(String(recItem.id));
+                      return (
+                        <div key={recItem.id} className="flex items-center justify-between p-3 bg-white border border-neutral-100 rounded-2xl shadow-sm hover:shadow-md hover:border-primary/10 transition-all group">
+                          <div className="flex items-center gap-3 cursor-pointer" onClick={() => window.location.href = `/menu/${generateSlug(recItem.title)}`}>
+                            <div className="w-12 h-12 rounded-xl overflow-hidden shadow-sm shrink-0">
+                              <img src={resolveImage(recItem.image)} alt={recItem.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                            </div>
+                            <div className="flex flex-col">
+                              <span className="text-sm font-bold text-neutral-800 leading-tight group-hover:text-primary transition-colors">{recItem.title}</span>
+                              <span className="text-xs font-medium text-accent mt-0.5">{recItem.price?.replace('$', '৳').replace('.00', '')}</span>
+                            </div>
+                          </div>
+                          
+                          <div className="shrink-0">
+                            {recCartItem ? (
+                                <div className="flex items-center gap-2 bg-emerald-50 text-emerald-600 px-3 py-1.5 rounded-full border border-emerald-100 text-xs font-bold">
+                                  <Check className="w-3.5 h-3.5" /> Added ({recCartItem.quantity})
+                                </div>
+                            ) : (
+                                <button
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    const numericPrice = parseFloat((recItem.price || '0').replace(/[^0-9.]/g, ''));
+                                    addToCart({
+                                      id: Number(recItem.id),
+                                      title: recItem.title,
+                                      price: isNaN(numericPrice) ? 0 : numericPrice,
+                                      priceStr: recItem.price?.replace('$', '৳').replace('.00', ''),
+                                      image: resolveImage(recItem.image),
+                                      quantity: 1,
+                                      availableAddOns: recItem.addOns
+                                    });
+                                  }}
+                                  className="flex items-center justify-center w-8 h-8 rounded-full bg-[hsl(40_18%_96%)] text-primary hover:bg-accent hover:text-[hsl(195_30%_8%)] transition-colors"
+                                >
+                                  <Plus className="w-4 h-4" />
+                                </button>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
             </motion.div>
 
           </div>
@@ -358,6 +546,75 @@ const MenuDetail = () => {
       </section>
 
       <Footer />
+
+      {/* Full Screen Image Viewer Modal */}
+      <AnimatePresence>
+        {isFullScreen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] bg-black/95 flex flex-col items-center justify-center p-4 md:p-12"
+          >
+            <button 
+              onClick={() => setIsFullScreen(false)}
+              className="absolute top-6 right-6 p-3 rounded-full bg-white/10 text-white hover:bg-white/20 transition-all z-10"
+            >
+              <X className="w-6 h-6" />
+            </button>
+
+            <div className="relative w-full h-full flex items-center justify-center">
+              <AnimatePresence mode="wait">
+                <motion.img
+                  key={activeImageIndex}
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.9 }}
+                  transition={{ duration: 0.4, ease: "circOut" }}
+                  src={resolveImage(item.images && item.images.length > 0 ? item.images[activeImageIndex] : item.image)}
+                  alt={item.title}
+                  className="max-w-full max-h-full object-contain shadow-2xl rounded-lg"
+                />
+              </AnimatePresence>
+
+              {/* Navigation Arrows for Full Screen */}
+              {item.images && item.images.length > 1 && (
+                <>
+                  <button
+                    onClick={() => setActiveImageIndex((prev) => (prev === 0 ? item.images!.length - 1 : prev - 1))}
+                    className="absolute left-4 p-4 rounded-full bg-white/10 text-white hover:bg-white/20 transition-all"
+                  >
+                    <ChevronLeft className="w-8 h-8" />
+                  </button>
+                  <button
+                    onClick={() => setActiveImageIndex((prev) => (prev === item.images!.length - 1 ? 0 : prev + 1))}
+                    className="absolute right-4 p-4 rounded-full bg-white/10 text-white hover:bg-white/20 transition-all"
+                  >
+                    <ChevronRight className="w-8 h-8" />
+                  </button>
+                </>
+              )}
+            </div>
+
+            {/* Thumbnail Strip in Full Screen */}
+            {item.images && item.images.length > 1 && (
+              <div className="flex gap-4 mt-8">
+                {item.images.map((img, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => setActiveImageIndex(idx)}
+                    className={`relative w-16 h-16 rounded-lg overflow-hidden border-2 transition-all ${
+                      activeImageIndex === idx ? "border-accent scale-110 shadow-lg" : "border-transparent opacity-40 hover:opacity-100"
+                    }`}
+                  >
+                    <img src={resolveImage(img)} alt={`${item.title} ${idx + 1}`} className="w-full h-full object-cover" />
+                  </button>
+                ))}
+              </div>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

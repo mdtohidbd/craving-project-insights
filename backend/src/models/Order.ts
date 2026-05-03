@@ -4,7 +4,11 @@ const orderItemSchema = new mongoose.Schema({
     menuItemId: { type: String, required: true },
     title: { type: String, required: true },
     price: { type: Number, required: true },
-    quantity: { type: Number, required: true }
+    quantity: { type: Number, required: true },
+    addOns: [{
+        name: { type: String, required: true },
+        price: { type: Number, required: true }
+    }]
 }, { _id: false });
 
 const splitPaymentSchema = new mongoose.Schema({
