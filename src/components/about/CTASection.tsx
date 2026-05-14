@@ -1,8 +1,10 @@
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
+import { useSettings } from "@/context/SettingsContext";
 
 const CTASection = () => {
+  const { settings } = useSettings();
   return (
     <section className="relative py-20 md:py-24 overflow-hidden">
       <div
@@ -32,7 +34,7 @@ const CTASection = () => {
           </h2>
           <p className="text-primary-foreground/50 max-w-lg mx-auto mb-8 text-lg leading-relaxed">
             Whether you're craving a quick bite, a gourmet meal, or something in between,
-            Craving has you covered.
+            {settings.websiteName} has you covered.
           </p>
           <Link
             to="/contact"

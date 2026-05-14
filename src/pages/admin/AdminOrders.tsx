@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useSettings } from "@/context/SettingsContext";
 import AdminLayout from "../../components/admin/AdminLayout";
 import { Check, X, Info, Search, FileText, Printer, Clock, ArrowRight, CheckCircle, CheckCheck, LayoutGrid, List as ListIcon, Users, Bike, MapPin, Phone, Receipt } from "lucide-react";
 import { toast } from "sonner";
@@ -162,6 +163,7 @@ const KDSOrderCard = ({ order, onUpdateStatus, onSelect, onCompleteOrder }: { or
 };
 
 const AdminOrders = () => {
+    const { settings } = useSettings();
     const [orders, setOrders] = useState<Order[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
@@ -797,7 +799,7 @@ const AdminOrders = () => {
                                 /* Bill View */
                                 <div id="printable-bill" className="p-8 print:p-0">
                                     <div className="text-center mb-6">
-                                        <h2 className="text-2xl font-serif font-black text-neutral-900 mb-1">CRAVING</h2>
+                                        <h2 className="text-2xl font-serif font-black text-neutral-900 mb-1">{settings.websiteName.toUpperCase()}</h2>
                                         <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-[0.2em]">Restaurant & Cafe</p>
                                         <div className="w-12 h-0.5 bg-neutral-900 mx-auto mt-4" />
                                     </div>
@@ -870,7 +872,7 @@ const AdminOrders = () => {
 
                                     <div className="text-center">
                                         <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-[0.2em] mb-1">Thank You For Dining With Us!</p>
-                                        <p className="text-[9px] text-neutral-300">cravingpos.com</p>
+                                        <p className="text-[9px] text-neutral-300">{settings.websiteName.toLowerCase().replace(/\s+/g, '')}.com</p>
                                     </div>
 
                                     {selectedOrder.status === 'served' && (

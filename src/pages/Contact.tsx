@@ -1,11 +1,13 @@
 import { motion } from "framer-motion";
 import { MapPin, Phone, Mail, ArrowRight } from "lucide-react";
 import { useState } from "react";
+import { useSettings } from "@/context/SettingsContext";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { useToast } from "@/hooks/use-toast";
 
 const Contact = () => {
+  const { settings } = useSettings();
   const { toast } = useToast();
   const [formData, setFormData] = useState({
     name: "",
@@ -234,7 +236,7 @@ const Contact = () => {
                   {
                     icon: Mail,
                     label: "Email",
-                    value: "hello@craving.com",
+                    value: `hello@${settings.websiteName.toLowerCase().replace(/\s+/g, '')}.com`,
                   },
                 ].map((contact, index) => (
                   <motion.div

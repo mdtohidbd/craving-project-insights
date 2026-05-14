@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useSettings } from "@/context/SettingsContext";
 import AdminLayout from "../../components/admin/AdminLayout";
 import { Plus, Edit, Trash2, Users, Clock, CheckCircle, XCircle, X, RefreshCcw, Filter, Sparkles, FileText, Receipt } from "lucide-react";
 import { toast } from "sonner";
@@ -27,6 +28,7 @@ interface TableOrder {
 }
 
 const AdminTables = () => {
+    const { settings } = useSettings();
     const [tables, setTables] = useState<Table[]>([]);
     const [loading, setLoading] = useState(true);
     const [activeFilter, setActiveFilter] = useState("All");
@@ -211,7 +213,7 @@ const AdminTables = () => {
             .dashed { border-bottom: 2px dashed #000; margin: 10px 0; }
             .total-row { display: flex; justify-content: space-between; font-weight: bold; font-size: 16px; margin: 8px 0; }
         </style></head><body>
-            <div class="center" style="font-size:20px;font-weight:bold;margin-bottom:10px;">CRAVINGS</div>
+            <div class="center" style="font-size:20px;font-weight:bold;margin-bottom:10px;">${settings.websiteName.toUpperCase()}</div>
             <div class="dashed"></div>
             <div class="row"><span>Table</span><span>${table.tableNumber}</span></div>
             <div class="row"><span>Order</span><span>${orderNum}</span></div>

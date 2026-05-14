@@ -55,6 +55,29 @@ export const SettingsProvider = ({ children }: { children: React.ReactNode }) =>
         refreshSettings();
     }, [refreshSettings]);
 
+    useEffect(() => {
+        if (settings.websiteName) {
+            document.title = `${settings.websiteName} | Fine Dining Restaurant`;
+            
+            // Update meta description
+            const metaDescription = document.querySelector('meta[name="description"]');
+            if (metaDescription) {
+                metaDescription.setAttribute('content', `Experience exquisite flavors at ${settings.websiteName}. Our handpicked selection of bold and delicious food will leave you craving for more.`);
+            }
+
+            // Update Open Graph tags
+            const ogTitle = document.querySelector('meta[property="og:title"]');
+            if (ogTitle) {
+                ogTitle.setAttribute('content', `${settings.websiteName} | Fine Dining Restaurant`);
+            }
+            
+            const ogDescription = document.querySelector('meta[property="og:description"]');
+            if (ogDescription) {
+                ogDescription.setAttribute('content', `Experience exquisite flavors at ${settings.websiteName}. Our handpicked selection of bold and delicious food will leave you craving for more.`);
+            }
+        }
+    }, [settings.websiteName]);
+
     const updateSettings = async (updates: Partial<GeneralSettings>) => {
         // Optimistic update
         setSettings(prev => ({ ...prev, ...updates }));

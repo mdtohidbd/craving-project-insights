@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useSettings } from "@/context/SettingsContext";
 import AdminLayout from "../../components/admin/AdminLayout";
 import { Search, Plus, Minus, Trash2, Printer, Divide, Clock, X, Utensils, ChevronDown, ChevronUp, UserPlus, Info, Banknote, CreditCard, Smartphone, BadgePercent, Scissors, DollarSign, Sparkles, Split, ShoppingCart } from "lucide-react";
 import { toast } from "sonner";
@@ -69,6 +70,7 @@ interface CustomerType {
 }
 
 const AdminPOS = () => {
+    const { settings } = useSettings();
     const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
     const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
@@ -442,7 +444,7 @@ const AdminPOS = () => {
             img { display: block; margin: 10px auto; }
             @media print { @page { margin: 0; size: 80mm auto; } }
         </style></head><body>
-            <div class="center bold" style="font-size:20px;margin-bottom:15px;">MY RESTAURANT</div>
+            <div class="center bold" style="font-size:20px;margin-bottom:15px;">${settings.websiteName.toUpperCase()}</div>
             <div class="dashed"></div>
             <div class="row"><span>Order #</span><span>${orderNum}</span></div>
             <div class="row"><span>Date</span><span>${details.date}</span></div>
@@ -461,7 +463,7 @@ const AdminPOS = () => {
             <div class="center" style="margin-top:10px;">
                 <p style="margin-bottom:10px;">Thank you for your visit!</p>
                 <img src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${details.orderId}" alt="QR" width="100" height="100" />
-                <p style="font-size:12px;margin-top:10px;"><strong>Skybridge Systems</strong> | yourskybridge.com</p>
+                <p style="font-size:12px;margin-top:10px;"><strong>${settings.websiteName}</strong> | ${settings.websiteName.toLowerCase().replace(/\s+/g, '')}.com</p>
             </div>
         </body></html>`;
 
@@ -2626,7 +2628,7 @@ const AdminPOS = () => {
                         {/* Scrollable Content */}
                         <div className="p-8 overflow-y-auto custom-scrollbar">
                             <div className="text-center mb-8">
-                                <h2 className="text-3xl font-serif font-bold text-[#0f172a] mb-2">Cravings...</h2>
+                                <h2 className="text-3xl font-serif font-bold text-[#0f172a] mb-2">{settings.websiteName}...</h2>
                                 <p className="text-sm font-medium text-neutral-500 tracking-[0.2em] uppercase">Order Receipt</p>
                             </div>
 
