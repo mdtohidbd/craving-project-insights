@@ -5,35 +5,19 @@ import { ArrowLeft, CheckCircle2, ShieldCheck, CreditCard, Banknote, Printer, Cl
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { useCart } from "@/context/CartContext";
+import { useSettings } from "@/context/SettingsContext";
 import { toast } from "sonner";
 
 const Checkout = () => {
   const { cart, totalAmount, clearCart, updateQuantity, toggleAddOn } = useCart();
+  const { settings } = useSettings();
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [orderDetails, setOrderDetails] = useState<any>(null);
   const [paymentMethod, setPaymentMethod] = useState<"bkash" | "nagad" | "cod">("cod");
 
-  const [deliveryFee, setDeliveryFee] = useState(50);
-
-  useEffect(() => {
-    const fetchSettings = async () => {
-      try {
-        const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
-        const res = await fetch(`${apiUrl}/settings`);
-        if (res.ok) {
-          const data = await res.json();
-          if (data && typeof data.deliveryFee === 'number') {
-            setDeliveryFee(data.deliveryFee);
-          }
-        }
-      } catch (err) {
-        console.error("Failed to fetch settings:", err);
-      }
-    };
-    fetchSettings();
-  }, []);
+  const deliveryFee = settings.deliveryFee;
 
   const finalTotal = totalAmount + (cart.length > 0 ? deliveryFee : 0);
 
@@ -297,7 +281,7 @@ const Checkout = () => {
                   <div className="p-8 md:p-10 pt-4">
                     {/* Restaurant Branding */}
                     <div className="text-center mb-8 pb-6 border-b border-dashed border-gray-200">
-                      <h2 className="text-3xl font-serif font-bold text-primary mb-1">CRAVING</h2>
+                      <h2 className="text-3xl font-serif font-bold text-primary mb-1 uppercase">{settings.websiteName}</h2>
                       <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.3em]">Exquisite Dining</p>
                       <div className="mt-4 flex items-center justify-center gap-2 text-xs text-muted-foreground">
                         <Calendar className="w-3.5 h-3.5" />
@@ -362,7 +346,7 @@ const Checkout = () => {
 
                     {/* Simple Message */}
                     <div className="mt-8 pt-6 border-t border-gray-50 text-center">
-                      <p className="text-[10px] text-muted-foreground uppercase tracking-[0.2em] font-black">Thank you for Choosing Craving</p>
+                      <p className="text-[10px] text-muted-foreground uppercase tracking-[0.2em] font-black">Thank you for Choosing {settings.websiteName}</p>
                     </div>
                   </div>
 

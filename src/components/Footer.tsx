@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Flame, ArrowRight } from "lucide-react";
+import { useSettings } from "@/context/SettingsContext";
 
 const quickLinks = [
   { name: "Home", path: "/" },
@@ -12,6 +13,8 @@ const quickLinks = [
 ];
 
 const Footer = () => {
+  const { settings } = useSettings();
+  const domain = settings.websiteName.toLowerCase().replace(/\s+/g, '') + ".com";
   return (
     <footer className="relative overflow-hidden">
 
@@ -27,7 +30,7 @@ const Footer = () => {
                 <Flame className="w-6 h-6 transition-transform duration-500 group-hover:rotate-12"
                   style={{ color: "hsl(43 74% 48%)" }} />
                 <span className="text-2xl font-serif font-bold text-primary-foreground tracking-tight">
-                  Craving
+                  {settings.websiteName}
                 </span>
               </Link>
               <p className="text-[13px] leading-[1.7] max-w-sm"
@@ -69,7 +72,7 @@ const Footer = () => {
                 <li>2464 Royal Ln<br />Mesa, New Jersey</li>
                 <li>(629) 555-0129</li>
                 <li className="pt-2 hover:text-white transition-colors cursor-pointer">
-                  hello@craving.com
+                  hello@{domain}
                 </li>
               </ul>
             </div>
@@ -97,7 +100,7 @@ const Footer = () => {
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <p className="text-[13px] tracking-wide"
               style={{ color: "hsl(40 20% 96% / 0.4)" }}>
-              © {new Date().getFullYear()} Craving. All Rights Reserved.
+              © {new Date().getFullYear()} {settings.websiteName}. All Rights Reserved.
             </p>
             <div className="flex items-center gap-6">
               {["Instagram", "Twitter", "Facebook"].map((social) => (

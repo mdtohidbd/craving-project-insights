@@ -3,6 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X } from "lucide-react";
 import { Cart } from "./Cart";
+import { useSettings } from "@/context/SettingsContext";
 
 const navLinks = [
   { name: "Home", path: "/" },
@@ -15,6 +16,7 @@ const Navbar = ({ theme = "dark" }: { theme?: "light" | "dark" }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const location = useLocation();
+  const { settings } = useSettings();
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
@@ -38,7 +40,7 @@ const Navbar = ({ theme = "dark" }: { theme?: "light" | "dark" }) => {
             {/* Logo */}
             <Link to="/" className="flex items-center gap-3 group">
               <span className={`text-3xl font-serif font-bold ${scrolled || theme === "dark" ? "text-primary-foreground" : "text-primary"}`} style={{ letterSpacing: "-0.01em" }}>
-                Craving
+                {settings.websiteName}
               </span>
             </Link>
 

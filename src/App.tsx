@@ -9,6 +9,7 @@ import { ScrollToTop } from "./components/ScrollToTop";
 import { CartProvider } from "./context/CartContext";
 import { AuthProvider } from "./context/AuthContext";
 import { ModuleProvider } from "./context/ModuleContext";
+import { SettingsProvider } from "./context/SettingsContext";
 import ProtectedRoute from "./components/admin/ProtectedRoute";
 import ModuleGuard from "./components/admin/ModuleGuard";
 import { Loader2 } from "lucide-react";
@@ -77,54 +78,56 @@ const App = () => (
     <TooltipProvider>
       <CartProvider>
         <AuthProvider>
-          <ModuleProvider>
-            <Toaster />
-            <Sonner />
-            <SmoothScroll />
-            <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-              <ScrollToTop />
-              <Routes>
-                {/* ── Public Routes ─────────────────────────────────────── */}
-                <Route path="/"            element={<Index />} />
-                <Route path="/about"       element={<About />} />
-                <Route path="/menu"        element={<Menu />} />
-                <Route path="/menu/:slug"  element={<MenuDetail />} />
-                <Route path="/blog"        element={<Blog />} />
-                <Route path="/blog/:id"    element={<BlogDetail />} />
-                <Route path="/contact"     element={<Contact />} />
-                <Route path="/checkout"    element={<Checkout />} />
-                <Route path="/book-table"  element={<BookTable />} />
-                <Route path="/track-order" element={<OrderTracking />} />
+          <SettingsProvider>
+            <ModuleProvider>
+              <Toaster />
+              <Sonner />
+              <SmoothScroll />
+              <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+                <ScrollToTop />
+                <Routes>
+                  {/* ── Public Routes ─────────────────────────────────────── */}
+                  <Route path="/"            element={<Index />} />
+                  <Route path="/about"       element={<About />} />
+                  <Route path="/menu"        element={<Menu />} />
+                  <Route path="/menu/:slug"  element={<MenuDetail />} />
+                  <Route path="/blog"        element={<Blog />} />
+                  <Route path="/blog/:id"    element={<BlogDetail />} />
+                  <Route path="/contact"     element={<Contact />} />
+                  <Route path="/checkout"    element={<Checkout />} />
+                  <Route path="/book-table"  element={<BookTable />} />
+                  <Route path="/track-order" element={<OrderTracking />} />
 
-                {/* ── Admin Auth (no guard) ──────────────────────────────── */}
-                <Route path="/admin/login" element={<Suspense fallback={<PageLoader />}><AdminLogin /></Suspense>} />
+                  {/* ── Admin Auth (no guard) ──────────────────────────────── */}
+                  <Route path="/admin/login" element={<Suspense fallback={<PageLoader />}><AdminLogin /></Suspense>} />
 
-                {/* ── Protected + Module-Guarded Admin Routes ────────────── */}
-                <Route path="/admin"                element={<AdminRoute moduleId="dashboard"><AdminDashboard /></AdminRoute>} />
-                <Route path="/admin/tables"         element={<AdminRoute moduleId="tables"><AdminTables /></AdminRoute>} />
-                <Route path="/admin/orders"         element={<AdminRoute moduleId="orders"><AdminOrders /></AdminRoute>} />
-                <Route path="/admin/customers"      element={<AdminRoute moduleId="customers"><AdminCustomers /></AdminRoute>} />
-                <Route path="/admin/menu"           element={<AdminRoute moduleId="menu"><AdminMenu /></AdminRoute>} />
-                <Route path="/admin/categories"     element={<AdminRoute moduleId="menu"><AdminCategories /></AdminRoute>} />
-                <Route path="/admin/inventory"      element={<AdminRoute moduleId="inventory"><AdminInventory /></AdminRoute>} />
-                <Route path="/admin/messages"       element={<AdminRoute moduleId="messages"><AdminMessages /></AdminRoute>} />
-                <Route path="/admin/notifications"  element={<AdminRoute moduleId="notifications"><AdminNotifications /></AdminRoute>} />
-                <Route path="/admin/settings"       element={<AdminRoute moduleId="settings"><AdminSettings /></AdminRoute>} />
-                <Route path="/admin/reservations"   element={<AdminRoute moduleId="reservations"><AdminReservations /></AdminRoute>} />
-                <Route path="/admin/delivery"       element={<AdminRoute moduleId="delivery"><AdminDelivery /></AdminRoute>} />
-                <Route path="/admin/pos"            element={<AdminRoute moduleId="pos"><AdminPOS /></AdminRoute>} />
+                  {/* ── Protected + Module-Guarded Admin Routes ────────────── */}
+                  <Route path="/admin"                element={<AdminRoute moduleId="dashboard"><AdminDashboard /></AdminRoute>} />
+                  <Route path="/admin/tables"         element={<AdminRoute moduleId="tables"><AdminTables /></AdminRoute>} />
+                  <Route path="/admin/orders"         element={<AdminRoute moduleId="orders"><AdminOrders /></AdminRoute>} />
+                  <Route path="/admin/customers"      element={<AdminRoute moduleId="customers"><AdminCustomers /></AdminRoute>} />
+                  <Route path="/admin/menu"           element={<AdminRoute moduleId="menu"><AdminMenu /></AdminRoute>} />
+                  <Route path="/admin/categories"     element={<AdminRoute moduleId="menu"><AdminCategories /></AdminRoute>} />
+                  <Route path="/admin/inventory"      element={<AdminRoute moduleId="inventory"><AdminInventory /></AdminRoute>} />
+                  <Route path="/admin/messages"       element={<AdminRoute moduleId="messages"><AdminMessages /></AdminRoute>} />
+                  <Route path="/admin/notifications"  element={<AdminRoute moduleId="notifications"><AdminNotifications /></AdminRoute>} />
+                  <Route path="/admin/settings"       element={<AdminRoute moduleId="settings"><AdminSettings /></AdminRoute>} />
+                  <Route path="/admin/reservations"   element={<AdminRoute moduleId="reservations"><AdminReservations /></AdminRoute>} />
+                  <Route path="/admin/delivery"       element={<AdminRoute moduleId="delivery"><AdminDelivery /></AdminRoute>} />
+                  <Route path="/admin/pos"            element={<AdminRoute moduleId="pos"><AdminPOS /></AdminRoute>} />
 
-                {/* ── Superadmin-only Routes ─────────────────────────────── */}
-                <Route path="/admin/users"       element={<AdminRoute moduleId="users"       requireSuperAdmin><AdminUsers /></AdminRoute>} />
-                <Route path="/admin/modules"     element={<AdminRoute moduleId="modules"     requireSuperAdmin><AdminModules /></AdminRoute>} />
-                <Route path="/admin/staff"       element={<AdminRoute moduleId="staff"       requireSuperAdmin><AdminStaff /></AdminRoute>} />
-                <Route path="/admin/deliverymen" element={<AdminRoute moduleId="deliverymen" requireSuperAdmin><AdminDeliverymen /></AdminRoute>} />
+                  {/* ── Superadmin-only Routes ─────────────────────────────── */}
+                  <Route path="/admin/users"       element={<AdminRoute moduleId="users"       requireSuperAdmin><AdminUsers /></AdminRoute>} />
+                  <Route path="/admin/modules"     element={<AdminRoute moduleId="modules"     requireSuperAdmin><AdminModules /></AdminRoute>} />
+                  <Route path="/admin/staff"       element={<AdminRoute moduleId="staff"       requireSuperAdmin><AdminStaff /></AdminRoute>} />
+                  <Route path="/admin/deliverymen" element={<AdminRoute moduleId="deliverymen" requireSuperAdmin><AdminDeliverymen /></AdminRoute>} />
 
-                {/* ── 404 ────────────────────────────────────────────────── */}
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </BrowserRouter>
-          </ModuleProvider>
+                  {/* ── 404 ────────────────────────────────────────────────── */}
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </BrowserRouter>
+            </ModuleProvider>
+          </SettingsProvider>
         </AuthProvider>
       </CartProvider>
     </TooltipProvider>

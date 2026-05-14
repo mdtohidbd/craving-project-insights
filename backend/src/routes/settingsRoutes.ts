@@ -8,7 +8,7 @@ const router = express.Router();
 const ensureSettings = async () => {
     let settings = await Settings.findOne();
     if (!settings) {
-        settings = await Settings.create({ deliveryFee: 50, smsNumber: '' });
+        settings = await Settings.create({ websiteName: 'Craving', deliveryFee: 50, smsNumber: '' });
     }
     // Backfill globalModules if they were missing from an old record
     if (!settings.globalModules || settings.globalModules.length === 0) {
@@ -48,6 +48,7 @@ router.get('/', async (req, res) => {
 router.put('/', async (req, res) => {
     try {
         const settings = await ensureSettings();
+        if (req.body.websiteName   !== undefined) settings.websiteName   = req.body.websiteName;
         if (req.body.deliveryFee  !== undefined) settings.deliveryFee  = req.body.deliveryFee;
         if (req.body.adminPassword !== undefined) settings.adminPassword = req.body.adminPassword;
         if (req.body.smsNumber     !== undefined) settings.smsNumber     = req.body.smsNumber;

@@ -1,6 +1,8 @@
 import { motion } from "framer-motion";
+import { useSettings } from "@/context/SettingsContext";
 
 const CravingBanner = () => {
+  const { settings } = useSettings();
   return (
     <section className="py-20 bg-secondary/50 relative overflow-hidden">
       <div className="absolute inset-0">
@@ -14,7 +16,7 @@ const CravingBanner = () => {
           transition={{ duration: 0.8 }}
         >
           <span className="text-7xl md:text-9xl font-serif font-bold text-primary/10 italic select-none">
-            Craving
+            {settings.websiteName}
           </span>
         </motion.div>
       </div>

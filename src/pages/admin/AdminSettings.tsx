@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import AdminLayout from "../../components/admin/AdminLayout";
-import { Lock, Smartphone, Save, ShieldCheck, AlertCircle, Phone, Truck } from "lucide-react";
+import { Lock, Smartphone, Save, ShieldCheck, AlertCircle, Phone, Truck, Globe } from "lucide-react";
 import { toast } from "sonner";
+import { useSettings } from "@/context/SettingsContext";
 
 const AdminSettings = () => {
     // Password state
@@ -9,83 +10,91 @@ const AdminSettings = () => {
     const [newPassword, setNewPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
 
-    const [smsNumber, setSmsNumber] = useState("+1 (555) 0123");
-    const [newSmsNumber, setNewSmsNumber] = useState("");
+    const { settings, updateSettings, isLoading: settingsLoading } = useSettings();
 
-    // Delivery Fee state
-    const [deliveryFee, setDeliveryFee] = useState<number>(50);
-    const [newDeliveryFee, setNewDeliveryFee] = useState<string>("50");
+    const [websiteName, setWebsiteName] = useState("");
+    const [smsNumber, setSmsNumber] = useState("");
+    const [deliveryFee, setDeliveryFee] = useState<string>("50");
 
     useEffect(() => {
-        const fetchSettings = async () => {
-            try {
-                const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
-                const res = await fetch(`${apiUrl}/settings`);
-                if (res.ok) {
-                    const data = await res.json();
-                    if (data) {
-                        if (data.deliveryFee !== undefined) {
-                            setDeliveryFee(data.deliveryFee);
-                            setNewDeliveryFee(data.deliveryFee.toString());
-                        }
-                        if (data.smsNumber) {
-                            setSmsNumber(data.smsNumber);
-                            setNewSmsNumber(data.smsNumber);
-                        }
-                    }
-                }
-            } catch (error) {
-                console.error("Failed to fetch settings:", error);
-            }
-        };
-        fetchSettings();
-    }, []);
+        if (!settingsLoading && settings) {
+            setWebsiteName(settings.websiteName);
+            setSmsNumber(settings.smsNumber);
+            setDeliveryFee(settings.deliveryFee.toString());
+        }
+    }, [settings, settingsLoading]);
+
+    const handleSaveGeneral = async () => {
+        try {
+            await updateSettings({ websiteName });
+            toast.success("Website name updated successfully!");
+        } catch (error) {
+            toast.error("Failed to update website name.");
+        }
+    };
 
     const handleSaveDeliveryFee = async () => {
         try {
-            const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
-            const res = await fetch(`${apiUrl}/settings`, {
-                method: "PUT",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ deliveryFee: Number(newDeliveryFee) })
-            });
-
-            if (res.ok) {
-                setDeliveryFee(Number(newDeliveryFee));
-                toast.success("Delivery fee updated successfully!");
-            } else {
-                throw new Error("Update failed");
-            }
+            await updateSettings({ deliveryFee: Number(deliveryFee) });
+            toast.success("Delivery fee updated successfully!");
         } catch (error) {
-            console.error("Failed to update delivery fee:", error);
             toast.error("Failed to update delivery fee.");
         }
     };
 
     const handleSaveSmsNumber = async () => {
         try {
-            const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
-            const res = await fetch(`${apiUrl}/settings`, {
-                method: "PUT",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ smsNumber: newSmsNumber })
-            });
-
-            if (res.ok) {
-                setSmsNumber(newSmsNumber);
-                toast.success("SMS number updated successfully!");
-            } else {
-                throw new Error("Update failed");
-            }
+            await updateSettings({ smsNumber });
+            toast.success("SMS number updated successfully!");
         } catch (error) {
-            console.error("Failed to update SMS number:", error);
             toast.error("Failed to update SMS number.");
         }
     };
 
     return (
         <AdminLayout title="Settings">
-            <div className="max-w-4xl space-y-8">
+            <div className="max-w-4xl space-y-8 pb-12">
+
+                {/* General Settings */}
+                <div className="bg-white border border-neutral-200/60 rounded-[12px] overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-500">
+                    <div className="p-6 border-b border-neutral-100 bg-neutral-50/50">
+                        <div className="flex items-center gap-4">
+                            <div className="w-12 h-12 bg-blue-50 rounded-[12px] flex items-center justify-center shadow-inner">
+                                <Globe className="w-6 h-6 text-blue-500" />
+                            </div>
+                            <div>
+                                <h2 className="text-lg font-black text-neutral-900 tracking-tight">General Information</h2>
+                                <p className="text-xs font-medium text-neutral-500 uppercase tracking-wider">Basic website identity settings</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="p-8 space-y-8">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div className="space-y-2">
+                                <label className="text-[11px] font-black text-neutral-500 uppercase tracking-widest ml-1">Website Name</label>
+                                <input
+                                    type="text"
+                                    value={websiteName}
+                                    onChange={(e) => setWebsiteName(e.target.value)}
+                                    className="w-full bg-neutral-50/50 border border-neutral-200 text-neutral-900 rounded-[12px] px-5 py-3 text-sm focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all placeholder:text-neutral-400 font-medium"
+                                    placeholder="e.g. Craving"
+                                />
+                                <p className="text-[10px] font-bold text-neutral-400 mt-2 flex items-center gap-1.5 ml-1">
+                                    <Globe className="w-3.5 h-3.5 text-blue-400" />
+                                    This name appears across the entire website
+                                </p>
+                            </div>
+                        </div>
+
+                        <div className="flex items-center justify-end pt-6 border-t border-neutral-100">
+                            <button onClick={handleSaveGeneral} className="flex items-center justify-center gap-2 px-8 py-3 bg-blue-500 text-white text-sm font-black rounded-[12px] hover:bg-blue-600 hover:scale-[1.02] active:scale-95 transition-all shadow-lg shadow-blue-500/20">
+                                <Save className="w-4 h-4" />
+                                Save Identity
+                            </button>
+                        </div>
+                    </div>
+                </div>
 
                 {/* Security Settings */}
                 <div className="bg-white border border-neutral-200/60 rounded-[12px] overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-500">
@@ -172,7 +181,7 @@ const AdminSettings = () => {
                                 </div>
                                 <div>
                                     <p className="text-[10px] font-black text-rose-400 uppercase tracking-widest mb-1">Live Number</p>
-                                    <p className="text-xl font-black text-neutral-900 tracking-tight">{smsNumber}</p>
+                                    <p className="text-xl font-black text-neutral-900 tracking-tight">{settings.smsNumber}</p>
                                 </div>
                             </div>
 
@@ -180,8 +189,8 @@ const AdminSettings = () => {
                                 <label className="text-[11px] font-black text-neutral-500 uppercase tracking-widest ml-1">Update Receiver</label>
                                 <input
                                     type="text"
-                                    value={newSmsNumber}
-                                    onChange={(e) => setNewSmsNumber(e.target.value)}
+                                    value={smsNumber}
+                                    onChange={(e) => setSmsNumber(e.target.value)}
                                     className="w-full bg-neutral-50/50 border border-neutral-200 text-neutral-900 rounded-[12px] px-5 py-3 text-sm focus:outline-none focus:ring-4 focus:ring-rose-500/10 focus:border-rose-500 transition-all placeholder:text-neutral-400 font-medium"
                                     placeholder="e.g. +1 (555) 0000"
                                 />
@@ -223,7 +232,7 @@ const AdminSettings = () => {
                                 </div>
                                 <div>
                                     <p className="text-[10px] font-black text-amber-400 uppercase tracking-widest mb-1">Active Fee</p>
-                                    <p className="text-xl font-black text-neutral-900 tracking-tight">৳{deliveryFee}</p>
+                                    <p className="text-xl font-black text-neutral-900 tracking-tight">৳{settings.deliveryFee}</p>
                                 </div>
                             </div>
 
@@ -231,8 +240,8 @@ const AdminSettings = () => {
                                 <label className="text-[11px] font-black text-neutral-500 uppercase tracking-widest ml-1">New Delivery Fee (৳)</label>
                                 <input
                                     type="number"
-                                    value={newDeliveryFee}
-                                    onChange={(e) => setNewDeliveryFee(e.target.value)}
+                                    value={deliveryFee}
+                                    onChange={(e) => setDeliveryFee(e.target.value)}
                                     className="w-full bg-neutral-50/50 border border-neutral-200 text-neutral-900 rounded-[12px] px-5 py-3 text-sm focus:outline-none focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 transition-all placeholder:text-neutral-400 font-medium"
                                     placeholder="e.g. 50"
                                     min="0"

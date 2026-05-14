@@ -9,6 +9,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { ArrowRight, Sparkles, Shield, Heart, Award } from "lucide-react";
+import { useSettings } from "@/context/SettingsContext";
 import chefImage from "@/assets/chef.jpg";
 import menuShrimp from "@/assets/menu-shrimp.jpg";
 
@@ -42,6 +43,7 @@ const benefits = [
 ];
 
 const About = () => {
+  const { settings } = useSettings();
   return (
     <div className="min-h-screen">
       <Navbar />
@@ -67,7 +69,7 @@ const About = () => {
                 style={{ letterSpacing: "-0.04em" }}>
               The Story of
               <br />
-              <span className="italic" style={{ color: "hsl(43 74% 48%)" }}>Craving</span>
+              <span className="italic" style={{ color: "hsl(43 74% 48%)" }}>{settings.websiteName}</span>
             </h1>
             <p className="max-w-xl mx-auto text-[18px] leading-[1.8]"
                style={{ color: "hsl(40 20% 96% / 0.85)" }}>
@@ -150,10 +152,10 @@ const About = () => {
                   style={{ letterSpacing: "-0.04em" }}>
                 Experience the
                 <br />
-                Unique <span className="italic" style={{ color: "hsl(43 74% 48%)" }}>Craving</span>
+                Unique <span className="italic" style={{ color: "hsl(43 74% 48%)" }}>{settings.websiteName}</span>
               </h2>
               <p className="text-muted-foreground text-[16px] leading-[1.8] mb-4 max-w-md">
-                At Craving, we believe there's something for every discerning taste.
+                At {settings.websiteName}, we believe there's something for every discerning taste.
                 Whether it's a quick meal on-the-go or a special anniversary,
                 we perfectly satisfy every craving.
               </p>
@@ -200,7 +202,7 @@ const About = () => {
                   style={{ letterSpacing: "-0.04em" }}>
                 Why Choose
                 <br />
-                <span className="italic" style={{ color: "hsl(43 74% 48%)" }}>Craving?</span>
+                <span className="italic" style={{ color: "hsl(43 74% 48%)" }}>{settings.websiteName}?</span>
               </h2>
 
               <Accordion

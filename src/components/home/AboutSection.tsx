@@ -1,9 +1,11 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
+import { useSettings } from "@/context/SettingsContext";
 import chefImage from "@/assets/chef.jpg";
 
 const AboutSection = () => {
+  const { settings } = useSettings();
   return (
     <section className="section-divide relative overflow-hidden"
              style={{ background: "hsl(38 15% 92% / 0.3)" }}>
@@ -68,7 +70,7 @@ const AboutSection = () => {
               Meets <span className="italic" style={{ color: "hsl(43 74% 48%)" }}>Flavor</span>
             </h2>
             <p className="text-muted-foreground text-lg leading-[1.6] mb-8 max-w-md">
-              At Craving, we celebrate the art of cooking. Our chefs turn
+              At {settings.websiteName}, we celebrate the art of cooking. Our chefs turn
               every meal into an unforgettable experience — from gourmet
               dishes to street food favorites, carefully crafted to delight your senses.
             </p>

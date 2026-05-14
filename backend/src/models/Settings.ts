@@ -7,6 +7,7 @@ export interface IModuleConfig {
 }
 
 export interface ISettings extends Document {
+    websiteName: string;
     deliveryFee: number;
     adminPassword?: string;
     smsNumber?: string;
@@ -20,6 +21,7 @@ const ModuleConfigSchema = new Schema({
 }, { _id: false });
 
 const SettingsSchema: Schema = new Schema({
+    websiteName: { type: String, required: true, default: 'Craving' },
     deliveryFee: { type: Number, required: true, default: 50 },
     adminPassword: { type: String, default: '' },
     smsNumber: { type: String, default: '' },

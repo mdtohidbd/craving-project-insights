@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { Sparkles, Shield, Heart, Truck } from "lucide-react";
+import { useSettings } from "@/context/SettingsContext";
 import menuShrimp from "@/assets/menu-shrimp.jpg";
 
 const benefits = [
@@ -26,6 +27,7 @@ const benefits = [
 ];
 
 const BenefitsSection = () => {
+  const { settings } = useSettings();
   return (
     <section className="section-divide relative overflow-hidden"
              style={{ background: "hsl(38 15% 92% / 0.3)" }}>
@@ -87,7 +89,7 @@ const BenefitsSection = () => {
             </span>
             <h2 className="text-6xl md:text-7xl lg:text-8xl font-serif font-bold text-primary mb-4 md:mb-6 leading-[1.1]"
                 style={{ letterSpacing: "-0.04em" }}>
-              The Craving <span className="italic" style={{ color: "hsl(43 74% 48%)" }}>Difference</span>
+              The {settings.websiteName} <span className="italic" style={{ color: "hsl(43 74% 48%)" }}>Difference</span>
             </h2>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4 md:gap-6 lg:space-y-4">

@@ -1,31 +1,33 @@
 import { motion } from "framer-motion";
 import { Quote } from "lucide-react";
-
-const testimonials = [
-  {
-    id: 1,
-    name: "Sarah Johnson",
-    role: "Food Blogger",
-    avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100",
-    text: "This restaurant delivers quality when it comes to atmosphere, service, and taste. The grilled fish was absolutely delicious.",
-  },
-  {
-    id: 2,
-    name: "Michael Chen",
-    role: "Regular Guest",
-    avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100",
-    text: "Amazing experience! The ambiance is perfect for a romantic dinner. The chef really knows how to bring out the best flavors.",
-  },
-  {
-    id: 3,
-    name: "Emma Williams",
-    role: "Food Critic",
-    avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100",
-    text: "Craving has redefined my expectations for fine dining. Every visit is a new adventure in taste. Highly recommend!",
-  },
-];
+import { useSettings } from "@/context/SettingsContext";
 
 const TestimonialsSection = () => {
+  const { settings } = useSettings();
+
+  const testimonials = [
+    {
+      id: 1,
+      name: "Sarah Johnson",
+      role: "Food Blogger",
+      avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100",
+      text: "This restaurant delivers quality when it comes to atmosphere, service, and taste. The grilled fish was absolutely delicious.",
+    },
+    {
+      id: 2,
+      name: "Michael Chen",
+      role: "Regular Guest",
+      avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100",
+      text: "Amazing experience! The ambiance is perfect for a romantic dinner. The chef really knows how to bring out the best flavors.",
+    },
+    {
+      id: 3,
+      name: "Emma Williams",
+      role: "Food Critic",
+      avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100",
+      text: `${settings.websiteName} has redefined my expectations for fine dining. Every visit is a new adventure in taste. Highly recommend!`,
+    },
+  ];
   return (
     <section className="section-divide relative overflow-hidden"
              style={{ background: "hsl(40 18% 96%)" }}>
