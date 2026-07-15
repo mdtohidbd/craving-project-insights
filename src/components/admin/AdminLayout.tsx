@@ -94,6 +94,25 @@ const AdminLayout = ({ children, title }: AdminLayoutProps) => {
         } catch (err) { }
     };
 
+    const handleNotificationClick = async (notif: any) => {
+        setIsNotificationOpen(false);
+        
+        if (!notif.isRead) {
+            setNotifications(prev => prev.map(n => n._id === notif._id ? { ...n, isRead: true } : n));
+            try {
+                const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+                await fetch(`${apiUrl}/notifications/${notif._id}/read`, { method: 'PATCH' });
+            } catch (err) {}
+        }
+        
+        if (notif.type === 'order') navigate('/admin/orders');
+        else if (notif.type === 'reservation') navigate('/admin/reservations');
+        else if (notif.type === 'message') navigate('/admin/messages');
+        else if (notif.type === 'stock') navigate('/admin/inventory');
+        else if (notif.type === 'staff_signup') navigate('/admin/staff');
+        else navigate('/admin/notifications');
+    };
+
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
             if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -155,18 +174,26 @@ const AdminLayout = ({ children, title }: AdminLayoutProps) => {
             <header className="bg-white/80 backdrop-blur-md border-b border-neutral-200/60 sticky top-0 z-50 px-4 lg:px-8 shrink-0 print:hidden shadow-sm">
                 <div className="max-w-7xl mx-auto">
                     <div className="h-16 flex items-center justify-between">
-                        <div className="flex items-center gap-6">
+                        <div className="flex items-center gap-3 sm:gap-6">
+                            <Link 
+                                to="/" 
+                                title="Back to Website" 
+                                className="flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-neutral-100 text-neutral-500 hover:text-primary hover:bg-neutral-200 transition-all active:scale-95"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
+                            </Link>
+
                             <Link to="/admin" className="flex items-center gap-3 group transition-transform active:scale-95">
-                                <div className="w-10 h-10 rounded-2xl bg-primary flex items-center justify-center text-primary-foreground font-black shadow-xl shadow-primary/30 rotate-6 group-hover:rotate-0 transition-all duration-500">
+                                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-primary flex items-center justify-center text-primary-foreground font-black shadow-xl shadow-primary/30 rotate-6 group-hover:rotate-0 transition-all duration-500">
                                     S
                                 </div>
-                                <div className="flex flex-col">
+                                <div className="hidden sm:flex flex-col">
                                     <span className="text-base font-black tracking-tight leading-none text-neutral-900 group-hover:text-primary transition-colors">Skybridge</span>
                                     <span className="text-[10px] uppercase font-black text-primary tracking-[0.2em] mt-1.5 opacity-80">Management</span>
                                 </div>
                             </Link>
                             <div className="h-8 w-px bg-neutral-200/60 hidden sm:block mx-2" />
-                            <h1 className="text-xl font-extrabold text-black uppercase tracking-[0.15em] hidden sm:block">
+                            <h1 className="text-lg sm:text-xl font-extrabold text-black uppercase tracking-[0.15em] hidden md:block">
                                 {title}
                             </h1>
                         </div>
@@ -209,7 +236,7 @@ const AdminLayout = ({ children, title }: AdminLayoutProps) => {
                                         <div className="max-h-[350px] overflow-y-auto custom-scrollbar">
                                             {notifications.length > 0 ? (
                                                 notifications.map((n) => (
-                                                    <div key={n._id} className="p-4 hover:bg-neutral-50 border-b border-neutral-50 transition-colors cursor-pointer group">
+                                                    <div key={n._id} onClick={() => handleNotificationClick(n)} className="p-4 hover:bg-neutral-50 border-b border-neutral-50 transition-colors cursor-pointer group">
                                                         <div className="flex gap-3">
                                                             <div className={`mt-1.5 w-2 h-2 rounded-full shrink-0 ${!n.isRead ? 'bg-primary' : 'bg-transparent'}`} />
                                                             <div className="space-y-1">

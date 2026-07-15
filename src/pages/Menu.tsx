@@ -254,10 +254,10 @@ const Menu = () => {
             transition={{ duration: 0.5, delay: 0.2 }}
             className="flex justify-center"
           >
-            <a href="/JustFade_Menu.pdf" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-white/10 text-white hover:bg-white/20 transition-all text-sm uppercase tracking-widest backdrop-blur-md">
+            <Link to="/menu/pdf" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-white/10 text-white hover:bg-white/20 transition-all text-sm uppercase tracking-widest backdrop-blur-md">
               <FileText size={16} />
               Quick View PDF
-            </a>
+            </Link>
           </motion.div>
         </div>
       </section>

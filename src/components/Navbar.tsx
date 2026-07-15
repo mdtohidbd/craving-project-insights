@@ -39,7 +39,7 @@ const Navbar = ({ theme = "dark" }: { theme?: "light" | "dark" }) => {
           <div className="flex items-center justify-between h-20">
             {/* Logo */}
             <Link to="/" className="flex items-center gap-3 group">
-              <span className={`text-3xl font-serif font-bold ${scrolled || theme === "dark" ? "text-primary-foreground" : "text-primary"}`} style={{ letterSpacing: "-0.01em" }}>
+              <span className={`text-2xl md:text-3xl font-serif font-bold ${scrolled || theme === "dark" ? "text-primary-foreground" : "text-primary"}`} style={{ letterSpacing: "-0.01em" }}>
                 {settings.websiteName}
               </span>
             </Link>
@@ -91,13 +91,6 @@ const Navbar = ({ theme = "dark" }: { theme?: "light" | "dark" }) => {
             {/* Mobile Menu Button */}
             <div className="md:hidden flex items-center gap-4">
               <Cart className={scrolled || theme === "dark" ? "text-primary-foreground" : "text-primary"} />
-              <button
-                onClick={() => setIsOpen(!isOpen)}
-                className={`${scrolled || theme === "dark" ? "text-primary-foreground" : "text-primary"} p-2 transition-colors duration-300 hover:opacity-80 appearance-none`}
-                aria-label="Toggle menu"
-              >
-                {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-              </button>
             </div>
           </div>
         </div>

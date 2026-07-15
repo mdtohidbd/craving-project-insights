@@ -35,14 +35,14 @@ const Contact = () => {
   };
 
   const inputStyles =
-    "w-full px-6 py-5 rounded-2xl border bg-background text-foreground text-[16px] focus:outline-none focus:ring-1 focus:ring-accent focus:border-accent transition-all duration-300 placeholder:text-muted-foreground/60 shadow-sm border-border";
+    "w-full px-5 py-3.5 rounded-xl bg-[hsl(40_18%_96%)] border-2 border-transparent text-primary text-sm font-semibold focus:outline-none focus:bg-white focus:border-accent/30 focus:ring-4 focus:ring-accent/5 transition-all duration-300 placeholder:text-muted-foreground/40 placeholder:font-normal";
 
   return (
     <div className="min-h-screen">
       <Navbar />
 
       {/* Hero Section */}
-      <section className="bg-primary pt-20 pb-12 relative overflow-hidden">
+      <section className="bg-primary pt-28 pb-28 relative overflow-hidden">
         <div className="absolute inset-0">
           <div className="absolute top-[0%] left-[-10%] w-[600px] h-[600px] rounded-full pointer-events-none"
             style={{ background: "radial-gradient(circle, hsl(43 60% 50% / 0.05), transparent 70%)" }} />
@@ -82,19 +82,18 @@ const Contact = () => {
       </section>
 
       {/* Contact Form */}
-      <section className="-mt-20 relative z-20 pb-32" style={{ background: "hsl(40 18% 96%)" }}>
+      <section className="-mt-16 relative z-20 pb-24" style={{ background: "hsl(40 18% 96%)" }}>
         <div className="container mx-auto px-6 md:px-12">
           <motion.div
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-            className="max-w-4xl mx-auto bg-card rounded-[2.5rem] p-10 md:p-16 shadow-2xl"
-            style={{ border: "1px solid hsl(38 12% 88%)" }}
+            className="max-w-3xl mx-auto bg-white rounded-[2rem] p-8 md:p-10 shadow-[0_20px_50px_rgba(0,0,0,0.1)] border border-black/5"
           >
-            <form onSubmit={handleSubmit} className="space-y-8">
-              <div className="grid md:grid-cols-2 gap-8">
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="grid md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-[11px] uppercase tracking-[0.2em] font-bold mb-4"
+                  <label className="block text-[10px] uppercase tracking-[0.2em] font-bold mb-2.5"
                     style={{ color: "hsl(195 30% 12% / 0.6)" }}>
                     Name
                   </label>
@@ -109,7 +108,7 @@ const Contact = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-[11px] uppercase tracking-[0.2em] font-bold mb-4"
+                  <label className="block text-[10px] uppercase tracking-[0.2em] font-bold mb-2.5"
                     style={{ color: "hsl(195 30% 12% / 0.6)" }}>
                     Phone
                   </label>
@@ -127,7 +126,7 @@ const Contact = () => {
 
               <div className="grid md:grid-cols-2 gap-8">
                 <div>
-                  <label className="block text-[11px] uppercase tracking-[0.2em] font-bold mb-4"
+                  <label className="block text-[10px] uppercase tracking-[0.2em] font-bold mb-2.5"
                     style={{ color: "hsl(195 30% 12% / 0.6)" }}>
                     Email
                   </label>
@@ -142,7 +141,7 @@ const Contact = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-[11px] uppercase tracking-[0.2em] font-bold mb-4"
+                  <label className="block text-[10px] uppercase tracking-[0.2em] font-bold mb-2.5"
                     style={{ color: "hsl(195 30% 12% / 0.6)" }}>
                     Subject
                   </label>
@@ -169,7 +168,7 @@ const Contact = () => {
               </div>
 
               <div>
-                <label className="block text-[11px] uppercase tracking-[0.2em] font-bold mb-4"
+                <label className="block text-[10px] uppercase tracking-[0.2em] font-bold mb-2.5"
                   style={{ color: "hsl(195 30% 12% / 0.6)" }}>
                   Message
                 </label>
@@ -186,7 +185,7 @@ const Contact = () => {
 
               <button
                 type="submit"
-                className="btn-gold inline-flex items-center gap-4 group px-12 py-5 w-full md:w-auto"
+                className="btn-gold inline-flex items-center gap-3 group px-10 py-4 w-full md:w-auto text-sm"
               >
                 Send Message
                 <ArrowRight className="w-5 h-5 transition-transform duration-300 group-hover:translate-x-1" />
@@ -271,12 +270,12 @@ const Contact = () => {
               viewport={{ once: true }}
               transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
             >
-              <div className="overflow-hidden max-w-lg mx-auto shadow-2xl" style={{ borderRadius: "3rem" }}>
+              <div className="overflow-hidden mx-auto shadow-2xl relative group" style={{ borderRadius: "2.5rem", height: "600px" }}>
+                <div className="absolute inset-0 bg-primary/10 group-hover:bg-transparent transition-colors duration-500 z-10" />
                 <img
-                  src="https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=600"
+                  src="https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=800"
                   alt="Restaurant interior"
-                  className="w-full h-full object-cover transition-transform [transition-duration:2s] hover:scale-105"
-                  style={{ minHeight: "750px" }}
+                  className="w-full h-full object-cover transition-transform [transition-duration:2s] group-hover:scale-105"
                 />
               </div>
             </motion.div>

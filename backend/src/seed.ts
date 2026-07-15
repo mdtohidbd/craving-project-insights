@@ -4,6 +4,7 @@ import { MenuItem } from './models/MenuItem';
 import { InventoryItem } from './models/InventoryItem';
 import Category from './models/Category';
 import { Reservation } from './models/Reservation';
+import { User } from './models/User';
 import connectDB from './config/db';
 
 dotenv.config();
@@ -210,6 +211,27 @@ const seedReservations = [
     { date: "2026-03-13", time: "20:30", guests: "4", name: "Hasan", phone: "01800000000", requests: "Birthday celebration", bookingId: "RES-999000", status: "confirmed" }
 ];
 
+const seedUsers = [
+    {
+        name: "Super Admin", username: "admin123", phone: "01711111111", email: "admin@craving.com", password: "password123", role: "superadmin", status: "approved", allowedModules: ['dashboard', 'tables', 'pos', 'orders', 'delivery', 'customers', 'menu', 'inventory', 'reservations', 'notifications', 'messages', 'settings', 'users']
+    },
+    {
+        name: "Restaurant Manager", username: "manager123", phone: "01722222222", email: "manager@craving.com", password: "password123", role: "staff", staffRole: "manager", status: "approved", allowedModules: ['dashboard', 'orders', 'menu', 'inventory', 'reservations', 'users']
+    },
+    {
+        name: "Cashier", username: "cashier123", phone: "01733333333", email: "cashier@craving.com", password: "password123", role: "staff", staffRole: "cashier", status: "approved", allowedModules: ['pos', 'orders']
+    },
+    {
+        name: "Head Chef", username: "chef123", phone: "01744444444", email: "chef@craving.com", password: "password123", role: "staff", staffRole: "chef", status: "approved", allowedModules: ['orders', 'inventory']
+    },
+    {
+        name: "Waiter", username: "waiter123", phone: "01755555555", email: "waiter@craving.com", password: "password123", role: "staff", staffRole: "waiter", status: "approved", allowedModules: ['tables', 'orders']
+    },
+    {
+        name: "Delivery Boy", username: "delivery123", phone: "01766666666", email: "delivery@craving.com", password: "password123", role: "staff", staffRole: "delivery", status: "approved", allowedModules: ['delivery']
+    }
+];
+
 const seedDatabase = async () => {
     try {
         await connectDB();
@@ -218,6 +240,7 @@ const seedDatabase = async () => {
         await InventoryItem.deleteMany({});
         await Category.deleteMany({});
         await Reservation.deleteMany({});
+        await User.deleteMany({});
         
         console.log("Existing data cleared.");
         
@@ -225,6 +248,11 @@ const seedDatabase = async () => {
         await InventoryItem.insertMany(seedInventoryItems);
         await Category.insertMany(seedCategories);
         await Reservation.insertMany(seedReservations);
+        
+        // We use create() instead of insertMany for Users so that pre-save hooks (like password hashing) are triggered
+        for (const u of seedUsers) {
+            await User.create(u);
+        }
         
         console.log("Database seeded successfully!");
         process.exit(0);

@@ -157,14 +157,14 @@ const BookTable = () => {
       <Navbar />
 
       {/* Header Section */}
-      <section className="bg-primary pt-32 pb-24 relative overflow-hidden">
+      <section className="bg-primary pt-28 pb-20 md:pt-32 md:pb-24 relative overflow-hidden">
         <div className="absolute inset-0">
           <div className="absolute top-[0%] left-[-10%] w-[600px] h-[600px] rounded-full pointer-events-none"
             style={{ background: "radial-gradient(circle, hsl(43 60% 50% / 0.06), transparent 70%)" }} />
            <div className="absolute bottom-[0%] right-[-10%] w-[500px] h-[500px] rounded-full pointer-events-none"
             style={{ background: "radial-gradient(circle, hsl(38 50% 40% / 0.04), transparent 70%)" }} />
         </div>
-        <div className="container mx-auto px-6 md:px-12 relative z-10 text-center max-w-4xl">
+        <div className="container mx-auto px-5 md:px-12 relative z-10 text-center max-w-4xl">
           <motion.div
              initial={{ opacity: 0, y: 20 }}
              animate={{ opacity: 1, y: 0 }}
@@ -178,7 +178,7 @@ const BookTable = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="text-5xl md:text-7xl font-serif font-bold text-primary-foreground mb-6 leading-tight"
+            className="text-4xl sm:text-5xl md:text-7xl font-serif font-bold text-primary-foreground mb-4 md:mb-6 leading-tight"
             style={{ letterSpacing: "-0.03em" }}
           >
             Book a Table
@@ -195,54 +195,92 @@ const BookTable = () => {
       </section>
 
       {/* Booking Form Layout */}
-      <section className="py-16 md:py-24 relative z-20 -mt-16">
-        <div className="container mx-auto px-6 md:px-12 max-w-6xl">
-          <div className="grid lg:grid-cols-12 gap-10 md:gap-16 items-start">
+      <section className="py-12 md:py-24 relative z-20 -mt-10 md:-mt-16 pb-28 md:pb-24">
+        <div className="container mx-auto px-4 sm:px-6 md:px-12 max-w-6xl">
+          <div className="grid lg:grid-cols-12 gap-8 md:gap-16 items-start">
 
             {/* Form Column */}
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
-              className="lg:col-span-8 bg-white p-8 md:p-12 pl-8 md:pl-14 rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.06)] border border-black/5"
+              className="lg:col-span-8 bg-white p-5 sm:p-8 md:p-12 md:pl-14 rounded-[2rem] md:rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.06)] border border-black/5"
             >
               <form onSubmit={handleSubmit} className="space-y-10">
                 
                 {/* Section 1: Reservation Details */}
                 <div>
-                  <h3 className="text-xl font-serif font-bold text-primary mb-6 flex items-center gap-3">
-                    <span className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm">1</span>
+                  <h3 className="text-lg sm:text-xl font-serif font-bold text-primary mb-5 sm:mb-6 flex items-center gap-3">
+                    <span className="w-8 h-8 rounded-2xl bg-[hsl(43_74%_48%)]/10 text-[hsl(43_74%_48%)] flex items-center justify-center text-sm font-bold shrink-0">1</span>
                     When & How Many?
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-2">
-                       <label className="text-xs uppercase tracking-widest font-bold text-muted-foreground ml-2">Date</label>
-                       <div className="relative">
-                         <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                            <CalendarIcon className="h-5 w-5 text-muted-foreground" />
+                       <label className="text-[10px] uppercase tracking-[0.2em] font-black text-muted-foreground ml-1">Date</label>
+                       <div className="relative group">
+                         <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none z-10">
+                            <CalendarIcon className="h-5 w-5 text-muted-foreground group-focus-within:text-accent transition-colors" />
                          </div>
-                         <input required name="date" type="date" className="w-full bg-[hsl(40_18%_96%)] border-none rounded-2xl pl-12 pr-5 py-4 text-primary font-medium focus:ring-2 focus:ring-[hsl(43_74%_48%)] transition-all" />
+                         <input 
+                           required 
+                           name="date" 
+                           type="date" 
+                           className="w-full bg-[hsl(40_18%_96%)] border-2 border-transparent rounded-2xl pl-12 pr-5 py-4 text-primary font-bold focus:bg-white focus:border-accent/30 focus:ring-4 focus:ring-accent/5 transition-all outline-none relative" 
+                           style={{ colorScheme: "light" }}
+                         />
+                         <style dangerouslySetInnerHTML={{__html: `
+                           input[type="date"]::-webkit-calendar-picker-indicator {
+                             position: absolute;
+                             left: 0;
+                             top: 0;
+                             width: 100%;
+                             height: 100%;
+                             margin: 0;
+                             padding: 0;
+                             opacity: 0;
+                             cursor: pointer;
+                           }
+                         `}} />
                        </div>
                     </div>
 
                     <div className="space-y-2">
-                       <label className="text-xs uppercase tracking-widest font-bold text-muted-foreground ml-2">Time</label>
-                       <div className="relative">
-                         <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                            <Clock className="h-5 w-5 text-muted-foreground" />
+                       <label className="text-[10px] uppercase tracking-[0.2em] font-black text-muted-foreground ml-1">Time</label>
+                       <div className="relative group">
+                         <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none z-10">
+                            <Clock className="h-5 w-5 text-muted-foreground group-focus-within:text-accent transition-colors" />
                          </div>
-                         <input required name="time" type="time" className="w-full bg-[hsl(40_18%_96%)] border-none rounded-2xl pl-12 pr-5 py-4 text-primary font-medium focus:ring-2 focus:ring-[hsl(43_74%_48%)] transition-all" />
+                         <input 
+                           required 
+                           name="time" 
+                           type="time" 
+                           className="w-full bg-[hsl(40_18%_96%)] border-2 border-transparent rounded-2xl pl-12 pr-5 py-4 text-primary font-bold focus:bg-white focus:border-accent/30 focus:ring-4 focus:ring-accent/5 transition-all outline-none relative" 
+                           style={{ colorScheme: "light" }}
+                         />
+                         <style dangerouslySetInnerHTML={{__html: `
+                           input[type="time"]::-webkit-calendar-picker-indicator {
+                             position: absolute;
+                             left: 0;
+                             top: 0;
+                             width: 100%;
+                             height: 100%;
+                             margin: 0;
+                             padding: 0;
+                             opacity: 0;
+                             cursor: pointer;
+                           }
+                         `}} />
                        </div>
                     </div>
 
                     <div className="md:col-span-2 space-y-2">
-                       <label className="text-xs uppercase tracking-widest font-bold text-muted-foreground ml-2">Number of Guests</label>
-                       <div className="relative">
+                       <label className="text-[10px] uppercase tracking-[0.2em] font-black text-muted-foreground ml-1">Number of Guests</label>
+                       <div className="relative group">
                          <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                            <Users className="h-5 w-5 text-muted-foreground" />
+                            <Users className="h-5 w-5 text-muted-foreground group-focus-within:text-accent transition-colors" />
                          </div>
-                         <select required name="guests" className="w-full bg-[hsl(40_18%_96%)] border-none rounded-2xl pl-12 pr-5 py-4 text-primary font-medium focus:ring-2 focus:ring-[hsl(43_74%_48%)] transition-all appearance-none cursor-pointer">
-                            <option value="">Select Guests</option>
+                         <select required name="guests" className="w-full bg-[hsl(40_18%_96%)] border-2 border-transparent rounded-2xl pl-12 pr-12 py-4 text-primary font-bold focus:bg-white focus:border-accent/30 focus:ring-4 focus:ring-accent/5 transition-all outline-none appearance-none cursor-pointer">
+                            <option value="" className="font-normal text-muted-foreground">Select Guests</option>
                             <option value="1">1 Person</option>
                             <option value="2">2 People</option>
                             <option value="3">3 People</option>
@@ -261,38 +299,38 @@ const BookTable = () => {
 
                 {/* Section 2: Personal Details */}
                 <div className="pt-6 border-t border-black/5">
-                  <h3 className="text-xl font-serif font-bold text-primary mb-6 flex items-center gap-3">
-                    <span className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm">2</span>
+                  <h3 className="text-lg sm:text-xl font-serif font-bold text-primary mb-5 sm:mb-6 flex items-center gap-3">
+                    <span className="w-8 h-8 rounded-2xl bg-[hsl(43_74%_48%)]/10 text-[hsl(43_74%_48%)] flex items-center justify-center text-sm font-bold shrink-0">2</span>
                     Your Details
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-2">
-                       <label className="text-xs uppercase tracking-widest font-bold text-muted-foreground ml-2">Full Name</label>
-                       <div className="relative">
+                       <label className="text-[10px] uppercase tracking-[0.2em] font-black text-muted-foreground ml-1">Full Name</label>
+                       <div className="relative group">
                          <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                            <User className="h-5 w-5 text-muted-foreground" />
+                            <User className="h-5 w-5 text-muted-foreground group-focus-within:text-accent transition-colors" />
                          </div>
-                         <input required name="name" type="text" placeholder="John Doe" className="w-full bg-[hsl(40_18%_96%)] border-none rounded-2xl pl-12 pr-5 py-4 text-primary font-medium focus:ring-2 focus:ring-[hsl(43_74%_48%)] transition-all" />
+                         <input required name="name" type="text" placeholder="John Doe" className="w-full bg-[hsl(40_18%_96%)] border-2 border-transparent rounded-2xl pl-12 pr-5 py-4 text-primary font-bold focus:bg-white focus:border-accent/30 focus:ring-4 focus:ring-accent/5 transition-all outline-none placeholder:text-muted-foreground/40 placeholder:font-normal" />
                        </div>
                     </div>
 
                     <div className="space-y-2">
-                       <label className="text-xs uppercase tracking-widest font-bold text-muted-foreground ml-2">Phone Number</label>
-                       <div className="relative">
+                       <label className="text-[10px] uppercase tracking-[0.2em] font-black text-muted-foreground ml-1">Phone Number</label>
+                       <div className="relative group">
                          <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                            <Phone className="h-5 w-5 text-muted-foreground" />
+                            <Phone className="h-5 w-5 text-muted-foreground group-focus-within:text-accent transition-colors" />
                          </div>
-                         <input required name="phone" type="tel" placeholder="+880 1XXXXXXXXX" className="w-full bg-[hsl(40_18%_96%)] border-none rounded-2xl pl-12 pr-5 py-4 text-primary font-medium focus:ring-2 focus:ring-[hsl(43_74%_48%)] transition-all" />
+                         <input required name="phone" type="tel" placeholder="+880 1XXXXXXXXX" className="w-full bg-[hsl(40_18%_96%)] border-2 border-transparent rounded-2xl pl-12 pr-5 py-4 text-primary font-bold focus:bg-white focus:border-accent/30 focus:ring-4 focus:ring-accent/5 transition-all outline-none placeholder:text-muted-foreground/40 placeholder:font-normal" />
                        </div>
                     </div>
 
                     <div className="md:col-span-2 space-y-2">
-                       <label className="text-xs uppercase tracking-widest font-bold text-muted-foreground ml-2">Special Requests (Optional)</label>
-                       <div className="relative">
+                       <label className="text-[10px] uppercase tracking-[0.2em] font-black text-muted-foreground ml-1">Special Requests (Optional)</label>
+                       <div className="relative group">
                          <div className="absolute top-4 left-0 pl-4 pointer-events-none">
-                            <MessageSquare className="h-5 w-5 text-muted-foreground" />
+                            <MessageSquare className="h-5 w-5 text-muted-foreground group-focus-within:text-accent transition-colors" />
                          </div>
-                         <textarea name="requests" rows={3} placeholder="Dietary requirements, special occasions, etc." className="w-full bg-[hsl(40_18%_96%)] border-none rounded-2xl pl-12 pr-5 py-4 text-primary font-medium focus:ring-2 focus:ring-[hsl(43_74%_48%)] transition-all resize-none"></textarea>
+                         <textarea name="requests" rows={3} placeholder="Dietary requirements, special occasions, etc." className="w-full bg-[hsl(40_18%_96%)] border-2 border-transparent rounded-2xl pl-12 pr-5 py-4 text-primary font-bold focus:bg-white focus:border-accent/30 focus:ring-4 focus:ring-accent/5 transition-all outline-none resize-none placeholder:text-muted-foreground/40 placeholder:font-normal"></textarea>
                        </div>
                     </div>
                   </div>
@@ -322,13 +360,13 @@ const BookTable = () => {
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.4 }}
-              className="lg:col-span-4 space-y-8"
+              className="lg:col-span-4 space-y-6 md:space-y-8"
             >
               {/* Info Card */}
-              <div className="bg-primary p-8 rounded-[2rem] text-primary-foreground relative overflow-hidden shadow-2xl">
+              <div className="bg-primary p-6 sm:p-8 rounded-[2rem] text-primary-foreground relative overflow-hidden shadow-2xl">
                 <div className="absolute -top-10 -right-10 w-40 h-40 bg-[hsl(43_74%_48%)]/10 rounded-full blur-2xl pointer-events-none"></div>
                 
-                <h4 className="text-xl font-serif font-bold mb-6">Working Hours</h4>
+                <h4 className="text-lg sm:text-xl font-serif font-bold mb-5 sm:mb-6">Working Hours</h4>
                 <div className="space-y-4 mb-8">
                   <div className="flex justify-between items-center text-sm border-b border-white/10 pb-3">
                     <span className="text-white/60">Mon - Thu</span>

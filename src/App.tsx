@@ -13,6 +13,7 @@ import { SettingsProvider } from "./context/SettingsContext";
 import ProtectedRoute from "./components/admin/ProtectedRoute";
 import ModuleGuard from "./components/admin/ModuleGuard";
 import { Loader2 } from "lucide-react";
+import { MobileBottomNav } from "./components/MobileBottomNav";
 
 // ─── Public pages (eager) ─────────────────────────────────────────────────────
 import Index from "./pages/Index";
@@ -25,6 +26,7 @@ import Contact from "./pages/Contact";
 import Checkout from "./pages/Checkout";
 import BookTable from "./pages/BookTable";
 import OrderTracking from "@/pages/OrderTracking";
+import MenuPDFView from "./pages/MenuPDFView";
 import NotFound from "./pages/NotFound";
 
 // ─── Admin pages (lazy — only loaded when the route is visited) ───────────────
@@ -97,6 +99,7 @@ const App = () => (
                   <Route path="/checkout"    element={<Checkout />} />
                   <Route path="/book-table"  element={<BookTable />} />
                   <Route path="/track-order" element={<OrderTracking />} />
+                  <Route path="/menu/pdf"    element={<MenuPDFView />} />
 
                   {/* ── Admin Auth (no guard) ──────────────────────────────── */}
                   <Route path="/admin/login" element={<Suspense fallback={<PageLoader />}><AdminLogin /></Suspense>} />
@@ -125,6 +128,7 @@ const App = () => (
                   {/* ── 404 ────────────────────────────────────────────────── */}
                   <Route path="*" element={<NotFound />} />
                 </Routes>
+                <MobileBottomNav />
               </BrowserRouter>
             </ModuleProvider>
           </SettingsProvider>
