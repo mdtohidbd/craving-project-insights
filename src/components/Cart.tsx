@@ -13,7 +13,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 
-export const Cart = ({ className }: { className?: string }) => {
+export const Cart = ({ className, textLabel }: { className?: string, textLabel?: string }) => {
   const { cart, removeFromCart, updateQuantity, clearCart, totalItems, totalAmount } = useCart();
   const [isOpen, setIsOpen] = useState(false);
   const [bouncing, setBouncing] = useState(false);
@@ -40,27 +40,28 @@ export const Cart = ({ className }: { className?: string }) => {
   return (
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
       <SheetTrigger asChild>
-        <button className={`relative p-2 flex items-center justify-center ${className || ""}`} aria-label="Cart">
+        <button className={`relative p-2 flex items-center justify-center flex-col ${className || ""}`} aria-label="Cart">
           <motion.div
             animate={bouncing ? { scale: [1, 1.4, 0.85, 1.15, 1], rotate: [0, -12, 12, -6, 0] } : {}}
             transition={{ duration: 0.5, ease: "easeOut" }}
           >
             <ShoppingCart className="w-6 h-6" />
           </motion.div>
+          {textLabel && <span className="text-[10px] font-bold tracking-wide mt-1">{textLabel}</span>}
           {totalItems > 0 && (
             <motion.span
               key={totalItems}
               initial={{ scale: 0.4, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ type: "spring", stiffness: 400, damping: 12 }}
-              className="absolute -top-0 -right-0 flex h-5 w-5 items-center justify-center rounded-full bg-[hsl(43_74%_48%)] text-[10px] font-bold text-[hsl(195_30%_8%)] shadow-md"
+              className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-[hsl(43_74%_48%)] text-[10px] font-bold text-[hsl(195_30%_8%)] shadow-md"
             >
               {totalItems}
             </motion.span>
           )}
         </button>
       </SheetTrigger>
-      <SheetContent className="w-[100%] sm:max-w-md bg-[hsl(40_18%_96%)] flex flex-col h-[100dvh] border-l-[hsl(43_74%_48%)]/20 shadow-2xl p-4 md:p-6 overflow-hidden">
+      <SheetContent className="w-[100%] sm:max-w-md bg-[hsl(40_18%_96%)] flex flex-col h-[100dvh] border-l-[hsl(43_74%_48%)]/20 shadow-2xl p-4 md:p-6 pb-28 md:pb-6 overflow-hidden">
         <SheetHeader className="pb-4 border-b border-black/10 shrink-0">
           <SheetTitle className="text-2xl md:text-3xl font-serif font-bold text-primary flex items-center gap-3">
             <ShoppingCart className="w-7 h-7 md:w-8 md:h-8 text-[hsl(43_74%_48%)]" />
@@ -77,37 +78,37 @@ export const Cart = ({ className }: { className?: string }) => {
             </div>
           ) : (
             cart.map((item) => (
-              <div key={item.id} className="flex gap-4 items-center bg-white p-4 rounded-2xl shadow-sm border border-black/5 hover:shadow-md transition-shadow">
-                <img src={item.image} alt={item.title} className="w-20 h-20 object-cover rounded-xl shadow-sm" />
+              <div key={item.id} className="flex gap-3 sm:gap-4 items-center bg-white p-3 sm:p-4 rounded-xl sm:rounded-2xl shadow-sm border border-black/5 hover:shadow-md transition-shadow">
+                <img src={item.image} alt={item.title} className="w-16 h-16 sm:w-20 sm:h-20 object-cover rounded-lg sm:rounded-xl shadow-sm shrink-0" />
                 <div className="flex-1 min-w-0">
-                  <h4 className="font-bold text-primary truncate text-lg">{item.title}</h4>
+                  <h4 className="font-bold text-primary text-xs sm:text-base md:text-lg leading-snug break-words">{item.title}</h4>
                   {item.addOns && item.addOns.length > 0 && (
-                    <div className="text-xs text-neutral-500 mt-0.5 mb-1 truncate">
+                    <div className="text-[10px] text-neutral-500 mt-0.5 line-clamp-1">
                       + {item.addOns.map(a => a.name).join(', ')}
                     </div>
                   )}
-                  <p className="text-xl font-bold mt-1 text-accent">{item.priceStr?.replace('$', '৳')}</p>
+                  <p className="text-sm sm:text-lg md:text-xl font-bold mt-1 text-accent">{item.priceStr?.replace('$', '৳')}</p>
                 </div>
-                <div className="flex flex-col items-end gap-3 shrink-0">
+                <div className="flex flex-col items-end gap-2 shrink-0">
                   <button
                     onClick={() => removeFromCart(item.id)}
-                    className="text-red-500 hover:text-red-700 hover:bg-red-50 p-2 rounded-full transition-colors self-end"
+                    className="text-red-500 hover:text-red-700 hover:bg-red-50 p-1.5 rounded-full transition-colors self-end"
                   >
-                    <Trash2 className="w-4 h-4" />
+                    <Trash2 className="w-3.5 h-3.5" />
                   </button>
-                  <div className="flex items-center gap-3 bg-[hsl(40_18%_96%)] rounded-full px-2 py-1 shadow-inner border border-black/5">
+                  <div className="flex items-center gap-2 bg-[hsl(40_18%_96%)] rounded-full px-1.5 py-0.5 border border-black/5 shadow-inner">
                     <button
                       onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                      className="w-7 h-7 flex items-center justify-center rounded-full bg-white shadow-sm hover:bg-black/5 active:scale-95 transition-all text-primary"
+                      className="w-6 h-6 flex items-center justify-center rounded-full bg-white shadow-sm hover:bg-black/5 active:scale-95 transition-all text-primary"
                     >
-                      <Minus className="w-3 h-3" />
+                      <Minus className="w-2.5 h-2.5" />
                     </button>
-                    <span className="font-bold w-4 text-center text-sm">{item.quantity}</span>
+                    <span className="font-bold w-4 text-center text-xs">{item.quantity}</span>
                     <button
                       onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                      className="w-7 h-7 flex items-center justify-center rounded-full bg-[hsl(43_74%_48%)] shadow-sm hover:brightness-110 active:scale-95 transition-all text-[hsl(195_30%_8%)]"
+                      className="w-6 h-6 flex items-center justify-center rounded-full bg-[hsl(43_74%_48%)] shadow-sm hover:brightness-110 active:scale-95 transition-all text-[hsl(195_30%_8%)]"
                     >
-                      <Plus className="w-3 h-3" />
+                      <Plus className="w-2.5 h-2.5" />
                     </button>
                   </div>
                 </div>
@@ -116,15 +117,15 @@ export const Cart = ({ className }: { className?: string }) => {
           )}
         </div>
 
-        <SheetFooter className="mt-auto border-t border-black/10 pt-6 flex-col">
-          <div className="flex justify-between items-center w-full mb-6">
-            <span className="text-lg font-medium text-primary/80">Total</span>
-            <span className="font-bold text-3xl text-primary font-serif">৳{Math.round(totalAmount)}</span>
+        <SheetFooter className="mt-auto border-t border-black/10 pt-4 flex-col">
+          <div className="flex justify-between items-center w-full mb-4">
+            <span className="text-sm sm:text-lg font-medium text-primary/80">Total</span>
+            <span className="font-bold text-2xl sm:text-3xl text-primary font-serif">৳{Math.round(totalAmount)}</span>
           </div>
           <button
             onClick={handleCheckout}
             disabled={cart.length === 0}
-            className="w-full bg-gradient-to-br from-[hsl(43_74%_52%)] to-[hsl(38_80%_42%)] text-[hsl(195_30%_8%)] font-bold py-4 rounded-xl shadow-[0_8px_25px_hsl(43_74%_48%/0.3)] hover:shadow-[0_12px_35px_hsl(43_74%_48%/0.4)] hover:-translate-y-1 active:scale-[0.98] transition-all disabled:opacity-50 disabled:hover:translate-y-0 disabled:hover:shadow-none text-lg uppercase tracking-widest"
+            className="w-full bg-gradient-to-br from-[hsl(43_74%_52%)] to-[hsl(38_80%_42%)] text-[hsl(195_30%_8%)] font-bold py-3.5 sm:py-4 rounded-xl shadow-[0_8px_25px_hsl(43_74%_48%/0.3)] hover:shadow-[0_12px_35px_hsl(43_74%_48%/0.4)] hover:-translate-y-1 active:scale-[0.98] transition-all disabled:opacity-50 disabled:hover:translate-y-0 disabled:hover:shadow-none text-sm sm:text-lg uppercase tracking-widest"
           >
             Checkout Securely
           </button>

@@ -1,4 +1,5 @@
 > **BrainSync Context Pumper** 🧠
+<<<<<<< HEAD
 > Dynamically loaded for active file: `.mcp.json` (Domain: **Config/Infrastructure**)
 
 ### 📐 Config/Infrastructure Conventions & Fixes
@@ -42,3 +43,8 @@ dist-ssr
 .gemini/
 .cline/
 
+=======
+> Dynamically loaded for active file: `backend\src\seed.ts` (Domain: **Database (Models/Schema)**)
+
+*No specific memory context found for this file's domain.*
+>>>>>>> b52f6c845fe444953fbaf222db2ef0f7d37e3c5a

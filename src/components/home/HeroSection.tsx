@@ -12,7 +12,7 @@ const stats = [
 
 const HeroSection = () => {
   return (
-    <section className="relative min-h-[60vh] md:min-h-[70vh] bg-primary overflow-hidden flex items-center pt-20 pb-10">
+    <section className="relative min-h-[60vh] md:min-h-[70vh] bg-primary overflow-hidden flex items-center pt-32 pb-16">
       {/* Full-bleed Video Background */}
       <div className="absolute inset-0 pointer-events-none z-0">
         <video
@@ -67,7 +67,7 @@ const HeroSection = () => {
             ✦ Fine Dining Experience
           </motion.span>
 
-          <h1 className="text-[clamp(3rem,8vw,7rem)] font-serif font-bold text-primary-foreground leading-[0.9] mb-6"
+          <h1 className="text-6xl md:text-[clamp(4rem,8vw,7rem)] font-serif font-bold text-primary-foreground leading-[1] md:leading-[0.9] mb-6"
             style={{ letterSpacing: "-0.04em" }}>
             Savor
             <br />
@@ -81,8 +81,8 @@ const HeroSection = () => {
             Unlock an explosion of flavors in every bite. Experience culinary artistry in an atmosphere of quiet luxury.
           </p>
 
-          <div className="flex flex-col sm:flex-row items-center gap-6">
-            <Link to="/book-table" className="bg-[hsl(43_74%_48%)] text-[hsl(195_30%_8%)] font-bold px-10 py-4 rounded-full text-[12px] uppercase tracking-wider shadow-[0_8px_30px_rgba(228,168,32,0.25)] hover:-translate-y-1 transition-all inline-flex items-center gap-2 group">
+          <div className="flex flex-col sm:flex-row items-center gap-6 mt-4">
+            <Link to="/book-table" className="bg-[hsl(43_74%_48%)] text-[hsl(195_30%_8%)] font-bold px-10 py-4 rounded-full text-[12px] uppercase tracking-wider shadow-[0_8px_30px_rgba(228,168,32,0.25)] hover:-translate-y-1 transition-all inline-flex items-center gap-2 group w-full sm:w-auto justify-center">
               Book a Table
               <ArrowRight className="w-4 h-4 transition-transform duration-500 group-hover:translate-x-1.5" />
             </Link>
@@ -100,7 +100,7 @@ const HeroSection = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.6 }}
-          className="flex flex-wrap justify-center gap-6 md:gap-12 mt-12 pt-6 border-t w-full max-w-4xl"
+          className="grid grid-cols-2 sm:flex sm:flex-wrap justify-center gap-y-10 gap-x-4 sm:gap-12 mt-16 md:mt-24 pt-8 md:pt-10 border-t w-full max-w-4xl"
           style={{ borderColor: "rgba(233, 193, 118, 0.15)" }}
         >
           {stats.map((stat, index) => (

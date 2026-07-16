@@ -174,7 +174,7 @@ const OrderTracking = () => {
                                         className="space-y-8"
                                     >
                                         {/* Status Tracker */}
-                                        <div className="bg-white rounded-[2.5rem] p-8 md:p-12 shadow-[0_20px_50px_rgba(0,0,0,0.04)] border border-black/5">
+                                        <div className="bg-white rounded-[2.5rem] p-6 sm:p-8 md:p-12 shadow-[0_20px_50px_rgba(0,0,0,0.04)] border border-black/5">
                                             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-12">
                                                 <div>
                                                     <div className="flex items-center gap-2 mb-2">
@@ -182,7 +182,7 @@ const OrderTracking = () => {
                                                             Current Status
                                                         </span>
                                                     </div>
-                                                    <h3 className="text-3xl font-serif font-bold text-primary capitalize">
+                                                    <h3 className="text-2xl sm:text-3xl font-serif font-bold text-primary capitalize">
                                                         {order.status === 'pending' ? 'Order Received' :
                                                             order.status === 'preparing' ? 'Cooking in Progress' :
                                                                 order.status === 'ready' ? 'Ready for Selection' :
@@ -192,10 +192,10 @@ const OrderTracking = () => {
                                                                                 order.status.replace(/_/g, ' ')}
                                                     </h3>
                                                 </div>
-                                                <div className="text-right">
+                                                <div className="text-left md:text-right">
                                                     <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest mb-1">Order ID</p>
-                                                    <div className="flex flex-col items-end gap-1">
-                                                        <p className="font-mono font-bold text-primary bg-neutral-50 px-4 py-2 rounded-xl border border-neutral-100 shadow-inner">
+                                                    <div className="flex flex-col items-start md:items-end gap-1">
+                                                        <p className="font-mono font-bold text-primary bg-neutral-50 px-4 py-2 rounded-xl border border-neutral-100 shadow-inner text-sm sm:text-base">
                                                             #{order._id.slice(-6).toUpperCase()}
                                                         </p>
                                                         <p className="text-[9px] font-mono text-muted-foreground opacity-50 px-2">
@@ -206,46 +206,99 @@ const OrderTracking = () => {
                                             </div>
 
                                             <div className="relative pt-4 pb-4">
-                                                <div className="absolute top-9 left-12 right-12 h-1 bg-neutral-100 rounded-full">
-                                                    <motion.div
-                                                        initial={{ width: 0 }}
-                                                        animate={{ width: `${(currentStatusIndex / (statusSteps.length - 1)) * 100}%` }}
-                                                        transition={{ duration: 1, ease: "easeOut" }}
-                                                        className="h-full bg-accent rounded-full shadow-[0_0_10px_rgba(228,168,32,0.4)]"
-                                                    />
+                                                {/* Horizontal Stepper for Desktop */}
+                                                <div className="hidden md:block relative">
+                                                    <div className="absolute top-9 left-12 right-12 h-1 bg-neutral-100 rounded-full">
+                                                        <motion.div
+                                                            initial={{ width: 0 }}
+                                                            animate={{ width: `${(currentStatusIndex / (statusSteps.length - 1)) * 100}%` }}
+                                                            transition={{ duration: 1, ease: "easeOut" }}
+                                                            className="h-full bg-accent rounded-full shadow-[0_0_10px_rgba(228,168,32,0.4)]"
+                                                        />
+                                                    </div>
+
+                                                    <div className="relative flex justify-between">
+                                                        {statusSteps.map((step, idx) => {
+                                                            const Icon = step.icon;
+                                                            const isCompleted = idx <= currentStatusIndex;
+                                                            const isActive = idx === currentStatusIndex;
+
+                                                            return (
+                                                                <div key={idx} className="flex flex-col items-center gap-4 text-center">
+                                                                    <motion.div
+                                                                        initial={false}
+                                                                        animate={{
+                                                                            scale: isActive ? 1.2 : 1,
+                                                                            backgroundColor: isCompleted ? "var(--tw-bg-opacity)" : "#fff"
+                                                                        }}
+                                                                        className={`w-12 h-12 rounded-full flex items-center justify-center relative z-10 transition-all duration-500 shadow-md ${isCompleted ? 'bg-accent text-primary' : 'bg-white border-2 border-neutral-100 text-neutral-300'
+                                                                            } ${isActive ? 'ring-4 ring-accent/20' : ''}`}
+                                                                    >
+                                                                        <Icon className="w-6 h-6" />
+                                                                        {isActive && (
+                                                                            <motion.div
+                                                                                layoutId="active-ping-desktop"
+                                                                                className="absolute inset-0 rounded-full bg-accent animate-ping opacity-25"
+                                                                            />
+                                                                        )}
+                                                                    </motion.div>
+                                                                    <div className="space-y-1">
+                                                                        <span className={`text-[11px] font-bold uppercase tracking-tighter block leading-none ${isCompleted ? 'text-primary' : 'text-neutral-400'
+                                                                            }`}>
+                                                                            {step.label}
+                                                                        </span>
+                                                                        {isActive && <span className="text-[10px] text-accent font-bold">In Progress</span>}
+                                                                    </div>
+                                                                </div>
+                                                            );
+                                                        })}
+                                                    </div>
                                                 </div>
 
-                                                <div className="relative flex justify-between">
+                                                {/* Vertical Stepper for Mobile */}
+                                                <div className="md:hidden relative flex flex-col gap-8 pl-8">
+                                                    {/* Vertical connecting line */}
+                                                    <div className="absolute left-5 top-3 bottom-3 w-0.5 bg-neutral-100">
+                                                        <motion.div
+                                                            initial={{ height: 0 }}
+                                                            animate={{ height: `${(currentStatusIndex / (statusSteps.length - 1)) * 100}%` }}
+                                                            transition={{ duration: 1, ease: "easeOut" }}
+                                                            className="w-full bg-accent rounded-full shadow-[0_0_10px_rgba(228,168,32,0.4)]"
+                                                            style={{ height: `${(currentStatusIndex / (statusSteps.length - 1)) * 100}%` }}
+                                                        />
+                                                    </div>
+
                                                     {statusSteps.map((step, idx) => {
                                                         const Icon = step.icon;
                                                         const isCompleted = idx <= currentStatusIndex;
                                                         const isActive = idx === currentStatusIndex;
 
                                                         return (
-                                                            <div key={idx} className="flex flex-col items-center gap-4 text-center">
+                                                            <div key={idx} className="relative flex items-center gap-4">
                                                                 <motion.div
                                                                     initial={false}
                                                                     animate={{
-                                                                        scale: isActive ? 1.2 : 1,
+                                                                        scale: isActive ? 1.15 : 1,
                                                                         backgroundColor: isCompleted ? "var(--tw-bg-opacity)" : "#fff"
                                                                     }}
-                                                                    className={`w-12 h-12 rounded-full flex items-center justify-center relative z-10 transition-all duration-500 shadow-md ${isCompleted ? 'bg-accent text-primary' : 'bg-white border-2 border-neutral-100 text-neutral-300'
+                                                                    className={`w-10 h-10 rounded-full flex items-center justify-center relative z-10 transition-all duration-500 shadow-md -ml-[19px] ${isCompleted ? 'bg-accent text-primary' : 'bg-white border-2 border-neutral-100 text-neutral-300'
                                                                         } ${isActive ? 'ring-4 ring-accent/20' : ''}`}
                                                                 >
-                                                                    <Icon className="w-6 h-6" />
+                                                                    <Icon className="w-5 h-5" />
                                                                     {isActive && (
                                                                         <motion.div
-                                                                            layoutId="active-ping"
+                                                                            layoutId="active-ping-mobile"
                                                                             className="absolute inset-0 rounded-full bg-accent animate-ping opacity-25"
                                                                         />
                                                                     )}
                                                                 </motion.div>
-                                                                <div className="space-y-1">
-                                                                    <span className={`text-[11px] font-bold uppercase tracking-tighter block leading-none ${isCompleted ? 'text-primary' : 'text-neutral-400'
-                                                                        }`}>
+                                                                <div>
+                                                                    <p className={`text-xs font-bold uppercase tracking-wider ${isCompleted ? 'text-primary' : 'text-neutral-400'}`}>
                                                                         {step.label}
-                                                                    </span>
-                                                                    {isActive && <span className="text-[10px] text-accent font-bold">In Progress</span>}
+                                                                    </p>
+                                                                    <p className={`text-[10px] uppercase tracking-widest font-semibold mt-0.5 ${isActive ? 'text-accent' : isCompleted ? 'text-emerald-600' : 'text-muted-foreground/50'}`}>
+                                                                        {isActive ? 'In Progress' : isCompleted ? 'Completed' : 'Pending'}
+                                                                    </p>
                                                                 </div>
                                                             </div>
                                                         );

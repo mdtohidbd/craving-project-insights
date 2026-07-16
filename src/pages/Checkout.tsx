@@ -131,6 +131,17 @@ const Checkout = () => {
             transition={{ duration: 0.6, ease: "easeOut" }}
             className="w-full max-w-4xl mx-auto"
           >
+            {/* Back to Home Button at the Top */}
+            <div className="flex justify-start mb-6 print-hidden">
+              <button
+                onClick={() => navigate("/")}
+                className="inline-flex items-center gap-2 px-5 py-2.5 bg-white hover:bg-neutral-50 text-primary font-bold text-xs uppercase tracking-wider rounded-full shadow-[0_4px_12px_rgba(0,0,0,0.05)] border border-neutral-100 hover:-translate-y-0.5 transition-all duration-300"
+              >
+                <ArrowLeft className="w-4 h-4 text-accent" />
+                Back to Home
+              </button>
+            </div>
+
             {/* Header Success Section */}
             <div className="text-center mb-12 print-hidden">
               <motion.div
@@ -154,9 +165,9 @@ const Checkout = () => {
               {/* Left Column: Order Status and Details */}
               <div className="lg:col-span-3 space-y-6 print-hidden">
                 {/* Order Progress Tracker */}
-                <div className="bg-white rounded-[2.5rem] p-8 md:p-10 shadow-[0_15px_50px_rgba(0,0,0,0.04)] border border-black/5">
+                <div className="bg-white rounded-[2.5rem] p-6 sm:p-8 md:p-10 shadow-[0_15px_50px_rgba(0,0,0,0.04)] border border-black/5">
                   <div className="flex justify-between items-center mb-8">
-                    <h3 className="text-xl font-bold text-primary flex items-center gap-3">
+                    <h3 className="text-lg sm:text-xl font-bold text-primary flex items-center gap-3">
                       <Clock className="w-5 h-5 text-accent" />
                       Order Status
                     </h3>
@@ -165,50 +176,105 @@ const Checkout = () => {
                     </span>
                   </div>
 
-                  <div className="relative pt-2 pb-8">
-                    {/* Progress Bar Line */}
-                    <div className="absolute top-5 left-6 right-6 h-1 bg-gray-100 rounded-full">
-                      <div className="h-full bg-accent rounded-full" style={{ width: '25%' }}></div>
+                  <div className="relative pt-2 pb-4">
+                    {/* Horizontal Stepper for Desktop */}
+                    <div className="hidden md:block relative">
+                      {/* Progress Bar Line */}
+                      <div className="absolute top-5 left-6 right-6 h-1 bg-gray-100 rounded-full">
+                        <div className="h-full bg-accent rounded-full" style={{ width: '25%' }}></div>
+                      </div>
+
+                      {/* Status Steps */}
+                      <div className="relative flex justify-between">
+                        <div className="flex flex-col items-center gap-3 text-center">
+                          <div className="w-10 h-10 rounded-full bg-accent text-primary flex items-center justify-center relative z-10 shadow-lg">
+                            <Package className="w-5 h-5" />
+                          </div>
+                          <span className="text-[11px] font-bold text-primary uppercase tracking-tighter">Order<br />Placed</span>
+                        </div>
+                        <div className="flex flex-col items-center gap-3 text-center">
+                          <div className="w-10 h-10 rounded-full bg-white border-2 border-gray-100 text-gray-300 flex items-center justify-center relative z-10">
+                            <ChefHat className="w-5 h-5" />
+                          </div>
+                          <span className="text-[11px] font-bold text-gray-400 uppercase tracking-tighter">In the<br />Kitchen</span>
+                        </div>
+                        <div className="flex flex-col items-center gap-3 text-center">
+                          <div className="w-10 h-10 rounded-full bg-white border-2 border-gray-100 text-gray-300 flex items-center justify-center relative z-10">
+                            <Truck className="w-5 h-5" />
+                          </div>
+                          <span className="text-[11px] font-bold text-gray-400 uppercase tracking-tighter">Out for<br />Delivery</span>
+                        </div>
+                        <div className="flex flex-col items-center gap-3 text-center">
+                          <div className="w-10 h-10 rounded-full bg-white border-2 border-gray-100 text-gray-300 flex items-center justify-center relative z-10">
+                            <ThumbsUp className="w-5 h-5" />
+                          </div>
+                          <span className="text-[11px] font-bold text-gray-400 uppercase tracking-tighter">Enjoy your<br />Meal</span>
+                        </div>
+                      </div>
                     </div>
 
-                    {/* Status Steps */}
-                    <div className="relative flex justify-between">
-                      <div className="flex flex-col items-center gap-3 text-center">
-                        <div className="w-10 h-10 rounded-full bg-accent text-primary flex items-center justify-center relative z-10 shadow-lg">
+                    {/* Vertical Stepper for Mobile */}
+                    <div className="md:hidden relative flex flex-col gap-6 pl-8">
+                      {/* Vertical line connecting steps */}
+                      <div className="absolute left-5 top-2 bottom-2 w-0.5 bg-neutral-100">
+                        <div className="absolute top-0 left-0 w-full bg-accent rounded-full" style={{ height: '25%' }}></div>
+                      </div>
+
+                      {/* Step 1 */}
+                      <div className="relative flex items-center gap-4">
+                        <div className="w-10 h-10 rounded-full bg-accent text-primary flex items-center justify-center relative z-10 shadow-lg -ml-[19px]">
                           <Package className="w-5 h-5" />
                         </div>
-                        <span className="text-[11px] font-bold text-primary uppercase tracking-tighter">Order<br />Placed</span>
+                        <div>
+                          <p className="text-xs font-bold text-primary uppercase tracking-wider">Order Placed</p>
+                          <p className="text-[10px] text-accent font-semibold uppercase tracking-widest mt-0.5">Completed</p>
+                        </div>
                       </div>
-                      <div className="flex flex-col items-center gap-3 text-center">
-                        <div className="w-10 h-10 rounded-full bg-white border-2 border-gray-100 text-gray-300 flex items-center justify-center relative z-10">
+
+                      {/* Step 2 */}
+                      <div className="relative flex items-center gap-4">
+                        <div className="w-10 h-10 rounded-full bg-white border-2 border-gray-100 text-gray-300 flex items-center justify-center relative z-10 -ml-[19px]">
                           <ChefHat className="w-5 h-5" />
                         </div>
-                        <span className="text-[11px] font-bold text-gray-400 uppercase tracking-tighter">In the<br />Kitchen</span>
+                        <div>
+                          <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">In the Kitchen</p>
+                          <p className="text-[10px] text-muted-foreground uppercase tracking-widest mt-0.5">Pending</p>
+                        </div>
                       </div>
-                      <div className="flex flex-col items-center gap-3 text-center">
-                        <div className="w-10 h-10 rounded-full bg-white border-2 border-gray-100 text-gray-300 flex items-center justify-center relative z-10">
+
+                      {/* Step 3 */}
+                      <div className="relative flex items-center gap-4">
+                        <div className="w-10 h-10 rounded-full bg-white border-2 border-gray-100 text-gray-300 flex items-center justify-center relative z-10 -ml-[19px]">
                           <Truck className="w-5 h-5" />
                         </div>
-                        <span className="text-[11px] font-bold text-gray-400 uppercase tracking-tighter">Out for<br />Delivery</span>
+                        <div>
+                          <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Out for Delivery</p>
+                          <p className="text-[10px] text-muted-foreground uppercase tracking-widest mt-0.5">Pending</p>
+                        </div>
                       </div>
-                      <div className="flex flex-col items-center gap-3 text-center">
-                        <div className="w-10 h-10 rounded-full bg-white border-2 border-gray-100 text-gray-300 flex items-center justify-center relative z-10">
+
+                      {/* Step 4 */}
+                      <div className="relative flex items-center gap-4">
+                        <div className="w-10 h-10 rounded-full bg-white border-2 border-gray-100 text-gray-300 flex items-center justify-center relative z-10 -ml-[19px]">
                           <ThumbsUp className="w-5 h-5" />
                         </div>
-                        <span className="text-[11px] font-bold text-gray-400 uppercase tracking-tighter">Enjoy your<br />Meal</span>
+                        <div>
+                          <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Enjoy your Meal</p>
+                          <p className="text-[10px] text-muted-foreground uppercase tracking-widest mt-0.5">Pending</p>
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
 
                 {/* Delivery Information */}
-                <div className="bg-white rounded-[2.5rem] p-8 md:p-10 shadow-[0_15px_50px_rgba(0,0,0,0.04)] border border-black/5">
-                  <h3 className="text-xl font-bold text-primary mb-8 flex items-center gap-3">
+                <div className="bg-white rounded-[2.5rem] p-6 sm:p-8 md:p-10 shadow-[0_15px_50px_rgba(0,0,0,0.04)] border border-black/5">
+                  <h3 className="text-lg sm:text-xl font-bold text-primary mb-8 flex items-center gap-3">
                     <MapPin className="w-5 h-5 text-accent" />
                     Delivery Details
                   </h3>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
                     <div className="space-y-4">
                       <div className="flex items-start gap-4">
                         <div className="w-10 h-10 rounded-xl bg-gray-50 flex items-center justify-center flex-shrink-0">
@@ -244,26 +310,26 @@ const Checkout = () => {
                   )}
                 </div>
 
-                <div className="flex flex-col md:flex-row gap-4">
+                <div className="flex flex-col sm:flex-row gap-4">
                   <button
                     onClick={() => navigate(`/track-order?id=${orderDetails.orderId}`)}
-                    className="flex-1 bg-accent text-primary font-bold py-5 rounded-2xl hover:bg-accent/90 transition-all flex items-center justify-center gap-3 shadow-xl"
+                    className="flex-1 bg-accent text-primary font-bold py-4 px-6 rounded-2xl hover:bg-accent/90 transition-all flex items-center justify-center gap-3 shadow-lg hover:shadow-xl text-xs uppercase tracking-wider"
                   >
-                    <Clock className="w-5 h-5" />
+                    <Clock className="w-4 h-4" />
                     Track Your Order
                   </button>
                   <button
                     onClick={() => navigate("/menu")}
-                    className="flex-1 bg-primary text-white font-bold py-5 rounded-2xl hover:bg-primary/90 transition-all flex items-center justify-center gap-3 shadow-xl"
+                    className="flex-1 bg-primary text-white font-bold py-4 px-6 rounded-2xl hover:bg-primary/90 transition-all flex items-center justify-center gap-3 shadow-lg hover:shadow-xl text-xs uppercase tracking-wider"
                   >
                     Return to Menu
                   </button>
                   <button
                     onClick={handlePrint}
-                    className="px-8 bg-white border border-black/5 text-primary font-bold py-5 rounded-2xl hover:bg-gray-50 transition-all flex items-center justify-center gap-3 shadow-xl"
+                    className="sm:px-8 bg-white border border-black/5 text-primary font-bold py-4 px-6 rounded-2xl hover:bg-gray-50 transition-all flex items-center justify-center gap-3 shadow-md hover:shadow-lg text-xs uppercase tracking-wider"
                   >
-                    <Printer className="w-5 h-5" />
-                    Print
+                    <Printer className="w-4 h-4" />
+                    Print Invoice
                   </button>
                 </div>
               </div>
@@ -396,7 +462,7 @@ const Checkout = () => {
       <Navbar />
 
       {/* Header */}
-      <section className="bg-primary pt-24 pb-12 relative overflow-hidden">
+      <section className="bg-primary pt-28 pb-16 md:pt-32 md:pb-24 relative overflow-hidden">
         <div className="absolute inset-0">
           <div className="absolute top-[0%] right-[-10%] w-[600px] h-[600px] rounded-full pointer-events-none"
             style={{ background: "radial-gradient(circle, hsl(43 60% 50% / 0.05), transparent 70%)" }} />
@@ -405,7 +471,7 @@ const Checkout = () => {
           <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-5xl md:text-7xl font-serif font-bold text-primary-foreground mb-6"
+            className="text-4xl sm:text-5xl md:text-7xl font-serif font-bold text-primary-foreground mb-4 md:mb-6"
             style={{ letterSpacing: "-0.04em" }}
           >
             Secure Checkout
@@ -426,8 +492,8 @@ const Checkout = () => {
       </section>
 
       {/* Main Checkout Area */}
-      <section className="py-12 relative z-20 -mt-10">
-        <div className="container mx-auto px-6 md:px-12">
+      <section className="py-12 relative z-20 -mt-4 md:-mt-8 pb-28 md:pb-24">
+        <div className="container mx-auto px-4 sm:px-6 md:px-12 max-w-6xl">
           {cart.length === 0 ? (
             <div className="text-center py-20 bg-white rounded-3xl shadow-xl border border-black/5">
               <h2 className="text-3xl font-serif font-bold text-primary mb-4">Your cart is empty</h2>
@@ -446,20 +512,20 @@ const Checkout = () => {
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="lg:col-span-7 bg-white p-8 md:p-12 rounded-[2.5rem] shadow-[0_20px_40px_rgba(0,0,0,0.06)] border border-black/5"
+                className="lg:col-span-7 bg-white p-5 sm:p-8 md:p-12 rounded-[2rem] md:rounded-[2.5rem] shadow-[0_20px_40px_rgba(0,0,0,0.06)] border border-black/5"
               >
                 <form id="checkout-form" onSubmit={handleSubmit} className="space-y-10">
 
                   {/* Shipping Details */}
                   <div className="relative">
                     <div className="absolute -left-12 top-0 bottom-0 w-1 bg-accent/20 rounded-full hidden md:block" />
-                    <h2 className="text-2xl font-serif font-bold text-primary mb-8 flex items-center gap-4">
-                      <div className="w-10 h-10 rounded-2xl bg-primary text-white flex items-center justify-center shadow-lg shadow-primary/20">
-                        <MapPin className="w-5 h-5" />
+                    <h2 className="text-xl sm:text-2xl font-serif font-bold text-primary mb-6 sm:mb-8 flex items-center gap-3 sm:gap-4">
+                      <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-2xl bg-primary text-white flex items-center justify-center shadow-lg shadow-primary/20 shrink-0">
+                        <MapPin className="w-4 h-4 sm:w-5 sm:h-5" />
                       </div>
                       Delivery Details
                     </h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-6">
                       <div className="space-y-2.5">
                         <label className="text-[10px] uppercase tracking-[0.2em] font-black text-muted-foreground ml-1">Full Name</label>
                         <div className="relative group">
@@ -487,8 +553,8 @@ const Checkout = () => {
 
                   {/* Order Details (Interactive Section) */}
                   <div className="pt-6 border-t border-black/5">
-                    <h2 className="text-2xl font-serif font-bold text-primary mb-6 flex items-center gap-3">
-                      <span className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm">2</span>
+                    <h2 className="text-xl sm:text-2xl font-serif font-bold text-primary mb-5 sm:mb-6 flex items-center gap-3">
+                      <span className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm shrink-0">2</span>
                       Order Items
                     </h2>
                     <div className="space-y-6">
@@ -558,11 +624,11 @@ const Checkout = () => {
                   </div>
 
                   {/* Payment Details */}
-                  <div className="pt-10 border-t border-black/5 relative">
+                  <div className="pt-8 sm:pt-10 border-t border-black/5 relative">
                     <div className="absolute -left-12 top-10 bottom-0 w-1 bg-accent/20 rounded-full hidden md:block" />
-                    <h2 className="text-2xl font-serif font-bold text-primary mb-8 flex items-center gap-4">
-                      <div className="w-10 h-10 rounded-2xl bg-primary text-white flex items-center justify-center shadow-lg shadow-primary/20">
-                        <CreditCard className="w-5 h-5" />
+                    <h2 className="text-xl sm:text-2xl font-serif font-bold text-primary mb-6 sm:mb-8 flex items-center gap-3 sm:gap-4">
+                      <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-2xl bg-primary text-white flex items-center justify-center shadow-lg shadow-primary/20 shrink-0">
+                        <CreditCard className="w-4 h-4 sm:w-5 sm:h-5" />
                       </div>
                       Payment Method
                     </h2>
@@ -574,7 +640,7 @@ const Checkout = () => {
                             {paymentMethod === "bkash" && <Check className="w-4 h-4 text-primary font-bold" />}
                           </div>
                           <div className="w-14 h-14 rounded-2xl bg-white shadow-sm flex items-center justify-center border border-black/5 group-hover:scale-105 transition-transform duration-300">
-                            <img src="https://logowik.com/content/uploads/images/bkash-payment-icon8111.logowik.com.webp" alt="bKash" className="w-10 h-10 object-contain" />
+                            <img src="/images/bkash.svg" alt="bKash" className="w-10 h-10 object-contain" />
                           </div>
                           <div className="flex-1">
                             <p className="font-black text-primary text-lg">bKash</p>
@@ -593,7 +659,7 @@ const Checkout = () => {
                             {paymentMethod === "nagad" && <Check className="w-4 h-4 text-primary font-bold" />}
                           </div>
                           <div className="w-14 h-14 rounded-2xl bg-white shadow-sm flex items-center justify-center border border-black/5 group-hover:scale-105 transition-transform duration-300">
-                            <img src="https://logowik.com/content/uploads/images/nagad-payment-icon4691.logowik.com.webp" alt="Nagad" className="w-10 h-10 object-contain" />
+                            <img src="/images/nagad.svg" alt="Nagad" className="w-10 h-10 object-contain" />
                           </div>
                           <div className="flex-1">
                             <p className="font-black text-primary text-lg">Nagad</p>
