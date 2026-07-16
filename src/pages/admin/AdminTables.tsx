@@ -27,6 +27,16 @@ interface TableOrder {
     createdAt?: string;
 }
 
+const formatOrderStatus = (status: string) => {
+    switch (status?.toLowerCase()) {
+        case "pending": return "Waiting in Kitchen";
+        case "preparing": return "Cooking";
+        case "ready": return "Ready to Serve";
+        case "served": return "Served";
+        default: return status || "Occupied";
+    }
+};
+
 const AdminTables = () => {
     const { settings } = useSettings();
     const [tables, setTables] = useState<Table[]>([]);
@@ -61,6 +71,7 @@ const AdminTables = () => {
     });
     const [tableServiceState, setTableServiceState] = useState<Record<string, { kotSent: boolean; billPrinted: boolean }>>({});
     const [tableOrderStatuses, setTableOrderStatuses] = useState<Record<string, string>>({});
+    const [activeOrders, setActiveOrders] = useState<Record<string, TableOrder>>({});
     const [processingServiceTableId, setProcessingServiceTableId] = useState<string | null>(null);
 
     const fetchTables = async () => {
@@ -79,6 +90,7 @@ const AdminTables = () => {
                 if (ordersRes.ok) {
                     const allOrders = await ordersRes.json();
                     const statusMap: Record<string, string> = {};
+                    const ordersMap: Record<string, TableOrder> = {};
                     data.forEach((table: Table) => {
                         if (table.status === 'Occupied') {
                             const order = allOrders.find((o: any) => 
@@ -89,10 +101,12 @@ const AdminTables = () => {
                             );
                             if (order) {
                                 statusMap[table._id] = order.status;
+                                ordersMap[table._id] = order;
                             }
                         }
                     });
                     setTableOrderStatuses(statusMap);
+                    setActiveOrders(ordersMap);
                 }
             } else {
                 throw new Error('Failed to fetch tables');
@@ -476,7 +490,23 @@ const AdminTables = () => {
 
                 {/* Grid Section */}
                 <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 lg:gap-6">
-                    {filteredTables.map((table) => (
+                    {loading ? (
+                        Array.from({ length: 8 }).map((_, idx) => (
+                            <div key={idx} className="border-2 border-neutral-100 rounded-[1.5rem] lg:rounded-[2.5rem] p-4 lg:p-6 bg-white animate-pulse">
+                                <div className="flex flex-col lg:flex-row justify-between lg:items-start gap-2">
+                                    <div className="space-y-2">
+                                        <div className="h-7 lg:h-9 w-12 lg:w-16 bg-neutral-200 rounded-lg"></div>
+                                        <div className="h-3 lg:h-4 w-16 bg-neutral-200 rounded"></div>
+                                    </div>
+                                    <div className="h-5 lg:h-6 w-16 lg:w-20 bg-neutral-200 rounded-full shrink-0"></div>
+                                </div>
+                                <div className="mt-8 lg:mt-10 flex justify-end gap-2">
+                                    <div className="h-8 w-8 bg-neutral-200 rounded-full"></div>
+                                    <div className="h-8 w-8 bg-neutral-200 rounded-full"></div>
+                                </div>
+                            </div>
+                        ))
+                    ) : filteredTables.map((table) => (
                         <div 
                             key={table._id}
                             onClick={() => {
@@ -505,13 +535,10 @@ const AdminTables = () => {
                                     table.status === "Occupied" ? 'bg-white/50 text-[#be123c]' :
                                     'bg-white/50 text-[#1d4ed8]'
                                 }`}>
-                                    {table.status}
+                                    {table.status === "Occupied" && tableOrderStatuses[table._id] 
+                                        ? formatOrderStatus(tableOrderStatuses[table._id]) 
+                                        : table.status}
                                 </div>
-                                {table.status === "Occupied" && tableOrderStatuses[table._id] && (
-                                    <div className="mt-1 px-3 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest bg-white/40 text-[#be123c] border border-white/20 self-end">
-                                        {tableOrderStatuses[table._id]}
-                                    </div>
-                                )}
                             </div>
                             
                             {/* KOT / Bill Actions (Only for occupied tables) */}
@@ -653,30 +680,54 @@ const AdminTables = () => {
                         </div>
 
                         {/* Status Row */}
-                        <div className="flex justify-between items-center mb-8">
-                            <span className="text-neutral-500 font-bold">Status</span>
-                            <div className={`px-4 py-1.5 rounded-full text-xs font-black ${
+                        <div className="flex justify-between items-center mb-6">
+                            <span className="text-neutral-500 font-bold text-sm">Status</span>
+                            <div className={`px-3 py-1 rounded-full text-[10px] font-black ${
                                 selectedTable.status === "Free" ? 'bg-primary/10 text-primary' :
                                 selectedTable.status === "Reserved" ? 'bg-purple-50 text-purple-600' :
                                 'bg-rose-50 text-rose-600'
                             }`}>
-                                {selectedTable.status === "Free" ? "Available" : selectedTable.status}
+                                {selectedTable.status === "Free" ? "Available" : 
+                                 selectedTable.status === "Occupied" && tableOrderStatuses[selectedTable._id] ? formatOrderStatus(tableOrderStatuses[selectedTable._id]) : 
+                                 selectedTable.status}
                             </div>
                         </div>
 
+                        {/* Order Details if Occupied */}
+                        {selectedTable.status === "Occupied" && activeOrders[selectedTable._id] && (
+                            <div className="mb-6 bg-neutral-50 rounded-[20px] p-4 border border-neutral-100">
+                                <h4 className="text-[10px] font-black text-neutral-400 mb-3 uppercase tracking-widest">Order Items</h4>
+                                <div className="space-y-3 max-h-[140px] overflow-y-auto no-scrollbar">
+                                    {activeOrders[selectedTable._id].items.map((item, idx) => (
+                                        <div key={idx} className="flex justify-between items-center text-sm">
+                                            <div className="flex items-center gap-2">
+                                                <span className="w-5 h-5 rounded-full bg-neutral-200 text-neutral-500 flex items-center justify-center text-[10px] font-bold">
+                                                    {item.quantity}
+                                                </span>
+                                                <span className="font-bold text-neutral-700 text-xs">{item.title}</span>
+                                            </div>
+                                            <span className="font-bold text-neutral-800 text-xs">৳{(item.price * item.quantity).toFixed(0)}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                                <div className="mt-4 pt-3 border-t border-neutral-200/60 flex justify-between items-center">
+                                    <span className="text-[10px] font-black text-neutral-400 uppercase tracking-widest">Total</span>
+                                    <span className="font-black text-rose-600 text-sm">৳{activeOrders[selectedTable._id].total.toFixed(0)}</span>
+                                </div>
+                            </div>
+                        )}
+
                         {/* Action Buttons */}
-                        <div className="space-y-4">
+                        <div className="space-y-3">
                             {selectedTable.status === "Occupied" ? (
-                                <div className="space-y-4">
-                                    <div className="flex gap-4">
-                                        <button
-                                            onClick={() => handleStatusAction('addItems')}
-                                            className="flex-1 py-4 bg-[#1d7cf2] hover:bg-[#1a6ed9] text-white font-black rounded-[12px] transition-all shadow-lg shadow-blue-100 flex items-center justify-center gap-2 uppercase tracking-widest text-[11px]"
-                                        >
-                                            <Plus className="w-5 h-5" />
-                                            <span>Add Items</span>
-                                        </button>
-                                    </div>
+                                <div className="flex gap-2.5">
+                                    <button
+                                        onClick={() => handleStatusAction('addItems')}
+                                        className="flex-1 py-2.5 bg-[#1d7cf2] hover:bg-[#1a6ed9] text-white font-black rounded-xl transition-all flex items-center justify-center gap-1.5 uppercase tracking-wider text-[10px]"
+                                    >
+                                        <Plus className="w-3.5 h-3.5" />
+                                        <span>Add Items</span>
+                                    </button>
                                     <button
                                         onClick={() => {
                                             if (selectedTable._id) {
@@ -685,52 +736,52 @@ const AdminTables = () => {
                                                 toast.error("No active order reference found");
                                             }
                                         }}
-                                        className="w-full py-4 bg-primary/90 hover:bg-emerald-700 text-white font-black rounded-[12px] transition-all flex items-center justify-center gap-2 uppercase tracking-widest text-[11px] shadow-lg shadow-emerald-100"
+                                        className="flex-1 py-2.5 bg-primary hover:bg-emerald-600 text-white font-black rounded-xl transition-all flex items-center justify-center gap-1.5 uppercase tracking-wider text-[10px]"
                                     >
-                                        <Receipt className="w-5 h-5" />
-                                        <span>Complete Payment</span>
+                                        <Receipt className="w-3.5 h-3.5" />
+                                        <span>Pay Now</span>
                                     </button>
                                 </div>
                             ) : selectedTable.status === "Cleaning" ? (
                                 <button
                                     onClick={() => handleStatusAction('markFree')}
-                                    className="w-full py-4 bg-primary hover:bg-primary/90 text-white font-black rounded-[12px] transition-all flex items-center justify-center gap-2 uppercase tracking-widest text-[11px] shadow-lg shadow-emerald-100"
+                                    className="w-full py-2.5 bg-primary hover:bg-emerald-600 text-white font-black rounded-xl transition-all flex items-center justify-center gap-1.5 uppercase tracking-wider text-[10px]"
                                 >
-                                    <CheckCircle className="w-5 h-5" />
+                                    <CheckCircle className="w-3.5 h-3.5" />
                                     <span>Mark Free</span>
                                 </button>
                             ) : (
-                                <div className="flex gap-4">
+                                <div className="flex gap-2.5">
                                     <button
                                         onClick={() => handleStatusAction('newOrder')}
-                                        className="flex-1 py-3.5 bg-[#1d7cf2] hover:bg-[#1a6ed9] text-white font-bold rounded-[12px] transition-all shadow-lg shadow-blue-100 flex items-center justify-center gap-2"
+                                        className="flex-1 py-2.5 bg-[#1d7cf2] hover:bg-[#1a6ed9] text-white font-bold rounded-xl transition-all flex items-center justify-center gap-1.5 text-xs"
                                     >
-                                        <Plus className="w-5 h-5" />
+                                        <Plus className="w-4 h-4" />
                                         <span>New Order</span>
                                     </button>
                                     <button
                                         onClick={() => handleStatusAction(selectedTable.status === "Free" ? 'reserve' : 'markFree')}
-                                        className="flex-1 py-3.5 bg-[#e2f3f5] hover:bg-[#d1eaed] text-[#0f172a] font-bold rounded-[12px] transition-all flex items-center justify-center gap-2"
+                                        className="flex-1 py-2.5 bg-neutral-100 hover:bg-neutral-200 text-neutral-800 font-bold rounded-xl transition-all flex items-center justify-center gap-1.5 text-xs"
                                     >
-                                        {selectedTable.status === "Free" ? <Clock className="w-5 h-5" /> : <CheckCircle className="w-5 h-5" />}
+                                        {selectedTable.status === "Free" ? <Clock className="w-4 h-4" /> : <CheckCircle className="w-4 h-4" />}
                                         <span>{selectedTable.status === "Free" ? "Reserve" : "Mark Free"}</span>
                                     </button>
                                 </div>
                             )}
 
-                            <div className="flex gap-4 pt-4 border-t border-neutral-100 items-center">
+                            <div className="flex gap-2.5 pt-3 border-t border-neutral-100 items-center">
                                 <button
                                     onClick={() => handleStatusAction('edit')}
-                                    className="flex-1 py-4 bg-neutral-50 hover:bg-neutral-100 text-neutral-700 font-bold rounded-[2rem] border border-neutral-50 transition-all flex items-center justify-center gap-2"
+                                    className="flex-1 py-2 bg-neutral-50 hover:bg-neutral-100 text-neutral-600 font-bold rounded-xl border border-neutral-100 transition-all flex items-center justify-center gap-1.5 text-xs"
                                 >
-                                    <Edit className="w-4 h-4" />
-                                    <span>Edit Table</span>
+                                    <Edit className="w-3.5 h-3.5" />
+                                    <span>Edit</span>
                                 </button>
                                 <button
                                     onClick={() => handleStatusAction('delete')}
-                                    className="w-12 h-12 bg-rose-50 hover:bg-rose-100 text-rose-500 rounded-full flex items-center justify-center transition-all shrink-0 shadow-sm"
+                                    className="px-4 py-2 bg-rose-50 hover:bg-rose-100 text-rose-500 rounded-xl flex items-center justify-center transition-all shrink-0"
                                 >
-                                    <Trash2 className="w-5 h-5" />
+                                    <Trash2 className="w-3.5 h-3.5" />
                                 </button>
                             </div>
                         </div>

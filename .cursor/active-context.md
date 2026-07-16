@@ -1,3 +1,10 @@
+> **BrainSync Context Pumper** 🧠
+> Dynamically loaded for active file: `.mcp.json` (Domain: **Config/Infrastructure**)
+
+### 📐 Config/Infrastructure Conventions & Fixes
+- **[problem-fix] problem-fix in .gitignore**: File updated (external): .gitignore
+
+Content summary (37 lines):
 # Logs
 logs
 *.log
@@ -35,6 +42,3 @@ dist-ssr
 .gemini/
 .cline/
 
-AGENT.md
-CLAUDE.md
-.agent-mem/
