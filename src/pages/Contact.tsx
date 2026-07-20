@@ -66,7 +66,7 @@ const Contact = () => {
             className="text-7xl md:text-8xl lg:text-9xl font-serif font-bold leading-[0.9] mb-3"
             style={{ color: "hsl(40 20% 96%)", letterSpacing: "-0.04em" }}
           >
-            Let's <span className="italic" style={{ color: "hsl(43 74% 48%)" }}>Connect</span>
+            Let's <span className="italic" style={{ color: "hsl(43 74% 48%)" }}>{t("pos.connect", "Connect")}</span>
           </motion.h1>
           <motion.p
             initial={{ opacity: 0, y: 20 }}
@@ -158,11 +158,11 @@ const Contact = () => {
                       backgroundSize: "1.2rem",
                     }}
                   >
-                    <option value="" disabled hidden>Choose a topic</option>
+                    <option value="" disabled hidden>{t("pos.choose_a_topic", "Choose a topic")}</option>
 
-                    <option value="catering">Catering Services</option>
-                    <option value="feedback">Feedback</option>
-                    <option value="other">Other</option>
+                    <option value="catering">{t("pos.catering_services", "Catering Services")}</option>
+                    <option value="feedback">{t("pos.feedback", "Feedback")}</option>
+                    <option value="other">{t("pos.other", "Other")}</option>
                   </select>
                 </div>
               </div>
@@ -217,7 +217,7 @@ const Contact = () => {
                 style={{ letterSpacing: "-0.04em" }}>
                 Visit Us
                 <br />
-                <span className="italic" style={{ color: "hsl(43 74% 48%)" }}>Today</span>
+                <span className="italic" style={{ color: "hsl(43 74% 48%)" }}>{t("pos.today", "Today")}</span>
               </h2>
 
               <div className="space-y-6">

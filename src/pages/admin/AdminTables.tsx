@@ -3,6 +3,7 @@ import { useSettings } from "@/context/SettingsContext";
 import AdminLayout from "../../components/admin/AdminLayout";
 import { Plus, Edit, Trash2, Users, Clock, CheckCircle, XCircle, X, RefreshCcw, Filter, Sparkles, FileText, Receipt } from "lucide-react";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 
 interface Table {
     _id: string;
@@ -28,6 +29,7 @@ interface TableOrder {
 }
 
 const AdminTables = () => {
+    const { t } = useTranslation();
     const { settings } = useSettings();
     const [tables, setTables] = useState<Table[]>([]);
     const [loading, setLoading] = useState(true);
@@ -174,38 +176,38 @@ const AdminTables = () => {
         const orderNum = `#${order._id.slice(-6).toUpperCase()}`;
         const date = new Date(order.createdAt || Date.now()).toLocaleString("en-GB");
 
-        const html = `<!DOCTYPE html><html><head><title>KOT</title><style>
+        const html = `<!DOCTYPE html><html><head><title>{t("pos.kot", "KOT")}</title><style>
             * { margin:0; padding:0; box-sizing:border-box; }
             body { font-family: 'Courier New', monospace; width: 80mm; padding: 10px; color: #000; font-size: 14px; }
             .center { text-align: center; }
             .row { display: flex; justify-content: space-between; margin-bottom: 4px; }
             .dashed { border-bottom: 2px dashed #000; margin: 10px 0; }
         </style></head><body>
-            <div class="center" style="font-size:18px;font-weight:bold;margin-bottom:10px;">KITCHEN ORDER</div>
+            <div class="center" style="font-size:18px;font-weight:bold;margin-bottom:10px;">{t("pos.kitchen_order", "KITCHEN ORDER")}</div>
             <div class="dashed"></div>
-            <div class="row"><span>Table</span><span>${table.tableNumber}</span></div>
-            <div class="row"><span>Order</span><span>${orderNum}</span></div>
-            <div class="row"><span>Time</span><span>${date}</span></div>
+            <div class="row"><span>{t("pos.table", "Table")}</span><span>${table.tableNumber}</span></div>
+            <div class="row"><span>{t("pos.order", "Order")}</span><span>${orderNum}</span></div>
+            <div class="row"><span>{t("pos.time", "Time")}</span><span>${date}</span></div>
             <div class="dashed"></div>
             ${itemsHtml}
             <div class="dashed"></div>
-            <div class="center" style="margin-top:8px;">*** KOT ***</div>
+            <div class="center" style="margin-top:8px;">{t("pos.kot", "*** KOT ***")}</div>
         </body></html>`;
 
-        return openPrintWindow(html, "Please allow pop-ups to print the KOT");
+        return openPrintWindow(html, t("tables.allow_popups_kot", "Please allow pop-ups to print the KOT"));
     };
 
     const printBillForOrder = (table: Table, order: TableOrder) => {
         const itemsHtml = order.items
             .map(
                 (item) =>
-                    `<div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span>${item.title} x${item.quantity}</span><span>BDT ${(item.price * item.quantity).toFixed(2)}</span></div>`
+                    `<div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span>${item.title} x${item.quantity}</span><span>{t("pos.bdt", "BDT $")}{(item.price * item.quantity).toFixed(2)}</span></div>`
             )
             .join("");
         const orderNum = `#${order._id.slice(-6).toUpperCase()}`;
         const date = new Date(order.createdAt || Date.now()).toLocaleString("en-GB");
 
-        const html = `<!DOCTYPE html><html><head><title>Bill Receipt</title><style>
+        const html = `<!DOCTYPE html><html><head><title>{t("pos.bill_receipt", "Bill Receipt")}</title><style>
             * { margin:0; padding:0; box-sizing:border-box; }
             body { font-family: 'Courier New', monospace; width: 80mm; padding: 10px; color: #000; font-size: 14px; }
             .center { text-align: center; }
@@ -215,23 +217,23 @@ const AdminTables = () => {
         </style></head><body>
             <div class="center" style="font-size:20px;font-weight:bold;margin-bottom:10px;">${settings.websiteName.toUpperCase()}</div>
             <div class="dashed"></div>
-            <div class="row"><span>Table</span><span>${table.tableNumber}</span></div>
-            <div class="row"><span>Order</span><span>${orderNum}</span></div>
-            <div class="row"><span>Date</span><span>${date}</span></div>
+            <div class="row"><span>{t("pos.table", "Table")}</span><span>${table.tableNumber}</span></div>
+            <div class="row"><span>{t("pos.order", "Order")}</span><span>${orderNum}</span></div>
+            <div class="row"><span>{t("pos.date", "Date")}</span><span>${date}</span></div>
             <div class="dashed"></div>
             ${itemsHtml}
             <div class="dashed"></div>
-            <div class="row"><span>Subtotal</span><span>BDT ${(order.subtotal || 0).toFixed(2)}</span></div>
-            <div class="row"><span>Tax</span><span>BDT ${(order.tax || 0).toFixed(2)}</span></div>
-            <div class="total-row"><span>TOTAL</span><span>BDT ${(order.total || 0).toFixed(2)}</span></div>
+            <div class="row"><span>{t("pos.subtotal", "Subtotal")}</span><span>{t("pos.bdt", "BDT $")}{(order.subtotal || 0).toFixed(2)}</span></div>
+            <div class="row"><span>{t("pos.tax", "Tax")}</span><span>{t("pos.bdt", "BDT $")}{(order.tax || 0).toFixed(2)}</span></div>
+            <div class="total-row"><span>{t("pos.total", "TOTAL")}</span><span>{t("pos.bdt", "BDT $")}{(order.total || 0).toFixed(2)}</span></div>
         </body></html>`;
 
-        return openPrintWindow(html, "Please allow pop-ups to print the bill");
+        return openPrintWindow(html, t("tables.allow_popups_bill", "Please allow pop-ups to print the bill"));
     };
 
     const handleTableServiceAction = async (table: Table, action: "kot" | "bill") => {
         if (action === "bill" && table.status === "Free") {
-            toast.error(`Table ${table.tableNumber} is free. Please place an order first.`);
+            toast.error(t("tables.table_is_free", `Table ${table.tableNumber} is free. Please place an order first.`, { tableNumber: table.tableNumber }));
             return;
         }
 
@@ -239,7 +241,7 @@ const AdminTables = () => {
             setProcessingServiceTableId(table._id);
             const order = await getOrderForTable(table);
             if (!order) {
-                toast.error(`No active order found for Table ${table.tableNumber}`);
+                toast.error(t("tables.no_active_order", `No active order found for Table ${table.tableNumber}`, { tableNumber: table.tableNumber }));
                 return;
             }
 
@@ -260,12 +262,12 @@ const AdminTables = () => {
 
             toast.success(
                 action === "kot"
-                    ? `KOT printed for Table ${table.tableNumber}`
-                    : `Bill printed for Table ${table.tableNumber}`
+                    ? t("tables.kot_printed", `KOT printed for Table ${table.tableNumber}`, { tableNumber: table.tableNumber })
+                    : t("tables.bill_printed", `Bill printed for Table ${table.tableNumber}`, { tableNumber: table.tableNumber })
             );
         } catch (error) {
             console.error(`Failed to process ${action}:`, error);
-            toast.error(`Failed to ${action === "kot" ? "print KOT" : "print bill"}`);
+            toast.error(t("pos.failed_to", `Failed to {var0}`, { var0: action === "kot" ? "print KOT" : "print bill" }));
         } finally {
             setProcessingServiceTableId(null);
         }
@@ -301,35 +303,35 @@ const AdminTables = () => {
             const data = await response.json();
             
             if (!response.ok) {
-                throw new Error(data.message || "Failed to save table");
+                throw new Error(data.message || t("tables.save_failed", "Failed to save table"));
             }
             
-            toast.success(editingTable ? "Table updated successfully" : "Table added successfully");
+            toast.success(editingTable ? t("tables.update_success", "Table updated successfully") : t("tables.add_success", "Table added successfully"));
             setIsModalOpen(false);
             fetchTables();
         } catch (err: any) {
             console.error("Failed to save table:", err);
-            toast.error(err.message || "Failed to save table");
+            toast.error(err.message || t("tables.save_failed", "Failed to save table"));
         }
     };
 
     const handleDelete = (id: string) => {
         setConfirmModal({
             isOpen: true,
-            title: "Delete Table",
-            message: "Are you sure you want to delete this table? This action cannot be undone.",
-            confirmText: "Delete",
+            title: t("tables.delete_title", "Delete Table"),
+            message: t("tables.delete_confirm", "Are you sure you want to delete this table? This action cannot be undone."),
+            confirmText: t("common.delete", "Delete"),
             variant: "danger",
             onConfirm: async () => {
                 try {
                     const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
                     await fetch(`${apiUrl}/tables/${id}`, { method: "DELETE" });
-                    toast.success("Table deleted successfully");
+                    toast.success(t("tables.delete_success", "Table deleted successfully"));
                     fetchTables();
                     setConfirmModal(prev => ({ ...prev, isOpen: false }));
                 } catch (err) {
                     console.error("Failed to delete table:", err);
-                    toast.error("Failed to delete table");
+                    toast.error(t("tables.delete_failed", "Failed to delete table"));
                 }
             }
         });
@@ -346,10 +348,10 @@ const AdminTables = () => {
 
             setIsStatusModalOpen(false);
             fetchTables();
-            toast.success(`Table status updated to ${status}`);
+            toast.success(t("tables.status_updated", `Table status updated to ${status}`, { status }));
         } catch (err) {
             console.error("Failed to update table status:", err);
-            toast.error("Failed to update status");
+            toast.error(t("tables.status_update_failed", "Failed to update status"));
         }
     };
 
@@ -362,7 +364,7 @@ const AdminTables = () => {
         switch (action) {
             case 'newOrder':
                 if (selectedTable.status !== 'Free') {
-                    toast.error(`Table ${selectedTable.tableNumber} is currently ${selectedTable.status}. It must be Free before creating a new order.`);
+                    toast.error(t("tables.table_must_be_free", `Table ${selectedTable.tableNumber} is currently ${selectedTable.status}. It must be Free before creating a new order.`, { tableNumber: selectedTable.tableNumber, status: selectedTable.status }));
                     return;
                 }
                 window.location.href = `/admin/pos?table=${selectedTable._id}`;
@@ -381,9 +383,9 @@ const AdminTables = () => {
                 if (selectedTable.status === 'Occupied') {
                     setConfirmModal({
                         isOpen: true,
-                        title: "Mark Table as Free?",
-                        message: `Table ${selectedTable.tableNumber} is currently occupied. Do you want to cancel the active order and mark it as free?`,
-                        confirmText: "Yes, Mark Free",
+                        title: t("tables.mark_free_title", "Mark Table as Free?"),
+                        message: t("tables.mark_free_confirm", `Table ${selectedTable.tableNumber} is currently occupied. Do you want to cancel the active order and mark it as free?`, { tableNumber: selectedTable.tableNumber }),
+                        confirmText: t("tables.mark_free_btn", "Yes, Mark Free"),
                         variant: "warning",
                         onConfirm: async () => {
                             await performStatusUpdate(selectedTable._id, 'Free', { 
@@ -430,13 +432,13 @@ const AdminTables = () => {
         if (activeFilter === "Cleaning") return table.status === "Cleaning";
         return true;
     });    return (
-        <AdminLayout title="Tables">
+        <AdminLayout title={t("tables.tables", "Tables")}>
             <div className="space-y-4 lg:space-y-8 bg-[#f8fafc] min-h-screen -m-4 lg:-m-6 p-4 lg:p-8">
                 {/* Header Section */}
                 <div className="flex flex-col gap-4">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
-                            <h1 className="text-2xl lg:text-3xl font-black text-[#0f172a]">Tables</h1>
+                            <h1 className="text-2xl lg:text-3xl font-black text-[#0f172a]">{t("tables.tables", "Tables")}</h1>
                             <button 
                                 onClick={fetchTables}
                                 className="p-1.5 hover:bg-neutral-100 rounded-full transition-all active:rotate-180 duration-500"
@@ -449,8 +451,8 @@ const AdminTables = () => {
                             className="flex items-center gap-2 px-4 py-2 lg:px-6 lg:py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs lg:text-sm font-bold rounded-full shadow-lg shadow-blue-200 transition-all active:scale-95"
                         >
                             <Plus className="w-4 h-4 lg:w-5 lg:h-5" />
-                            <span className="hidden xs:inline">Add Table</span>
-                            <span className="xs:hidden">Add</span>
+                            <span className="hidden xs:inline">{t("tables.add_table", "Add Table")}</span>
+                            <span className="xs:hidden">{t("common.add", "Add")}</span>
                         </button>
                     </div>
 
@@ -467,7 +469,7 @@ const AdminTables = () => {
                                         : 'text-neutral-500 hover:text-neutral-700'
                                     }`}
                                 >
-                                    {label} ({count})
+                                    {t(`tables.${label.toLowerCase().replace(' ', '_')}`, label)} ({count})
                                 </button>
                             ))}
                         </div>
@@ -495,7 +497,7 @@ const AdminTables = () => {
                                     <h3 className="text-xl lg:text-3xl font-black">{table.tableNumber}</h3>
                                     <div className="flex items-center gap-1.5 opacity-70">
                                         <Users className="w-3 h-3 lg:w-4 lg:h-4" />
-                                        <span className="text-[10px] lg:text-sm font-bold">{table.capacity} seats</span>
+                                        <span className="text-[10px] lg:text-sm font-bold">{table.capacity} {t("tables.seats", "seats")}</span>
                                     </div>
                                 </div>
                                 
@@ -505,7 +507,7 @@ const AdminTables = () => {
                                     table.status === "Occupied" ? 'bg-white/50 text-[#be123c]' :
                                     'bg-white/50 text-[#1d4ed8]'
                                 }`}>
-                                    {table.status}
+                                    {table.status === "Free" ? t("tables.free", "FREE") : (table.status === "Cleaning" ? t("tables.cleaning", "Cleaning") : table.status)}
                                 </div>
                                 {table.status === "Occupied" && tableOrderStatuses[table._id] && (
                                     <div className="mt-1 px-3 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest bg-white/40 text-[#be123c] border border-white/20 self-end">
@@ -530,7 +532,7 @@ const AdminTables = () => {
                                         } disabled:opacity-60 disabled:cursor-not-allowed`}
                                     >
                                         <FileText className="w-3.5 h-3.5" />
-                                        {processingServiceTableId === table._id ? "..." : "KOT"}
+                                        {processingServiceTableId === table._id ? "..." : t("tables.kot", "KOT")}
                                     </button>
                                     <button
                                         onClick={(e) => {
@@ -545,7 +547,7 @@ const AdminTables = () => {
                                         } disabled:opacity-60 disabled:cursor-not-allowed`}
                                     >
                                         <Receipt className="w-3.5 h-3.5" />
-                                        {processingServiceTableId === table._id ? "..." : "Bill"}
+                                        {processingServiceTableId === table._id ? "..." : t("tables.bill", "Bill")}
                                     </button>
                                 </div>
                             )}
@@ -572,8 +574,8 @@ const AdminTables = () => {
                 {!loading && filteredTables.length === 0 && (
                     <div className="flex flex-col items-center justify-center py-20 text-neutral-400">
                         <XCircle className="w-16 h-16 mb-4 opacity-20" />
-                        <p className="text-xl font-bold">No tables found</p>
-                        <p className="text-sm">Try changing your filter or add a new table.</p>
+                        <p className="text-xl font-bold">{t("tables.no_tables_found", "No tables found")}</p>
+                        <p className="text-sm">{t("tables.try_changing_filter", "Try changing your filter or add a new table.")}</p>
                     </div>
                 )}
             </div>
@@ -583,14 +585,14 @@ const AdminTables = () => {
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
                     <div className="bg-white rounded-[2rem] w-full max-w-md shadow-2xl overflow-hidden p-8">
                         <div className="flex justify-between items-center mb-8">
-                            <h3 className="text-2xl font-black text-[#0f172a]">{editingTable ? "Edit Table" : "Add Table"}</h3>
+                            <h3 className="text-2xl font-black text-[#0f172a]">{editingTable ? t("tables.edit_table", "Edit Table") : t("tables.add_table", "Add Table")}</h3>
                             <button onClick={() => setIsModalOpen(false)} className="p-2 hover:bg-neutral-100 rounded-full transition-colors">
                                 <X className="w-6 h-6 text-neutral-400" />
                             </button>
                         </div>
                         <form onSubmit={handleSave} className="space-y-6">
                             <div>
-                                <label className="block text-sm font-bold text-neutral-700 mb-2">Table Number</label>
+                                <label className="block text-sm font-bold text-neutral-700 mb-2">{t("tables.table_number", "Table Number")}</label>
                                 <input
                                     required
                                     type="text"
@@ -602,7 +604,7 @@ const AdminTables = () => {
                             </div>
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-sm font-bold text-neutral-700 mb-2">Capacity</label>
+                                    <label className="block text-sm font-bold text-neutral-700 mb-2">{t("tables.capacity", "Capacity")}</label>
                                     <input
                                         required
                                         type="number"
@@ -612,7 +614,7 @@ const AdminTables = () => {
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-bold text-neutral-700 mb-2">Order</label>
+                                    <label className="block text-sm font-bold text-neutral-700 mb-2">{t("tables.order", "Order")}</label>
                                     <input
                                         required
                                         type="number"
@@ -623,9 +625,9 @@ const AdminTables = () => {
                                 </div>
                             </div>
                             <div className="flex gap-4 pt-4">
-                                <button type="button" onClick={() => setIsModalOpen(false)} className="flex-1 py-4 bg-neutral-100 hover:bg-neutral-200 text-neutral-600 font-bold rounded-[12px] transition-colors">Cancel</button>
+                                <button type="button" onClick={() => setIsModalOpen(false)} className="flex-1 py-4 bg-neutral-100 hover:bg-neutral-200 text-neutral-600 font-bold rounded-[12px] transition-colors">{t("common.cancel", "Cancel")}</button>
                                 <button type="submit" className="flex-1 py-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-[12px] transition-colors shadow-lg shadow-blue-100">
-                                    {editingTable ? "Update" : "Create"}
+                                    {editingTable ? t("common.update", "Update") : t("common.create", "Create")}
                                 </button>
                             </div>
                         </form>
@@ -645,7 +647,7 @@ const AdminTables = () => {
                                     selectedTable.status === "Reserved" ? 'bg-purple-500' :
                                     'bg-rose-500'
                                 }`} />
-                                <h3 className="text-xl font-bold text-[#0f172a]">Table {selectedTable.tableNumber}</h3>
+                                <h3 className="text-xl font-bold text-[#0f172a]">{t("tables.table", "Table")} {selectedTable.tableNumber}</h3>
                             </div>
                             <button onClick={() => setIsStatusModalOpen(false)} className="p-2 hover:bg-neutral-100 rounded-full transition-colors">
                                 <X className="w-5 h-5 text-neutral-400" />
@@ -654,13 +656,13 @@ const AdminTables = () => {
 
                         {/* Status Row */}
                         <div className="flex justify-between items-center mb-8">
-                            <span className="text-neutral-500 font-bold">Status</span>
+                            <span className="text-neutral-500 font-bold">{t("tables.status", "Status")}</span>
                             <div className={`px-4 py-1.5 rounded-full text-xs font-black ${
                                 selectedTable.status === "Free" ? 'bg-primary/10 text-primary' :
                                 selectedTable.status === "Reserved" ? 'bg-purple-50 text-purple-600' :
                                 'bg-rose-50 text-rose-600'
                             }`}>
-                                {selectedTable.status === "Free" ? "Available" : selectedTable.status}
+                                {selectedTable.status === "Free" ? t("tables.available", "Available") : t(`tables.status_${selectedTable.status.toLowerCase()}`, selectedTable.status)}
                             </div>
                         </div>
 
@@ -674,7 +676,7 @@ const AdminTables = () => {
                                             className="flex-1 py-4 bg-[#1d7cf2] hover:bg-[#1a6ed9] text-white font-black rounded-[12px] transition-all shadow-lg shadow-blue-100 flex items-center justify-center gap-2 uppercase tracking-widest text-[11px]"
                                         >
                                             <Plus className="w-5 h-5" />
-                                            <span>Add Items</span>
+                                            <span>{t("tables.add_items", "Add Items")}</span>
                                         </button>
                                     </div>
                                     <button
@@ -682,13 +684,13 @@ const AdminTables = () => {
                                             if (selectedTable._id) {
                                                 window.location.href = `/admin/pos?table=${selectedTable._id}&checkout=true`;
                                             } else {
-                                                toast.error("No active order reference found");
+                                                toast.error(t("tables.no_active_order_ref", "No active order reference found"));
                                             }
                                         }}
                                         className="w-full py-4 bg-primary/90 hover:bg-emerald-700 text-white font-black rounded-[12px] transition-all flex items-center justify-center gap-2 uppercase tracking-widest text-[11px] shadow-lg shadow-emerald-100"
                                     >
                                         <Receipt className="w-5 h-5" />
-                                        <span>Complete Payment</span>
+                                        <span>{t("tables.complete_payment", "Complete Payment")}</span>
                                     </button>
                                 </div>
                             ) : selectedTable.status === "Cleaning" ? (
@@ -697,7 +699,7 @@ const AdminTables = () => {
                                     className="w-full py-4 bg-primary hover:bg-primary/90 text-white font-black rounded-[12px] transition-all flex items-center justify-center gap-2 uppercase tracking-widest text-[11px] shadow-lg shadow-emerald-100"
                                 >
                                     <CheckCircle className="w-5 h-5" />
-                                    <span>Mark Free</span>
+                                    <span>{t("tables.mark_free", "Mark Free")}</span>
                                 </button>
                             ) : (
                                 <div className="flex gap-4">
@@ -706,14 +708,14 @@ const AdminTables = () => {
                                         className="flex-1 py-3.5 bg-[#1d7cf2] hover:bg-[#1a6ed9] text-white font-bold rounded-[12px] transition-all shadow-lg shadow-blue-100 flex items-center justify-center gap-2"
                                     >
                                         <Plus className="w-5 h-5" />
-                                        <span>New Order</span>
+                                        <span>{t("tables.new_order", "New Order")}</span>
                                     </button>
                                     <button
                                         onClick={() => handleStatusAction(selectedTable.status === "Free" ? 'reserve' : 'markFree')}
                                         className="flex-1 py-3.5 bg-[#e2f3f5] hover:bg-[#d1eaed] text-[#0f172a] font-bold rounded-[12px] transition-all flex items-center justify-center gap-2"
                                     >
                                         {selectedTable.status === "Free" ? <Clock className="w-5 h-5" /> : <CheckCircle className="w-5 h-5" />}
-                                        <span>{selectedTable.status === "Free" ? "Reserve" : "Mark Free"}</span>
+                                        <span>{selectedTable.status === "Free" ? t("tables.reserve", "Reserve") : t("tables.mark_free", "Mark Free")}</span>
                                     </button>
                                 </div>
                             )}
@@ -724,7 +726,7 @@ const AdminTables = () => {
                                     className="flex-1 py-4 bg-neutral-50 hover:bg-neutral-100 text-neutral-700 font-bold rounded-[2rem] border border-neutral-50 transition-all flex items-center justify-center gap-2"
                                 >
                                     <Edit className="w-4 h-4" />
-                                    <span>Edit Table</span>
+                                    <span>{t("tables.edit_table", "Edit Table")}</span>
                                 </button>
                                 <button
                                     onClick={() => handleStatusAction('delete')}
@@ -763,7 +765,7 @@ const AdminTables = () => {
                                     onClick={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
                                     className="flex-1 py-3 bg-neutral-100 hover:bg-neutral-200 text-neutral-700 font-bold rounded-[12px] transition-all"
                                 >
-                                    Cancel
+                                    {t("common.cancel", "Cancel")}
                                 </button>
                                 <button
                                     onClick={confirmModal.onConfirm}
@@ -773,7 +775,7 @@ const AdminTables = () => {
                                         'bg-blue-500 hover:bg-blue-600 shadow-blue-100'
                                     }`}
                                 >
-                                    {confirmModal.confirmText || "Confirm"}
+                                    {confirmModal.confirmText || t("common.confirm", "Confirm")}
                                 </button>
                             </div>
                         </div>

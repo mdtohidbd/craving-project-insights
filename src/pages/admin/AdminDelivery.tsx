@@ -6,6 +6,7 @@ import {
     Truck, Package, MapPin, User, Phone, CheckCircle, Clock,
     ArrowRight, Loader2, RefreshCw, ChevronDown, AlertCircle
 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 interface OrderItem { title: string; quantity: number; price: number; }
 interface DeliveryOrder {
@@ -34,6 +35,7 @@ const NEXT_STATUS: Record<string, string> = {
 
 const AdminDelivery = () => {
     const { user, token, isSuperAdmin } = useAuth();
+    const { t } = useTranslation();
     const isDeliveryMan = user?.staffRole === 'delivery';
 
     const [orders, setOrders] = useState<DeliveryOrder[]>([]);
@@ -74,7 +76,7 @@ const AdminDelivery = () => {
                 setOrders(all);
             }
             if (dmRes.ok) setCouriers((await dmRes.json()).filter((d: DeliveryMan) => d.status === 'active'));
-        } catch { toast.error('Failed to load delivery data'); }
+        } catch { toast.error(t("pos.failed_to_load_delivery_data", "Failed to load delivery data")); }
         finally { setIsLoading(false); }
     }, [apiUrl, isDeliveryMan, user?._id]);
 
@@ -95,9 +97,9 @@ const AdminDelivery = () => {
                 body: JSON.stringify(body),
             });
             if (!res.ok) throw new Error();
-            toast.success(`Order marked as ${deliveryStatus.replace(/_/g, ' ')}`);
+            toast.success(t("delivery.order_marked_as", `Order marked as ${deliveryStatus.replace(/_/g, ' ')}`, { status: t(`delivery.${deliveryStatus}`, deliveryStatus.replace(/_/g, ' ')) }));
             fetchOrders();
-        } catch { toast.error('Failed to update status'); }
+        } catch { toast.error(t("delivery.status_update_failed", 'Failed to update status')); }
         finally { setUpdatingId(null); }
     };
 
@@ -111,9 +113,9 @@ const AdminDelivery = () => {
                 body: JSON.stringify({ deliveryManId: courierId, deliveryStatus: 'assigned' }),
             });
             if (!res.ok) throw new Error();
-            toast.success(`Order assigned to ${courierName}`);
+            toast.success(t("delivery.order_assigned", `Order assigned to ${courierName}`, { name: courierName }));
             fetchOrders();
-        } catch { toast.error('Assignment failed'); }
+        } catch { toast.error(t("delivery.assignment_failed", 'Assignment failed')); }
         finally { setAssigningId(null); }
     };
 
@@ -132,12 +134,12 @@ const AdminDelivery = () => {
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <div>
                         <h2 className="text-2xl font-black tracking-tight text-neutral-900">
-                            {isDeliveryMan ? 'My Deliveries' : 'Delivery Operations'}
+                            {isDeliveryMan ? t("delivery.my_deliveries", "My Deliveries") : t("delivery.delivery_operations", "Delivery Operations")}
                         </h2>
                         <p className="text-sm text-neutral-500 mt-1">
                             {isDeliveryMan
-                                ? 'Your assigned delivery orders — update status as you progress'
-                                : 'Online orders awaiting assignment and fulfillment'}
+                                ? t("delivery.delivery_man_desc", "Your assigned delivery orders — update status as you progress")
+                                : t("delivery.admin_desc", "Online orders awaiting assignment and fulfillment")}
                         </p>
                     </div>
                     <button onClick={fetchOrders} className="p-2.5 rounded-[8px] border border-neutral-200 bg-white text-neutral-600 hover:bg-neutral-50 transition-colors self-start">
@@ -150,15 +152,15 @@ const AdminDelivery = () => {
                     <div className="grid grid-cols-3 gap-3">
                         <div className="bg-neutral-50 border border-neutral-200 rounded-[8px] p-4 text-center">
                             <p className="text-2xl font-black text-neutral-700">{orders.length}</p>
-                            <p className="text-xs text-neutral-500 mt-1">Total Active</p>
+                            <p className="text-xs text-neutral-500 mt-1">{t("delivery.total_active", "Total Active")}</p>
                         </div>
                         <div className="bg-amber-50 border border-amber-100 rounded-[8px] p-4 text-center">
                             <p className="text-2xl font-black text-amber-700">{pendingCount}</p>
-                            <p className="text-xs text-amber-600 mt-1">Unassigned</p>
+                            <p className="text-xs text-amber-600 mt-1">{t("delivery.unassigned", "Unassigned")}</p>
                         </div>
                         <div className="bg-blue-50 border border-blue-100 rounded-[8px] p-4 text-center">
                             <p className="text-2xl font-black text-blue-700">{inProgressCount}</p>
-                            <p className="text-xs text-blue-600 mt-1">In Progress</p>
+                            <p className="text-xs text-blue-600 mt-1">{t("delivery.in_progress", "In Progress")}</p>
                         </div>
                     </div>
                 )}
@@ -172,7 +174,7 @@ const AdminDelivery = () => {
                                 : "text-neutral-500 hover:text-neutral-900 hover:bg-white/40"
                             }`}
                     >
-                        ACTIVE DELIVERIES
+                        {t("delivery.active_deliveries", "ACTIVE DELIVERIES")}
                     </button>
                     <button
                         onClick={() => setViewTab("completed")}
@@ -181,7 +183,7 @@ const AdminDelivery = () => {
                                 : "text-neutral-500 hover:text-neutral-900 hover:bg-white/40"
                             }`}
                     >
-                        COMPLETED DELIVERIES
+                        {t("delivery.completed_deliveries", "COMPLETED DELIVERIES")}
                     </button>
                 </div>
 
@@ -189,7 +191,7 @@ const AdminDelivery = () => {
                 {!isDeliveryMan && pendingCount > 0 && (
                     <div className="flex items-center gap-3 px-4 py-3 bg-amber-50 border border-amber-200 rounded-[8px] text-sm text-amber-800">
                         <AlertCircle className="w-4 h-4 text-amber-500 shrink-0" />
-                        <span><strong>{pendingCount}</strong> order{pendingCount > 1 ? 's' : ''} waiting for courier assignment.</span>
+                        <span><strong>{pendingCount}</strong> {t("delivery.orders_waiting", "orders waiting for courier assignment.")}</span>
                     </div>
                 )}
 
@@ -199,7 +201,7 @@ const AdminDelivery = () => {
                 ) : displayedOrders.length === 0 ? (
                     <div className="flex flex-col items-center justify-center h-48 bg-white border border-dashed border-neutral-200 rounded-[12px] text-neutral-400">
                         <Package className="w-10 h-10 mb-2" />
-                        <p className="font-medium">{isDeliveryMan ? 'No deliveries assigned to you yet' : `No ${viewTab} delivery orders`}</p>
+                        <p className="font-medium">{isDeliveryMan ? t("delivery.no_deliveries_yet", "No deliveries assigned to you yet") : t("delivery.no_orders", `No ${viewTab} delivery orders`, { status: viewTab })}</p>
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -215,7 +217,7 @@ const AdminDelivery = () => {
                                         <p className="font-black text-neutral-900 text-sm">#{order._id.slice(-6).toUpperCase()}</p>
                                         <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold border ${statusCfg.color}`}>
                                             <span className={`w-1.5 h-1.5 rounded-full ${statusCfg.dot}`} />
-                                            {statusCfg.label}
+                                            {t(`delivery.${order.deliveryStatus}`, statusCfg.label)}
                                         </span>
                                     </div>
 
@@ -240,7 +242,7 @@ const AdminDelivery = () => {
                                         {order.items.slice(0, 2).map((it, i) => (
                                             <p key={i}>{it.quantity}× {it.title}</p>
                                         ))}
-                                        {order.items.length > 2 && <p className="text-neutral-400">+{order.items.length - 2} more items</p>}
+                                        {order.items.length > 2 && <p className="text-neutral-400">+{order.items.length - 2} {t("delivery.more_items", "more items")}</p>}
                                         <p className="font-bold text-neutral-900 mt-1">৳{order.total.toFixed(2)}</p>
                                     </div>
 
@@ -262,7 +264,7 @@ const AdminDelivery = () => {
                                                     onClick={() => setOpenAssignId(openAssignId === order._id ? null : order._id)}
                                                     disabled={assigningId === order._id || couriers.length === 0}
                                                     className="w-full flex items-center justify-between gap-2 px-4 py-2.5 rounded-[8px] border border-neutral-200 bg-neutral-50 text-sm font-semibold text-neutral-700 hover:border-primary hover:bg-primary/5 transition-all disabled:opacity-50">
-                                                    <span>{couriers.length === 0 ? 'No active couriers' : 'Assign Courier'}</span>
+                                                    <span>{couriers.length === 0 ? t("delivery.no_active_couriers", "No active couriers") : t("delivery.assign_courier", "Assign Courier")}</span>
                                                     {assigningId === order._id ? <Loader2 className="w-4 h-4 animate-spin" /> : <ChevronDown className="w-4 h-4" />}
                                                 </button>
                                                 {openAssignId === order._id && (
@@ -287,14 +289,14 @@ const AdminDelivery = () => {
                                                 disabled={updatingId === order._id}
                                                 className={`w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-[8px] text-sm font-bold transition-all active:scale-95 disabled:opacity-60 ${nextStatus === 'delivered' ? 'bg-primary text-white shadow-md shadow-emerald-200 hover:bg-primary/90' : 'bg-primary text-white shadow-md shadow-primary/20 hover:brightness-110'}`}>
                                                 {updatingId === order._id ? <Loader2 className="w-4 h-4 animate-spin" /> : nextStatus === 'delivered' ? <CheckCircle className="w-4 h-4" /> : <ArrowRight className="w-4 h-4" />}
-                                                {nextStatus === 'delivered' ? 'Mark Delivered' : 'Mark Out for Delivery'}
+                                                {nextStatus === 'delivered' ? t("delivery.mark_delivered", "Mark Delivered") : t("delivery.mark_out_for_delivery", "Mark Out for Delivery")}
                                             </button>
                                         )}
 
                                         {/* Delivered badge */}
                                         {order.deliveryStatus === 'delivered' && (
                                             <div className="flex items-center justify-center gap-2 py-2.5 text-primary text-sm font-bold">
-                                                <CheckCircle className="w-4 h-4" /> Completed
+                                                <CheckCircle className="w-4 h-4" /> {t("delivery.completed", "Completed")}
                                             </div>
                                         )}
                                     </div>

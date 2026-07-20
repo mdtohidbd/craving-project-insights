@@ -24,6 +24,10 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// i18n
+import { i18next, middleware } from './i18n';
+app.use(middleware.handle(i18next));
+
 // Routes Placeholder
 app.get('/api/health', (req, res) => {
     res.json({ status: 'OK', message: 'Backend is running' });

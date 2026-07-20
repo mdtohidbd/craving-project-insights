@@ -30,7 +30,7 @@ const NotFound = () => {
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full">
             <h2 className="text-4xl md:text-5xl font-serif font-bold text-primary-foreground mb-6"
                 style={{ letterSpacing: "-0.03em" }}>
-              Lost <span className="italic" style={{ color: "hsl(43 74% 48%)" }}>Appetite</span>
+              Lost <span className="italic" style={{ color: "hsl(43 74% 48%)" }}>{t("pos.appetite", "Appetite")}</span>
             </h2>
           </div>
         </div>

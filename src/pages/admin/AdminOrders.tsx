@@ -3,7 +3,7 @@ import { useSettings } from "@/context/SettingsContext";
 import AdminLayout from "../../components/admin/AdminLayout";
 import { Check, X, Info, Search, FileText, Printer, Clock, ArrowRight, CheckCircle, CheckCheck, LayoutGrid, List as ListIcon, Users, Bike, MapPin, Phone, Receipt } from "lucide-react";
 import { toast } from "sonner";
-
+import { useTranslation } from "react-i18next";
 interface OrderItem {
     menuItemId: string;
     title: string;
@@ -39,6 +39,7 @@ interface Order {
 }
 
 const KDSOrderCard = ({ order, onUpdateStatus, onSelect, onCompleteOrder }: { order: Order, onUpdateStatus: any, onSelect: any, onCompleteOrder: (order: Order) => void }) => {
+    const { t } = useTranslation();
     const getElapsedTime = (createdAt: string) => {
         const diff = new Date().getTime() - new Date(createdAt).getTime();
         const minutes = Math.floor(diff / 60000);
@@ -75,12 +76,12 @@ const KDSOrderCard = ({ order, onUpdateStatus, onSelect, onCompleteOrder }: { or
                             </span>
                             {order.orderType === 'dine-in' && order.tableNumber && (
                                 <span className="px-1.5 py-0.5 rounded bg-blue-50 text-blue-600 border border-blue-100 text-[7px] lg:text-[8px] font-black uppercase tracking-tighter flex items-center gap-1">
-                                    <Users className="w-2 h-2" /> T-{order.tableNumber}
+                                    <Users className="w-2 h-2" /> {t("pos.t", "T-")}{order.tableNumber}
                                 </span>
                             )}
                             {order.isBillPrinted && (
                                 <span className="px-1.5 py-0.5 rounded bg-primary/10 text-primary border border-emerald-100 text-[7px] lg:text-[8px] font-black uppercase tracking-tighter flex items-center gap-1">
-                                    <Printer className="w-2 h-2" /> Bill Printed
+                                    <Printer className="w-2 h-2" /> {t("tables.bill_printed", "Bill Printed")}
                                 </span>
                             )}
                         </div>
@@ -93,12 +94,12 @@ const KDSOrderCard = ({ order, onUpdateStatus, onSelect, onCompleteOrder }: { or
                     </div>
                 </div>
                 <button onClick={() => onSelect(order, false)} className="text-[10px] font-bold uppercase tracking-widest text-amber-600 hover:text-amber-700 underline underline-offset-4 decoration-amber-200 hover:decoration-amber-500 transition-all">
-                    Details
+                    {t("orders.details", "Details")}
                 </button>
             </div>
 
             <div className="mb-3 lg:mb-4">
-                <p className="text-[9px] lg:text-[10px] font-bold text-neutral-400 uppercase tracking-widest mb-1.5 lg:mb-2 px-1">Items</p>
+                <p className="text-[9px] lg:text-[10px] font-bold text-neutral-400 uppercase tracking-widest mb-1.5 lg:mb-2 px-1">{t("orders.items", "Items")}</p>
                 <div className="bg-neutral-50/50 rounded-[4px] lg:rounded-[8px] p-2.5 lg:p-3 border border-neutral-100 space-y-1.5 lg:space-y-2.5">
                     {order.items.map((item, idx) => (
                         <div key={idx} className="flex justify-between items-center text-xs lg:text-sm">
@@ -128,7 +129,7 @@ const KDSOrderCard = ({ order, onUpdateStatus, onSelect, onCompleteOrder }: { or
                             onClick={() => onUpdateStatus(order._id, 'preparing')}
                             className="flex-1 py-2 lg:py-3 bg-neutral-900 hover:bg-black text-white text-[9px] lg:text-[11px] font-bold uppercase tracking-widest rounded-[4px] lg:rounded-[8px] transition-all flex items-center justify-center gap-1.5 lg:gap-2 active:scale-95 shadow-sm lg:shadow-lg"
                         >
-                            <Clock className="w-3 h-3 lg:w-3.5 lg:h-3.5" /> <span className="truncate">Start cooking</span>
+                            <Clock className="w-3 h-3 lg:w-3.5 lg:h-3.5" /> <span className="truncate">{t("orders.start_cooking", "Start cooking")}</span>
                         </button>
                     )}
                     {order.status === 'preparing' && (
@@ -136,7 +137,7 @@ const KDSOrderCard = ({ order, onUpdateStatus, onSelect, onCompleteOrder }: { or
                             onClick={() => onUpdateStatus(order._id, 'ready')}
                             className="flex-1 py-2 lg:py-3 bg-blue-600 hover:bg-blue-700 text-white text-[9px] lg:text-[11px] font-bold uppercase tracking-widest rounded-[4px] lg:rounded-[8px] transition-all flex items-center justify-center gap-1.5 lg:gap-2 active:scale-95 shadow-sm lg:shadow-lg"
                         >
-                            <CheckCircle className="w-3 h-3 lg:w-3.5 lg:h-3.5" /> <span className="truncate">Mark Ready</span>
+                            <CheckCircle className="w-3 h-3 lg:w-3.5 lg:h-3.5" /> <span className="truncate">{t("orders.mark_ready", "Mark Ready")}</span>
                         </button>
                     )}
                     {order.status === 'ready' && (
@@ -145,7 +146,7 @@ const KDSOrderCard = ({ order, onUpdateStatus, onSelect, onCompleteOrder }: { or
                             className="flex-1 py-2 lg:py-3 bg-primary/90 hover:bg-emerald-700 text-white text-[9px] lg:text-[11px] font-bold uppercase tracking-widest rounded-[4px] lg:rounded-[8px] transition-all flex items-center justify-center gap-1.5 lg:gap-2 active:scale-95 shadow-sm lg:shadow-lg"
                         >
                             <CheckCheck className="w-3 h-3 lg:w-3.5 lg:h-3.5" />
-                            <span className="truncate">{order.orderType === 'online' ? 'Deliver' : 'Serve'}</span>
+                            <span className="truncate">{order.orderType === 'online' ? t("orders.deliver", "Deliver") : t("pos.serve", "Serve")}</span>
                         </button>
                     )}
                     {order.status === 'served' && (
@@ -153,7 +154,7 @@ const KDSOrderCard = ({ order, onUpdateStatus, onSelect, onCompleteOrder }: { or
                             onClick={() => onSelect(order, true)}
                             className="flex-1 py-2 lg:py-3 bg-indigo-600 hover:bg-indigo-700 text-white text-[9px] lg:text-[11px] font-bold uppercase tracking-widest rounded-[4px] lg:rounded-[8px] transition-all flex items-center justify-center gap-1.5 lg:gap-2 active:scale-95 shadow-sm lg:shadow-lg"
                         >
-                            <Receipt className="w-3 h-3 lg:w-3.5 lg:h-3.5" /> <span className="truncate">Bill</span>
+                            <Receipt className="w-3 h-3 lg:w-3.5 lg:h-3.5" /> <span className="truncate">{t("pos.checkout_bill", "Bill")}</span>
                         </button>
                     )}
                 </div>
@@ -163,6 +164,7 @@ const KDSOrderCard = ({ order, onUpdateStatus, onSelect, onCompleteOrder }: { or
 };
 
 const AdminOrders = () => {
+    const { t } = useTranslation();
     const { settings } = useSettings();
     const [orders, setOrders] = useState<Order[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -184,7 +186,7 @@ const AdminOrders = () => {
             }
         } catch (error) {
             console.error("Failed to fetch orders:", error);
-            toast.error("Failed to fetch orders");
+            toast.error(t("pos.failed_to_fetch_orders", "Failed to fetch orders"));
         } finally {
             setIsLoading(false);
         }
@@ -238,28 +240,28 @@ const AdminOrders = () => {
             });
             if (res.ok) {
                 if (newStatus === 'completed') {
-                    toast.success(actionName ? actionName : `Order #${orderId.slice(-6).toUpperCase()} has been served & completed! 🎉`, {
-                        description: "The order has been removed from the KDS board.",
+                    toast.success(actionName ? actionName : t("orders.order_completed", `Order #${orderId.slice(-6).toUpperCase()} has been served & completed! 🎉`, { orderId: orderId.slice(-6).toUpperCase() }), {
+                        description: t("orders.removed_from_kds", "The order has been removed from the KDS board."),
                         duration: 5000,
                     });
                 } else if (newStatus === 'ready') {
-                    toast.success(`Order #${orderId.slice(-6).toUpperCase()} is ready for serve! 🍽️`);
+                    toast.success(t("orders.order_ready", `Order #${orderId.slice(-6).toUpperCase()} is ready for serve! 🍽️`, { orderId: orderId.slice(-6).toUpperCase() }));
                 } else if (newStatus === 'served') {
-                    toast.success(`Order #${orderId.slice(-6).toUpperCase()} has been served! 😊`);
+                    toast.success(t("orders.order_served", `Order #${orderId.slice(-6).toUpperCase()} has been served! 😊`, { orderId: orderId.slice(-6).toUpperCase() }));
                 } else if (newStatus === 'preparing') {
-                    toast.info(`Cooking started for Order #${orderId.slice(-6).toUpperCase()} 👨‍🍳`);
+                    toast.info(t("orders.cooking_started", `Cooking started for Order #${orderId.slice(-6).toUpperCase()} 👨‍🍳`, { orderId: orderId.slice(-6).toUpperCase() }));
                 } else if (newStatus === 'assigned') {
-                    toast.success(`Order #${orderId.slice(-6).toUpperCase()} has been assigned to courier 🚚`);
+                    toast.success(t("orders.order_assigned", `Order #${orderId.slice(-6).toUpperCase()} has been assigned to courier 🚚`, { orderId: orderId.slice(-6).toUpperCase() }));
                 } else {
-                    toast.success(`Order status updated to ${newStatus}`);
+                    toast.success(t("orders.status_updated", `Order status updated to ${newStatus}`, { status: newStatus }));
                 }
                 await fetchOrders();
             } else {
-                toast.error("Failed to update order status");
+                toast.error(t("orders.update_failed", "Failed to update order status"));
             }
         } catch (error) {
             console.error(error);
-            toast.error("An error occurred while updating");
+            toast.error(t("orders.error_updating", "An error occurred while updating"));
         } finally {
             setProcessingId(null);
         }
@@ -276,7 +278,7 @@ const AdminOrders = () => {
             // The user specifically asked for "Serve & Complete" which is dine-in.
             // Let's stick to dine-in for now or ask for payment for all.
             
-            updateOrderStatus(selectedOrder._id, 'out_for_delivery', `Order assigned to courier. Status updated to Out for Delivery.`);
+            updateOrderStatus(selectedOrder._id, 'out_for_delivery', t("orders.assigned_out_for_delivery", `Order assigned to courier. Status updated to Out for Delivery.`));
 
             // Also update deliveryManId
             await fetch(`${apiUrl}/orders/${selectedOrder._id}`, {
@@ -291,7 +293,7 @@ const AdminOrders = () => {
             setShowAssignmentModal(false);
             setSelectedOrder(null);
         } catch (error) {
-            toast.error("Failed to assign delivery man");
+            toast.error(t("orders.assign_failed", "Failed to assign delivery man"));
         } finally {
             setProcessingId(null);
         }
@@ -312,7 +314,7 @@ const AdminOrders = () => {
     const processDineInPayment = async (order: Order) => {
         try {
             setProcessingId(order._id);
-            await updateOrderStatus(order._id, "completed", `Payment collected for Order #${order._id.slice(-6).toUpperCase()}. Status updated to Completed.`);
+            await updateOrderStatus(order._id, "completed", t("orders.payment_collected", `Payment collected for Order #${order._id.slice(-6).toUpperCase()}. Status updated to Completed.`, { orderId: order._id.slice(-6).toUpperCase() }));
             
             if (order.tableNumber) {
                 const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
@@ -330,7 +332,7 @@ const AdminOrders = () => {
                                 occupiedTime: undefined
                             })
                         });
-                        toast.info(`Table ${order.tableNumber} is now marked for Cleaning.`);
+                        toast.info(t("orders.table_cleaning", `Table ${order.tableNumber} is now marked for Cleaning.`, { tableNumber: order.tableNumber }));
                     }
                 }
             }
@@ -338,7 +340,7 @@ const AdminOrders = () => {
             setSelectedOrder(null);
         } catch (error) {
             console.error("Payment processing error:", error);
-            toast.error("Failed to complete payment process");
+            toast.error(t("orders.payment_failed", "Failed to complete payment process"));
         } finally {
             setProcessingId(null);
         }
@@ -363,13 +365,13 @@ const AdminOrders = () => {
                             onClick={() => setViewMode('kds')}
                             className={`px-6 py-3 text-[11px] font-bold uppercase tracking-widest rounded-[8px] transition-all flex items-center gap-2.5 ${viewMode === 'kds' ? 'bg-neutral-900 text-white shadow-lg' : 'text-neutral-500 hover:text-neutral-900 hover:bg-neutral-50'}`}
                         >
-                            <LayoutGrid className="w-4 h-4" /> KDS BOARD
+                            <LayoutGrid className="w-4 h-4" /> {t("orders.kds_board", "KDS BOARD")}
                         </button>
                         <button
                             onClick={() => setViewMode('list')}
                             className={`px-6 py-3 text-[11px] font-bold uppercase tracking-widest rounded-[8px] transition-all flex items-center gap-2.5 ${viewMode === 'list' ? 'bg-neutral-900 text-white shadow-lg' : 'text-neutral-500 hover:text-neutral-900 hover:bg-neutral-50'}`}
                         >
-                            <ListIcon className="w-4 h-4" /> LIST VIEW
+                            <ListIcon className="w-4 h-4" /> {t("orders.list_view", "LIST VIEW")}
                         </button>
                     </div>
 
@@ -377,7 +379,7 @@ const AdminOrders = () => {
                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400 group-focus-within:text-amber-500 transition-colors" />
                         <input
                             type="text"
-                            placeholder="Search orders..."
+                            placeholder={t("orders.search_orders", "Search orders...")}
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                             className="w-full bg-neutral-100/50 border border-neutral-200 text-neutral-900 rounded-[12px] pl-11 pr-4 py-3.5 focus:outline-none focus:bg-white focus:border-amber-500 focus:ring-4 focus:ring-amber-500/10 transition-all placeholder:text-neutral-400 text-[13px] font-medium"
@@ -416,7 +418,7 @@ const AdminOrders = () => {
                                                         </span>
                                                         {order.isBillPrinted && (
                                                             <span className="px-2 py-0.5 rounded bg-primary/10 text-primary border border-emerald-100 text-[8px] font-black uppercase tracking-widest flex items-center gap-1">
-                                                                <Printer className="w-2 h-2" /> Printed
+                                                                <Printer className="w-2 h-2" /> {t("tables.bill_printed", "Bill Printed")}
                                                             </span>
                                                         )}
                                                     </div>
@@ -427,8 +429,8 @@ const AdminOrders = () => {
                                             </div>
 
                                             <div className="bg-neutral-50 rounded-[8px] p-4 mb-5 border border-neutral-100 flex-1 group-hover:bg-white transition-colors">
-                                                <p className="font-bold text-neutral-900 text-sm leading-tight mb-1">{order.customerInfo.name || "Walk-in Guest"}</p>
-                                                <p className="text-[11px] font-medium text-neutral-500">{order.customerInfo.phone || "No phone provided"}</p>
+                                                <p className="font-bold text-neutral-900 text-sm leading-tight mb-1">{order.customerInfo.name || t("orders.walk_in_guest", "Walk-in Guest")}</p>
+                                                <p className="text-[11px] font-medium text-neutral-500">{order.customerInfo.phone || t("common.no_phone_provided", "No phone provided")}</p>
                                             </div>
 
                                             <div className="flex items-center justify-between mb-5">
@@ -455,13 +457,13 @@ const AdminOrders = () => {
                                                                                 'border-neutral-200 text-neutral-600 bg-neutral-50/10'
                                                         }`}
                                                 >
-                                                    <option value="pending">Pending</option>
-                                                    <option value="preparing">Preparing</option>
-                                                    <option value="ready">Ready</option>
-                                                    {order.orderType === 'dine-in' && <option value="served">Served</option>}
-                                                    {order.orderType !== 'dine-in' && <option value="assigned">Assigned</option>}
-                                                    <option value="completed">Completed</option>
-                                                    <option value="cancelled">Cancelled</option>
+                                                    <option value="pending">{t("orders.status_pending", "Pending")}</option>
+                                                    <option value="preparing">{t("orders.status_preparing", "Preparing")}</option>
+                                                    <option value="ready">{t("orders.status_ready", "Ready")}</option>
+                                                    {order.orderType === 'dine-in' && <option value="served">{t("orders.status_served", "Served")}</option>}
+                                                    {order.orderType !== 'dine-in' && <option value="assigned">{t("orders.status_assigned", "Assigned")}</option>}
+                                                    <option value="completed">{t("orders.status_completed", "Completed")}</option>
+                                                    <option value="cancelled">{t("orders.status_cancelled", "Cancelled")}</option>
                                                 </select>
                                             </div>
 
@@ -472,7 +474,7 @@ const AdminOrders = () => {
                                                 }}
                                                 className="w-full py-3 bg-neutral-900 group-hover:bg-amber-600 text-white text-[11px] font-bold uppercase tracking-widest rounded-[8px] transition-all flex items-center justify-center gap-2 active:scale-95 shadow-lg shadow-neutral-100 group-hover:shadow-amber-200"
                                             >
-                                                View Details
+                                                {t("orders.view_details", "View Details")}
                                                 <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
                                             </button>
                                         </div>
@@ -480,7 +482,7 @@ const AdminOrders = () => {
                                     {filteredListOrders.length === 0 && (
                                         <div className="col-span-full py-16 flex flex-col items-center justify-center text-neutral-500 bg-neutral-50 rounded-[8px] border border-neutral-200 border-dashed">
                                             <Search className="w-12 h-12 mb-4 opacity-50" />
-                                            <p>No orders found matching "{searchTerm}"</p>
+                                            <p>{t("orders.no_orders_found", "No orders found matching")} "{searchTerm}"</p>
                                         </div>
                                     )}
                                 </div>
@@ -492,10 +494,10 @@ const AdminOrders = () => {
                                     <div className="p-4 md:p-6 border-b border-neutral-100 flex justify-between items-center bg-white/50 shrink-0">
                                         <div className="flex items-center gap-2 md:gap-3">
                                             <div className="w-2 h-2 rounded-full bg-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.5)]" />
-                                            <h3 className="font-serif font-bold text-lg md:text-xl text-neutral-900 tracking-tight">New Orders</h3>
+                                            <h3 className="font-serif font-bold text-lg md:text-xl text-neutral-900 tracking-tight">{t("orders.new_orders", "New Orders")}</h3>
                                         </div>
                                         <span className="bg-amber-100 text-amber-700 px-2 md:px-3 py-1 rounded-full text-[10px] md:text-[11px] font-bold border border-amber-200">
-                                            {pendingOrders.length} {pendingOrders.length === 1 ? 'Order' : 'Orders'}
+                                            {pendingOrders.length} {pendingOrders.length === 1 ? t("orders.order_count", "Order") : t("orders.orders_count", "Orders")}
                                         </span>
                                     </div>
                                     <div className="overflow-x-auto md:overflow-x-hidden md:overflow-y-auto p-4 md:p-5 flex flex-row md:flex-col gap-4 md:gap-0 md:space-y-5 custom-scrollbar snap-x snap-mandatory md:snap-none md:flex-1">
@@ -513,7 +515,7 @@ const AdminOrders = () => {
                                                 <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-neutral-50 flex items-center justify-center border border-neutral-100">
                                                     <Clock className="w-5 h-5 md:w-6 md:h-6" />
                                                 </div>
-                                                <p className="text-[10px] md:text-xs font-medium italic">No new orders waiting</p>
+                                                <p className="text-[10px] md:text-xs font-medium italic">{t("orders.no_new_orders", "No new orders waiting")}</p>
                                             </div>
                                         )}
                                     </div>
@@ -524,10 +526,10 @@ const AdminOrders = () => {
                                     <div className="p-4 md:p-6 border-b border-neutral-100 flex justify-between items-center bg-white/50 shrink-0">
                                         <div className="flex items-center gap-2 md:gap-3">
                                             <div className="w-2 h-2 rounded-full bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.5)]" />
-                                            <h3 className="font-serif font-bold text-lg md:text-xl text-neutral-900 tracking-tight">Cooking</h3>
+                                            <h3 className="font-serif font-bold text-lg md:text-xl text-neutral-900 tracking-tight">{t("orders.cooking", "Cooking")}</h3>
                                         </div>
                                         <span className="bg-blue-100 text-blue-700 px-2 md:px-3 py-1 rounded-full text-[10px] md:text-[11px] font-bold border border-blue-200">
-                                            {preparingOrders.length} {preparingOrders.length === 1 ? 'Order' : 'Orders'}
+                                            {preparingOrders.length} {preparingOrders.length === 1 ? t("orders.order_count", "Order") : t("orders.orders_count", "Orders")}
                                         </span>
                                     </div>
                                     <div className="overflow-x-auto md:overflow-x-hidden md:overflow-y-auto p-4 md:p-5 flex flex-row md:flex-col gap-4 md:gap-0 md:space-y-5 custom-scrollbar snap-x snap-mandatory md:snap-none md:flex-1">
@@ -545,7 +547,7 @@ const AdminOrders = () => {
                                                 <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-neutral-50 flex items-center justify-center border border-neutral-100">
                                                     <Clock className="w-5 h-5 md:w-6 md:h-6" />
                                                 </div>
-                                                <p className="text-[10px] md:text-xs font-medium italic">No orders currently cooking</p>
+                                                <p className="text-[10px] md:text-xs font-medium italic">{t("orders.no_cooking_orders", "No orders currently cooking")}</p>
                                             </div>
                                         )}
                                     </div>
@@ -556,10 +558,10 @@ const AdminOrders = () => {
                                     <div className="p-4 md:p-6 border-b border-neutral-100 flex justify-between items-center bg-white/50 shrink-0">
                                         <div className="flex items-center gap-2 md:gap-3">
                                             <div className="w-2 h-2 rounded-full bg-primary shadow-[0_0_10px_rgba(16,185,129,0.5)]" />
-                                            <h3 className="font-serif font-bold text-lg md:text-xl text-neutral-900 tracking-tight">Ready for Serve</h3>
+                                            <h3 className="font-serif font-bold text-lg md:text-xl text-neutral-900 tracking-tight">{t("orders.ready_for_serve", "Ready for Serve")}</h3>
                                         </div>
                                         <span className="bg-emerald-100 text-primary px-2 md:px-3 py-1 rounded-full text-[10px] md:text-[11px] font-bold border border-primary/30">
-                                            {readyOrders.length} {readyOrders.length === 1 ? 'Order' : 'Orders'}
+                                            {readyOrders.length} {readyOrders.length === 1 ? t("orders.order_count", "Order") : t("orders.orders_count", "Orders")}
                                         </span>
                                     </div>
                                     <div className="overflow-x-auto md:overflow-x-hidden md:overflow-y-auto p-4 md:p-5 flex flex-row md:flex-col gap-4 md:gap-0 md:space-y-5 custom-scrollbar snap-x snap-mandatory md:snap-none md:flex-1">
@@ -577,7 +579,7 @@ const AdminOrders = () => {
                                                 <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-neutral-50 flex items-center justify-center border border-neutral-100">
                                                     <CheckCircle className="w-5 h-5 md:w-6 md:h-6" />
                                                 </div>
-                                                <p className="text-[10px] md:text-xs font-medium italic">No orders ready for serve</p>
+                                                <p className="text-[10px] md:text-xs font-medium italic">{t("orders.no_ready_orders", "No orders ready for serve")}</p>
                                             </div>
                                         )}
                                     </div>
@@ -602,10 +604,10 @@ const AdminOrders = () => {
                             <div className="relative flex justify-between items-start">
                                 <div className="space-y-1">
                                     <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/10 text-[10px] font-black uppercase tracking-widest mb-2">
-                                        <Bike className="w-3 h-3" /> Logistics Portal
+                                        <Bike className="w-3 h-3" /> {t("orders.logistics_portal", "Logistics Portal")}
                                     </div>
-                                    <h3 className="font-serif font-black text-3xl tracking-tight leading-none">Assign Courier</h3>
-                                    <p className="text-indigo-100 text-sm font-medium opacity-90 mt-2">Selecting partner for Order <span className="text-white font-bold">#{selectedOrder._id.slice(-6).toUpperCase()}</span></p>
+                                    <h3 className="font-serif font-black text-3xl tracking-tight leading-none">{t("orders.assign_courier", "Assign Courier")}</h3>
+                                    <p className="text-indigo-100 text-sm font-medium opacity-90 mt-2">{t("orders.selecting_partner", "Selecting partner for Order")} <span className="text-white font-bold">#{selectedOrder._id.slice(-6).toUpperCase()}</span></p>
                                 </div>
                                 <button 
                                     onClick={() => { setShowAssignmentModal(false); setSelectedOrder(null); }} 
@@ -618,11 +620,11 @@ const AdminOrders = () => {
                             {/* Order Quick Stats */}
                             <div className="relative mt-8 flex gap-4">
                                 <div className="px-4 py-2 bg-black/20 rounded-[8px] backdrop-blur-md border border-white/5">
-                                    <p className="text-[9px] font-bold text-indigo-200 uppercase tracking-widest mb-0.5">Order Type</p>
+                                    <p className="text-[9px] font-bold text-indigo-200 uppercase tracking-widest mb-0.5">{t("orders.order_type", "Order Type")}</p>
                                     <p className="text-xs font-black uppercase">{selectedOrder.orderType}</p>
                                 </div>
                                 <div className="px-4 py-2 bg-black/20 rounded-[8px] backdrop-blur-md border border-white/5">
-                                    <p className="text-[9px] font-bold text-indigo-200 uppercase tracking-widest mb-0.5">Address</p>
+                                    <p className="text-[9px] font-bold text-indigo-200 uppercase tracking-widest mb-0.5">{t("orders.address", "Address")}</p>
                                     <p className="text-xs font-black truncate max-w-[150px]">{selectedOrder.customerInfo?.address || "N/A"}</p>
                                 </div>
                             </div>
@@ -634,12 +636,12 @@ const AdminOrders = () => {
                                     <div className="w-20 h-20 bg-neutral-100 rounded-[16px] flex items-center justify-center mx-auto mb-6 text-neutral-300">
                                         <Users className="w-10 h-10" />
                                     </div>
-                                    <h4 className="text-xl font-bold text-neutral-900 mb-2">No Couriers Available</h4>
-                                    <p className="text-sm text-neutral-500 max-w-[280px] mx-auto">Please ensure you have active delivery personnel registered in your system.</p>
+                                    <h4 className="text-xl font-bold text-neutral-900 mb-2">{t("orders.no_couriers", "No Couriers Available")}</h4>
+                                    <p className="text-sm text-neutral-500 max-w-[280px] mx-auto">{t("orders.no_couriers_desc", "Please ensure you have active delivery personnel registered in your system.")}</p>
                                 </div>
                             ) : (
                                 <div className="grid grid-cols-1 gap-4">
-                                    <p className="text-[10px] font-black text-neutral-400 uppercase tracking-[0.2em] mb-1 px-1">Available Delivery Personnel</p>
+                                    <p className="text-[10px] font-black text-neutral-400 uppercase tracking-[0.2em] mb-1 px-1">{t("orders.available_personnel", "Available Delivery Personnel")}</p>
                                     {deliveryMen.filter(dm => dm.status === 'active').map(dm => (
                                         <button
                                             key={dm._id}
@@ -662,7 +664,7 @@ const AdminOrders = () => {
                                                         </div>
                                                         <div className="flex items-center gap-1.5 text-neutral-400">
                                                             <MapPin className="w-3 h-3" />
-                                                            <span className="text-[10px] font-medium italic">Active & Ready</span>
+                                                            <span className="text-[10px] font-medium italic">{t("orders.active_ready", "Active & Ready")}</span>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -682,7 +684,7 @@ const AdminOrders = () => {
                         {/* Footer Help */}
                         <div className="p-6 bg-neutral-50 border-t border-neutral-100 text-center">
                             <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">
-                                Selecting a courier will notify them immediately via SMS
+                                {t("orders.notify_courier", "Selecting a courier will notify them immediately via SMS")}
                             </p>
                         </div>
                     </div>
@@ -698,7 +700,7 @@ const AdminOrders = () => {
                         <div className="flex flex-col border-b border-neutral-100 print:hidden">
                             <div className="flex justify-between items-center p-6 bg-neutral-50/50">
                                 <div>
-                                    <h3 className="text-xl font-black text-neutral-900 uppercase tracking-tighter">Order Details</h3>
+                                    <h3 className="text-xl font-black text-neutral-900 uppercase tracking-tighter">{t("orders.order_details", "Order Details")}</h3>
                                     <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest mt-0.5">#{selectedOrder._id.slice(-6).toUpperCase()}</p>
                                 </div>
                                 <div className="flex gap-2">
@@ -736,13 +738,13 @@ const AdminOrders = () => {
                                     onClick={() => setViewType('kot')}
                                     className={`flex-1 py-2 text-[10px] font-black uppercase tracking-widest rounded-[4px] transition-all ${viewType === 'kot' ? 'bg-white text-orange-600 shadow-sm' : 'text-neutral-500'}`}
                                 >
-                                    Kitchen Ticket
+                                    {t("orders.kitchen_ticket", "Kitchen Ticket")}
                                 </button>
                                 <button 
                                     onClick={() => setViewType('bill')}
                                     className={`flex-1 py-2 text-[10px] font-black uppercase tracking-widest rounded-[4px] transition-all ${viewType === 'bill' ? 'bg-white text-primary shadow-sm' : 'text-neutral-500'}`}
                                 >
-                                    Customer Bill
+                                    {t("orders.customer_bill", "Customer Bill")}
                                 </button>
                             </div>
                         </div>
@@ -753,17 +755,17 @@ const AdminOrders = () => {
                                 /* KOT View */
                                 <div id="printable-kot" className="p-8 text-center print:p-0">
                                     <div className="mb-8 print:mb-4">
-                                        <div className="text-[11px] font-black uppercase tracking-[0.3em] text-neutral-400 mb-2">Kitchen Order Ticket</div>
+                                        <div className="text-[11px] font-black uppercase tracking-[0.3em] text-neutral-400 mb-2">{t("orders.kitchen_order_ticket", "Kitchen Order Ticket")}</div>
                                         <h2 className="text-4xl font-black text-neutral-900 leading-none">#{selectedOrder._id.slice(-6).toUpperCase()}</h2>
                                     </div>
                                     
                                     <div className="flex justify-between items-center py-4 border-y border-dashed border-neutral-200 mb-6 px-2">
                                         <div className="text-left">
-                                            <div className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">Table / Area</div>
-                                            <div className="text-lg font-black text-neutral-900">{selectedOrder.tableNumber ? `Table ${selectedOrder.tableNumber}` : selectedOrder.orderType.toUpperCase()}</div>
+                                            <div className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">{t("orders.table_area", "Table / Area")}</div>
+                                            <div className="text-lg font-black text-neutral-900">{selectedOrder.tableNumber ? `${t("tables.table", "Table")} ${selectedOrder.tableNumber}` : selectedOrder.orderType.toUpperCase()}</div>
                                         </div>
                                         <div className="text-right">
-                                            <div className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">Order Time</div>
+                                            <div className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">{t("orders.order_time", "Order Time")}</div>
                                             <div className="text-sm font-bold text-neutral-900">{new Date(selectedOrder.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
                                         </div>
                                     </div>
@@ -786,13 +788,13 @@ const AdminOrders = () => {
 
                                     {selectedOrder.customerInfo?.notes && (
                                         <div className="mb-6 p-4 bg-amber-50 rounded-[12px] border border-amber-100 text-left">
-                                            <p className="text-[9px] font-black text-amber-600 uppercase tracking-widest mb-1">Kitchen Notes:</p>
+                                            <p className="text-[9px] font-black text-amber-600 uppercase tracking-widest mb-1">{t("orders.kitchen_notes", "Kitchen Notes:")}</p>
                                             <p className="text-xs font-bold text-neutral-800 italic">"{selectedOrder.customerInfo.notes}"</p>
                                         </div>
                                     )}
 
                                     <div className="py-4 border-t border-dashed border-neutral-200">
-                                        <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-[0.4em]">*** KITCHEN COPY ***</p>
+                                        <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-[0.4em]">*** {t("orders.kitchen_copy", "KITCHEN COPY")} ***</p>
                                     </div>
                                 </div>
                             ) : (
@@ -800,19 +802,19 @@ const AdminOrders = () => {
                                 <div id="printable-bill" className="p-8 print:p-0">
                                     <div className="text-center mb-6">
                                         <h2 className="text-2xl font-serif font-black text-neutral-900 mb-1">{settings.websiteName.toUpperCase()}</h2>
-                                        <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-[0.2em]">Restaurant & Cafe</p>
+                                        <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-[0.2em]">{t("orders.restaurant_cafe", "Restaurant & Cafe")}</p>
                                         <div className="w-12 h-0.5 bg-neutral-900 mx-auto mt-4" />
                                     </div>
 
                                     <div className="flex justify-between text-[11px] font-bold text-neutral-500 uppercase tracking-wider mb-6 pb-4 border-b border-neutral-100">
-                                        <span>Order #{selectedOrder._id.slice(-6).toUpperCase()}</span>
+                                        <span>{t("pos.order", "Order")} #{selectedOrder._id.slice(-6).toUpperCase()}</span>
                                         <span>{new Date(selectedOrder.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}</span>
                                     </div>
 
                                     <div className="space-y-4 mb-8">
                                         <div className="flex justify-between text-[10px] font-black text-neutral-400 uppercase tracking-widest px-1">
-                                            <span>Item Description</span>
-                                            <span>Amount</span>
+                                            <span>{t("pos.item_description", "Item Description")}</span>
+                                            <span>{t("pos.amount", "Amount")}</span>
                                         </div>
                                         {selectedOrder.items.map((item, idx) => (
                                             <div key={idx} className="flex justify-between items-start gap-4">
@@ -832,38 +834,38 @@ const AdminOrders = () => {
 
                                     <div className="space-y-2 border-t border-dashed border-neutral-200 pt-6 mb-8">
                                         <div className="flex justify-between text-sm text-neutral-600 font-medium">
-                                            <span>Subtotal</span>
+                                            <span>{t("pos.subtotal", "Subtotal")}</span>
                                             <span>৳{selectedOrder.subtotal.toFixed(2)}</span>
                                         </div>
                                         <div className="flex justify-between text-sm text-neutral-600 font-medium">
-                                            <span>VAT / Tax</span>
+                                            <span>{t("pos.vat_tax", "VAT / Tax")}</span>
                                             <span>৳{selectedOrder.tax.toFixed(2)}</span>
                                         </div>
                                         {selectedOrder.discount && selectedOrder.discount > 0 ? (
                                             <div className="flex justify-between text-sm text-rose-600 font-bold italic">
-                                                <span>Discount</span>
+                                                <span>{t("pos.discount", "Discount")}</span>
                                                 <span>-৳{selectedOrder.discount.toFixed(2)}</span>
                                             </div>
                                         ) : null}
                                         <div className="flex justify-between text-xl font-serif font-black text-neutral-900 pt-4 mt-2 border-t border-neutral-900">
-                                            <span>Grand Total</span>
+                                            <span>{t("pos.grand_total", "Grand Total")}</span>
                                             <span>৳{selectedOrder.total.toFixed(2)}</span>
                                         </div>
                                     </div>
 
                                     <div className="bg-neutral-50 rounded-[12px] p-4 border border-neutral-100 space-y-2 mb-6">
                                         <div className="flex justify-between text-[10px] font-black text-neutral-400 uppercase tracking-widest">
-                                            <span>Payment Details</span>
-                                            <span>{selectedOrder.paymentMethod || 'CASH'}</span>
+                                            <span>{t("pos.payment_details", "Payment Details")}</span>
+                                            <span>{t(`pos.${(selectedOrder.paymentMethod || 'CASH').toLowerCase()}`, selectedOrder.paymentMethod || 'CASH')}</span>
                                         </div>
                                         {selectedOrder.amountReceived ? (
                                             <>
                                                 <div className="flex justify-between text-xs font-bold text-neutral-700">
-                                                    <span>Paid Amount</span>
+                                                    <span>{t("pos.paid_amount", "Paid Amount")}</span>
                                                     <span>৳{selectedOrder.amountReceived.toFixed(2)}</span>
                                                 </div>
                                                 <div className="flex justify-between text-xs font-bold text-primary">
-                                                    <span>Change Returned</span>
+                                                    <span>{t("pos.change_returned", "Change Returned")}</span>
                                                     <span>৳{selectedOrder.changeAmount?.toFixed(2) || '0.00'}</span>
                                                 </div>
                                             </>
@@ -871,8 +873,8 @@ const AdminOrders = () => {
                                     </div>
 
                                     <div className="text-center">
-                                        <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-[0.2em] mb-1">Thank You For Dining With Us!</p>
-                                        <p className="text-[9px] text-neutral-300">{settings.websiteName.toLowerCase().replace(/\s+/g, '')}.com</p>
+                                        <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-[0.2em] mb-1">{t("orders.thank_you_dining", "Thank You For Dining With Us!")}</p>
+                                        <p className="text-[9px] text-neutral-300">{settings.websiteName.toLowerCase().replace(/\s+/g, '')}{t("pos.com", ".com")}</p>
                                     </div>
 
                                     {selectedOrder.status === 'served' && (
@@ -887,10 +889,10 @@ const AdminOrders = () => {
                                                 ) : (
                                                     <CheckCircle className="w-5 h-5" />
                                                 )}
-                                                Collect Payment & Complete
+                                                {t("orders.collect_payment_complete", "Collect Payment & Complete")}
                                             </button>
                                             <p className="text-[9px] text-center text-neutral-400 mt-4 font-bold uppercase tracking-widest leading-relaxed">
-                                                This will mark the order as completed and set the table to cleaning status
+                                                {t("orders.collect_payment_desc", "This will mark the order as completed and set the table to cleaning status")}
                                             </p>
                                         </div>
                                     )}

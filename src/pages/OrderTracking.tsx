@@ -117,7 +117,7 @@ const OrderTracking = () => {
                             ✦ Real-Time Updates
                         </span>
                         <h1 className="text-5xl md:text-7xl font-serif font-bold text-white mb-8 tracking-tighter">
-                            Track Your <span className="italic text-accent">Order</span>
+                            Track Your <span className="italic text-accent">{t("pos.order", "Order")}</span>
                         </h1>
 
                         {/* Search Bar */}
@@ -164,7 +164,7 @@ const OrderTracking = () => {
                                         className="bg-white rounded-[2.5rem] p-20 flex flex-col items-center justify-center shadow-xl border border-black/5"
                                     >
                                         <div className="w-16 h-16 border-4 border-accent border-t-transparent rounded-full animate-spin mb-6" />
-                                        <p className="text-muted-foreground font-medium">Fetching your order updates...</p>
+                                        <p className="text-muted-foreground font-medium">{t("pos.fetching_your_order_updates", "Fetching your order updates...")}</p>
                                     </motion.div>
                                 ) : order ? (
                                     <motion.div
@@ -193,7 +193,7 @@ const OrderTracking = () => {
                                                     </h3>
                                                 </div>
                                                 <div className="text-left md:text-right">
-                                                    <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest mb-1">Order ID</p>
+                                                    <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest mb-1">{t("pos.order_id", "Order ID")}</p>
                                                     <div className="flex flex-col items-start md:items-end gap-1">
                                                         <p className="font-mono font-bold text-primary bg-neutral-50 px-4 py-2 rounded-xl border border-neutral-100 shadow-inner text-sm sm:text-base">
                                                             #{order._id.slice(-6).toUpperCase()}
@@ -247,7 +247,7 @@ const OrderTracking = () => {
                                                                             }`}>
                                                                             {step.label}
                                                                         </span>
-                                                                        {isActive && <span className="text-[10px] text-accent font-bold">In Progress</span>}
+                                                                        {isActive && <span className="text-[10px] text-accent font-bold">{t("pos.in_progress", "In Progress")}</span>}
                                                                     </div>
                                                                 </div>
                                                             );
@@ -321,7 +321,7 @@ const OrderTracking = () => {
                                                             <User className="w-5 h-5 text-primary/30" />
                                                         </div>
                                                         <div>
-                                                            <p className="text-[10px] font-bold uppercase text-muted-foreground tracking-widest mb-1">Customer</p>
+                                                            <p className="text-[10px] font-bold uppercase text-muted-foreground tracking-widest mb-1">{t("pos.customer", "Customer")}</p>
                                                             <p className="font-bold text-primary">{order.customerInfo.name}</p>
                                                             <p className="text-sm text-muted-foreground">{order.customerInfo.phone}</p>
                                                         </div>
@@ -331,7 +331,7 @@ const OrderTracking = () => {
                                                             <MapPin className="w-5 h-5 text-primary/30" />
                                                         </div>
                                                         <div>
-                                                            <p className="text-[10px] font-bold uppercase text-muted-foreground tracking-widest mb-1">Address</p>
+                                                            <p className="text-[10px] font-bold uppercase text-muted-foreground tracking-widest mb-1">{t("pos.address", "Address")}</p>
                                                             <p className="font-bold text-primary leading-snug">{order.customerInfo.address}</p>
                                                         </div>
                                                     </div>
@@ -398,7 +398,7 @@ const OrderTracking = () => {
                                         <div className="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-6">
                                             <AlertCircle className="w-10 h-10 text-red-500" />
                                         </div>
-                                        <h3 className="text-2xl font-bold text-primary mb-3">Order Not Found</h3>
+                                        <h3 className="text-2xl font-bold text-primary mb-3">{t("pos.order_not_found", "Order Not Found")}</h3>
                                         <p className="text-muted-foreground max-w-sm mx-auto mb-8">
                                             {error}
                                         </p>
@@ -423,7 +423,7 @@ const OrderTracking = () => {
                                         <div className="w-24 h-24 bg-neutral-50 rounded-[2rem] flex items-center justify-center mx-auto mb-8 shadow-inner">
                                             <Package className="w-10 h-10 text-primary/20" />
                                         </div>
-                                        <h3 className="text-3xl font-serif font-bold text-primary mb-4">Awaiting Your Order ID</h3>
+                                        <h3 className="text-3xl font-serif font-bold text-primary mb-4">{t("pos.awaiting_your_order_id", "Awaiting Your Order ID")}</h3>
                                         <p className="text-muted-foreground max-w-md mx-auto line-relaxed">
                                             Enter your unique order identifier from your receipt or choose from your recent orders to see the current status of your delicious meal.
                                         </p>
@@ -464,7 +464,7 @@ const OrderTracking = () => {
                                                 <div className="flex justify-between items-center">
                                                     <div className={order?._id === item.id ? 'text-white' : 'text-primary'}>
                                                         <p className="font-bold text-sm">৳{Math.round(item.total)}</p>
-                                                        <p className={`text-[10px] font-medium opacity-70`}>{item.itemCount} Items Ordered</p>
+                                                        <p className={`text-[10px] font-medium opacity-70`}>{item.itemCount} {t("pos.items_ordered", "Items Ordered")}</p>
                                                     </div>
                                                     <ArrowRight className={`w-4 h-4 transition-transform group-hover:translate-x-1 ${order?._id === item.id ? 'text-accent' : 'text-neutral-300'
                                                         }`} />
@@ -475,14 +475,14 @@ const OrderTracking = () => {
                                 ) : (
                                     <div className="text-center py-10 opacity-40">
                                         <History className="w-12 h-12 mx-auto mb-4 opacity-20" />
-                                        <p className="text-xs font-medium">No order history found on this device.</p>
+                                        <p className="text-xs font-medium">{t("pos.no_order_history_found_on_this_device", "No order history found on this device.")}</p>
                                     </div>
                                 )}
                             </div>
 
                             {/* Need Help Card */}
                             <div className="bg-accent rounded-[2.5rem] p-8 shadow-xl shadow-accent/20 text-primary">
-                                <h4 className="font-serif font-bold text-xl mb-3">Need Assistance?</h4>
+                                <h4 className="font-serif font-bold text-xl mb-3">{t("pos.need_assistance", "Need Assistance?")}</h4>
                                 <p className="text-xs font-medium mb-6 leading-relaxed opacity-80">
                                     If you can't find your order or have issues tracking it, our support team is ready to help you.
                                 </p>

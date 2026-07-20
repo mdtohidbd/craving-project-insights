@@ -146,8 +146,8 @@ const MenuDocument = ({ items, categories }: { items: MenuItem[], categories: st
       <Page size="A4" style={styles.page}>
         <View style={styles.pageBorder}>
           <View style={styles.header}>
-            <Text style={styles.title}>Lost Appetite</Text>
-            <Text style={styles.subtitle}>A culinary journey of delectable offerings</Text>
+            <Text style={styles.title}>{t("pos.lost_appetite", "Lost Appetite")}</Text>
+            <Text style={styles.subtitle}>{t("pos.a_culinary_journey_of_delectable_offerin", "A culinary journey of delectable offerings")}</Text>
           </View>
           <View style={styles.divider} />
 
@@ -243,15 +243,15 @@ const MenuPDFView = () => {
       
       <div className="pt-24 pb-6 px-4 md:px-12 flex-grow flex flex-col">
         <div className="container mx-auto mb-4 text-center">
-          <h1 className="text-3xl font-serif font-bold text-primary mb-2">Our Menu PDF</h1>
-          <p className="text-muted-foreground">You can download or print this menu directly from the viewer.</p>
+          <h1 className="text-3xl font-serif font-bold text-primary mb-2">{t("pos.our_menu_pdf", "Our Menu PDF")}</h1>
+          <p className="text-muted-foreground">{t("pos.you_can_download_or_print_this_menu_dire", "You can download or print this menu directly from the viewer.")}</p>
         </div>
         
         <div className="flex-grow rounded-xl overflow-hidden shadow-2xl border border-primary/10 bg-white" style={{ minHeight: '75vh' }}>
           {loading ? (
             <div className="w-full h-full flex flex-col items-center justify-center min-h-[500px]">
               <Loader2 className="w-10 h-10 animate-spin text-accent mb-4" />
-              <p className="text-primary font-medium">Generating beautiful PDF...</p>
+              <p className="text-primary font-medium">{t("pos.generating_beautiful_pdf", "Generating beautiful PDF...")}</p>
             </div>
           ) : (
             <PDFViewer width="100%" height="100%" className="border-none min-h-[500px] h-full">

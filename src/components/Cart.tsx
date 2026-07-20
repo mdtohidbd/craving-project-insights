@@ -30,7 +30,7 @@ export const Cart = ({ className, textLabel }: { className?: string, textLabel?:
 
   const handleCheckout = () => {
     if (cart.length === 0) {
-      toast.error("Your cart is empty!");
+      toast.error(t("pos.your_cart_is_empty", "Your cart is empty!"));
       return;
     }
     setIsOpen(false);
@@ -73,8 +73,8 @@ export const Cart = ({ className, textLabel }: { className?: string, textLabel?:
           {cart.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-center space-y-4 opacity-50">
               <ShoppingCart className="w-16 h-16 text-primary mb-2 opacity-20" />
-              <p className="text-2xl font-serif font-bold text-primary">Your cart is empty</p>
-              <p className="text-sm text-primary max-w-[200px]">Looks like you haven't made your choice yet.</p>
+              <p className="text-2xl font-serif font-bold text-primary">{t("pos.your_cart_is_empty", "Your cart is empty")}</p>
+              <p className="text-sm text-primary max-w-[200px]">{t("pos.looks_like_you_haven_t_made_your_choice_", "Looks like you haven't made your choice yet.")}</p>
             </div>
           ) : (
             cart.map((item) => (
@@ -119,7 +119,7 @@ export const Cart = ({ className, textLabel }: { className?: string, textLabel?:
 
         <SheetFooter className="mt-auto border-t border-black/10 pt-4 flex-col">
           <div className="flex justify-between items-center w-full mb-4">
-            <span className="text-sm sm:text-lg font-medium text-primary/80">Total</span>
+            <span className="text-sm sm:text-lg font-medium text-primary/80">{t("pos.total", "Total")}</span>
             <span className="font-bold text-2xl sm:text-3xl text-primary font-serif">৳{Math.round(totalAmount)}</span>
           </div>
           <button

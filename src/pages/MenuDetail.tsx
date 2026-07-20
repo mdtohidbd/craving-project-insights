@@ -109,7 +109,7 @@ const MenuDetail = () => {
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="animate-pulse flex flex-col items-center">
           <div className="w-12 h-12 rounded-full border-4 border-primary border-t-transparent animate-spin"></div>
-          <p className="mt-4 text-primary font-serif font-medium">Preparing your table...</p>
+          <p className="mt-4 text-primary font-serif font-medium">{t("pos.preparing_your_table", "Preparing your table...")}</p>
         </div>
       </div>
     );
@@ -123,7 +123,7 @@ const MenuDetail = () => {
           <h1 className="text-6xl md:text-8xl font-serif font-bold text-primary mb-6" style={{ letterSpacing: "-0.04em" }}>
             Dish Not Found
           </h1>
-          <p className="text-muted-foreground mb-8 text-lg">We couldn't find the culinary creation you're looking for.</p>
+          <p className="text-muted-foreground mb-8 text-lg">{t("pos.we_couldn_t_find_the_culinary_creation_y", "We couldn't find the culinary creation you're looking for.")}</p>
           <Link to="/menu" className="btn-solid inline-flex items-center gap-3">
             <ArrowLeft className="w-5 h-5" /> Return to Menu
           </Link>
@@ -263,7 +263,7 @@ const MenuDetail = () => {
 
                 {item.addOns && item.addOns.length > 0 && (
                   <div className="mb-8">
-                    <h3 className="text-lg font-serif font-bold text-primary mb-4">Add-ons</h3>
+                    <h3 className="text-lg font-serif font-bold text-primary mb-4">{t("pos.add_ons", "Add-ons")}</h3>
                     <div className="space-y-3 max-w-xl">
                       {item.addOns.map((addon, index) => {
                         const isSelected = selectedAddOns.some(a => a.name === addon.name);
@@ -352,14 +352,14 @@ const MenuDetail = () => {
                 <div className="mt-8 max-w-xl">
                   <div className="flex items-center gap-3 mb-4">
                      <Sparkles className="w-4 h-4 text-accent" />
-                     <h4 className="text-sm font-bold text-primary uppercase tracking-wider">Frequently Bought Together</h4>
+                     <h4 className="text-sm font-bold text-primary uppercase tracking-wider">{t("pos.frequently_bought_together", "Frequently Bought Together")}</h4>
                   </div>
                   <div className="space-y-3">
                     {relatedItems.slice(0, 2).map((recItem) => {
                       const recCartItem = getCartItem(String(recItem.id));
                       return (
                         <div key={recItem.id} className="flex items-center justify-between p-3 bg-white border border-neutral-100 rounded-2xl shadow-sm hover:shadow-md hover:border-primary/10 transition-all group">
-                          <div className="flex items-center gap-3 cursor-pointer" onClick={() => window.location.href = `/menu/${generateSlug(recItem.title)}`}>
+                          <div className="flex items-center gap-3 cursor-pointer" onClick={() => {window.location.href = `/menu/${generateSlug(recItem.title)}`}}>
                             <div className="w-12 h-12 rounded-xl overflow-hidden shadow-sm shrink-0">
                               <img src={resolveImage(recItem.image)} alt={recItem.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
                             </div>
@@ -372,7 +372,7 @@ const MenuDetail = () => {
                           <div className="shrink-0">
                             {recCartItem ? (
                                 <div className="flex items-center gap-2 bg-emerald-50 text-emerald-600 px-3 py-1.5 rounded-full border border-emerald-100 text-xs font-bold">
-                                  <Check className="w-3.5 h-3.5" /> Added ({recCartItem.quantity})
+                                  <Check className="w-3.5 h-3.5" /> {t("pos.added_label", "Added")}{recCartItem.quantity})
                                 </div>
                             ) : (
                                 <button
@@ -419,7 +419,7 @@ const MenuDetail = () => {
                 ✦ Perfect Pairings
               </span>
               <h2 className="text-4xl md:text-5xl font-serif font-bold text-primary" style={{ letterSpacing: "-0.03em" }}>
-                You Might Also <span className="italic text-accent">Like</span>
+                You Might Also <span className="italic text-accent">{t("pos.like", "Like")}</span>
               </h2>
             </div>
 
@@ -526,7 +526,7 @@ const MenuDetail = () => {
                                   <motion.div key="add" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex items-center justify-between w-full">
                                     <span>{item.price?.replace('$', '৳').replace('.00', '')}</span>
                                     <div className="flex items-center gap-2">
-                                      <span>Add</span>
+                                      <span>{t("pos.add", "Add")}</span>
                                       <ShoppingCart size={13} className="opacity-70 group-hover:opacity-100" />
                                     </div>
                                   </motion.div>

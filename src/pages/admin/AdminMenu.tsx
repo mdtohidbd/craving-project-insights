@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import AdminLayout from "../../components/admin/AdminLayout";
 import { Search, Plus, Edit, Trash2, List, X, Upload, Image as ImageIcon, FolderOpen } from "lucide-react";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 
 interface MenuItem {
     _id: string;
@@ -20,6 +21,7 @@ interface MenuItem {
 }
 
 const AdminMenu = () => {
+    const { t } = useTranslation();
     const [searchTerm, setSearchTerm] = useState("");
     const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
     const [categories, setCategories] = useState<{ _id?: string, name: string, order: number }[]>([]);
@@ -98,10 +100,10 @@ const AdminMenu = () => {
                     await fetch(`${apiUrl}/menu/${id}`, { method: "DELETE" });
                     fetchData();
                     setConfirmModal(prev => ({ ...prev, isOpen: false }));
-                    toast.success("Menu item deleted successfully");
+                    toast.success(t("pos.menu_item_deleted_successfully", "Menu item deleted successfully"));
                 } catch (err) {
                     console.error("Failed to delete menu item:", err);
-                    toast.error("Failed to delete menu item");
+                    toast.error(t("pos.failed_to_delete_menu_item", "Failed to delete menu item"));
                 }
             }
         });
@@ -157,10 +159,10 @@ const AdminMenu = () => {
                     await fetch(`${apiUrl}/categories/${id}`, { method: "DELETE" });
                     fetchData();
                     setConfirmModal(prev => ({ ...prev, isOpen: false }));
-                    toast.success("Category deleted successfully");
+                    toast.success(t("pos.category_deleted_successfully", "Category deleted successfully"));
                 } catch (err) {
                     console.error("Failed to delete category:", err);
-                    toast.error("Failed to delete category");
+                    toast.error(t("pos.failed_to_delete_category", "Failed to delete category"));
                 }
             }
         });
@@ -245,14 +247,14 @@ const AdminMenu = () => {
                             <svg className="w-5 h-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
                             </svg>
-                            <h2 className="text-lg font-semibold text-neutral-900">Categories</h2>
+                            <h2 className="text-lg font-semibold text-neutral-900">{t("menu.categories", "Categories")}</h2>
                         </div>
                         <button
                             onClick={() => handleOpenCategoryModal()}
                             className="px-4 py-1.5 bg-blue-600 text-white text-sm font-medium rounded-full hover:bg-blue-700 transition-colors flex items-center gap-1"
                         >
                             <Plus className="w-4 h-4" />
-                            Add
+                            {t("menu.add", "Add")}
                         </button>
                     </div>
                     
@@ -265,7 +267,7 @@ const AdminMenu = () => {
                                     : "bg-neutral-50 border border-neutral-100 text-neutral-700 hover:bg-neutral-100"
                             }`}
                         >
-                            <span className="font-medium text-sm">All Items</span>
+                            <span className="font-medium text-sm">{t("menu.all_items", "All Items")}</span>
                         </div>
                         
                         {categories.filter(c => c.name !== "All").sort((a, b) => a.order - b.order).map((category) => {
@@ -302,13 +304,13 @@ const AdminMenu = () => {
                 {/* Menu Items Section */}
                 <div className="flex-1 bg-white border border-neutral-200 rounded-[12px] p-6 shadow-sm w-full">
                     <div className="flex flex-col sm:flex-row gap-4 items-center justify-between mb-6">
-                        <h2 className="text-xl font-semibold text-neutral-900">Menu Items</h2>
+                        <h2 className="text-xl font-semibold text-neutral-900">{t("menu.menu_items", "Menu Items")}</h2>
                         <button
                             onClick={() => handleOpenModal()}
                             className="w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-2 bg-blue-600 text-white text-sm font-medium rounded-full hover:bg-blue-700 transition-colors"
                         >
                             <Plus className="w-4 h-4" />
-                            Add Item
+                            {t("menu.add_item", "Add Item")}
                         </button>
                     </div>
 
@@ -316,7 +318,7 @@ const AdminMenu = () => {
                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
                         <input
                             type="text"
-                            placeholder="Search menu items..."
+                            placeholder={t("menu.search_menu", "Search menu items...")}
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                             className="w-full bg-white border border-neutral-300 text-neutral-900 rounded-full pl-11 pr-4 py-2.5 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all placeholder:text-neutral-400"
@@ -327,11 +329,11 @@ const AdminMenu = () => {
                         <table className="w-full text-sm text-left whitespace-nowrap">
                             <thead className="text-xs text-neutral-500 bg-transparent border-b border-neutral-200">
                                 <tr>
-                                    <th className="px-2 py-4 font-medium">Name</th>
-                                    <th className="px-4 py-4 font-medium">Category</th>
-                                    <th className="px-4 py-4 font-medium">Price</th>
-                                    <th className="px-4 py-4 font-medium">Available</th>
-                                    <th className="px-2 py-4 font-medium text-right">Actions</th>
+                                    <th className="px-2 py-4 font-medium">{t("menu.name", "Name")}</th>
+                                    <th className="px-4 py-4 font-medium">{t("menu.category", "Category")}</th>
+                                    <th className="px-4 py-4 font-medium">{t("menu.price", "Price")}</th>
+                                    <th className="px-4 py-4 font-medium">{t("menu.available", "Available")}</th>
+                                    <th className="px-2 py-4 font-medium text-right">{t("common.actions", "Actions")}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -355,7 +357,7 @@ const AdminMenu = () => {
                                         </td>
                                         <td className="px-4 py-4">
                                             <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-primary/90 text-white">
-                                                Yes
+                                                {t("menu.yes", "Yes")}
                                             </span>
                                         </td>
                                         <td className="px-2 py-4 text-right">
@@ -375,12 +377,12 @@ const AdminMenu = () => {
                         {!loading && filteredData.length === 0 && (
                             <div className="p-8 text-center text-neutral-500">
                                 <List className="w-8 h-8 mx-auto mb-3 opacity-50" />
-                                <p>No menu items found.</p>
+                                <p>{t("menu.no_items_found", "No menu items found.")}</p>
                             </div>
                         )}
                         {loading && (
                             <div className="p-8 text-center text-neutral-500">
-                                <p>Loading menu...</p>
+                                <p>{t("common.loading", "Loading...")}</p>
                             </div>
                         )}
                     </div>
@@ -392,23 +394,23 @@ const AdminMenu = () => {
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm overflow-y-auto">
                     <div className="bg-white rounded-[2rem] shadow-2xl w-full max-w-2xl overflow-hidden my-auto border-none">
                         <div className="flex items-center justify-between px-8 py-6">
-                            <h3 className="text-[1.35rem] font-medium text-neutral-900 tracking-tight">{editingItem ? "Edit Menu Item" : "Add New Item"}</h3>
+                            <h3 className="text-[1.35rem] font-medium text-neutral-900 tracking-tight">{editingItem ? t("menu.edit_item", "Edit Menu Item") : t("menu.add_new_item", "Add New Item")}</h3>
                             <button type="button" onClick={() => setIsModalOpen(false)} className="p-2 text-neutral-500 hover:text-neutral-900 transition-colors rounded-full hover:bg-neutral-100">
                                 <X className="w-5 h-5" />
                             </button>
                         </div>
                         <form onSubmit={handleSave} className="px-8 pb-8 space-y-6">
                             <div>
-                                <input required type="text" placeholder="Name *" value={formData.title} onChange={e => setFormData({ ...formData, title: e.target.value })} className="w-full bg-white border border-neutral-400 rounded-[16px] px-5 py-3.5 text-neutral-900 focus:outline-none focus:border-blue-500 placeholder:text-neutral-800 font-medium" />
+                                <input required type="text" placeholder={t("menu.name_placeholder", "Name *")} value={formData.title} onChange={e => setFormData({ ...formData, title: e.target.value })} className="w-full bg-white border border-neutral-400 rounded-[16px] px-5 py-3.5 text-neutral-900 focus:outline-none focus:border-blue-500 placeholder:text-neutral-800 font-medium" />
                             </div>
                             <div className="grid grid-cols-2 gap-6">
                                 <div>
-                                    <input type="text" placeholder="SKU" value={formData.sku} onChange={e => setFormData({ ...formData, sku: e.target.value })} className="w-full bg-white border border-neutral-400 rounded-[16px] px-5 py-3.5 text-neutral-900 focus:outline-none focus:border-blue-500 placeholder:text-neutral-800 font-medium" />
+                                    <input type="text" placeholder={t("menu.sku", "SKU")} value={formData.sku} onChange={e => setFormData({ ...formData, sku: e.target.value })} className="w-full bg-white border border-neutral-400 rounded-[16px] px-5 py-3.5 text-neutral-900 focus:outline-none focus:border-blue-500 placeholder:text-neutral-800 font-medium" />
                                 </div>
                                 <div className="relative">
-                                    <label className="absolute -top-2 left-4 bg-white px-1.5 text-xs font-semibold text-neutral-700 tracking-wide">Category</label>
+                                    <label className="absolute -top-2 left-4 bg-white px-1.5 text-xs font-semibold text-neutral-700 tracking-wide">{t("menu.category", "Category")}</label>
                                     <select required value={formData.category} onChange={e => setFormData({ ...formData, category: e.target.value })} className="w-full bg-white border border-neutral-400 rounded-[16px] px-5 py-3.5 text-neutral-900 focus:outline-none focus:border-blue-500 appearance-none font-medium">
-                                        <option value="" disabled>None</option>
+                                        <option value="" disabled>{t("common.none", "None")}</option>
                                         {categories.filter(c => c.name !== "All").map(c => (
                                             <option key={c.name} value={c.name}>{c.name}</option>
                                         ))}
@@ -420,27 +422,27 @@ const AdminMenu = () => {
                             </div>
                             <div className="grid grid-cols-2 gap-6">
                                 <div>
-                                    <input required type="text" placeholder="Price *" value={formData.price} onChange={e => setFormData({ ...formData, price: e.target.value })} className="w-full bg-white border border-neutral-400 rounded-[16px] px-5 py-3.5 text-neutral-900 focus:outline-none focus:border-blue-500 placeholder:text-neutral-800 font-medium" />
+                                    <input required type="text" placeholder={t("menu.price_placeholder", "Price *")} value={formData.price} onChange={e => setFormData({ ...formData, price: e.target.value })} className="w-full bg-white border border-neutral-400 rounded-[16px] px-5 py-3.5 text-neutral-900 focus:outline-none focus:border-blue-500 placeholder:text-neutral-800 font-medium" />
                                 </div>
                                 <div>
-                                    <input type="text" placeholder="Discount Price" value={formData.discountPrice} onChange={e => setFormData({ ...formData, discountPrice: e.target.value })} className="w-full bg-white border border-neutral-400 rounded-[16px] px-5 py-3.5 text-neutral-900 focus:outline-none focus:border-blue-500 placeholder:text-neutral-800 font-medium" />
+                                    <input type="text" placeholder={t("menu.discount_price", "Discount Price")} value={formData.discountPrice} onChange={e => setFormData({ ...formData, discountPrice: e.target.value })} className="w-full bg-white border border-neutral-400 rounded-[16px] px-5 py-3.5 text-neutral-900 focus:outline-none focus:border-blue-500 placeholder:text-neutral-800 font-medium" />
                                 </div>
                             </div>
                             <div>
-                                <label className="block text-sm font-semibold text-neutral-700 tracking-wide mb-2">Description</label>
+                                <label className="block text-sm font-semibold text-neutral-700 tracking-wide mb-2">{t("menu.description", "Description")}</label>
                                 <textarea rows={4} value={formData.description} onChange={e => setFormData({ ...formData, description: e.target.value })} className="w-full bg-[#f8f9fa] border border-neutral-200 rounded-[16px] px-5 py-4 text-neutral-900 focus:outline-none focus:border-blue-500 resize-none font-medium" />
                             </div>
                             <div>
                                 <div className="flex items-center justify-between mb-2">
-                                    <label className="block text-sm font-semibold text-neutral-700 tracking-wide">Add-ons (Optional)</label>
+                                    <label className="block text-sm font-semibold text-neutral-700 tracking-wide">{t("menu.addons", "Add-ons (Optional)")}</label>
                                     <button type="button" onClick={() => setFormData({ ...formData, addOns: [...formData.addOns, { name: "", price: 0 }] })} className="text-sm text-blue-600 font-medium hover:text-blue-700 flex items-center gap-1">
-                                        <Plus className="w-4 h-4" /> Add Option
+                                        <Plus className="w-4 h-4" /> {t("menu.add_option", "Add Option")}
                                     </button>
                                 </div>
                                 <div className="space-y-3">
                                     {formData.addOns.map((addon, index) => (
                                         <div key={index} className="flex gap-3 items-center">
-                                            <input type="text" placeholder="Name (e.g. Extra Cheese)" value={addon.name} onChange={e => {
+                                            <input type="text" placeholder={t("menu.addon_name_placeholder", "Name (e.g. Extra Cheese)")} value={addon.name} onChange={e => {
                                                 const newAddons = [...formData.addOns];
                                                 newAddons[index].name = e.target.value;
                                                 setFormData({ ...formData, addOns: newAddons });
@@ -460,13 +462,13 @@ const AdminMenu = () => {
                                         </div>
                                     ))}
                                     {formData.addOns.length === 0 && (
-                                        <p className="text-sm text-neutral-500 italic">No add-ons configured.</p>
+                                        <p className="text-sm text-neutral-500 italic">{t("menu.no_addons", "No add-ons configured.")}</p>
                                     )}
                                 </div>
                             </div>
                             <div>
                                 <label className="block text-sm font-semibold text-neutral-700 tracking-wide mb-3">
-                                    Images (Max 3)
+                                    {t("menu.images_max_3", "Images (Max 3)")}
                                 </label>
                                 
                                 <div className="grid grid-cols-3 gap-4">
@@ -514,7 +516,7 @@ const AdminMenu = () => {
                                             className="aspect-square rounded-2xl border-2 border-dashed border-neutral-300 flex flex-col items-center justify-center gap-2 hover:border-blue-500 hover:bg-blue-50 transition-all text-neutral-500 hover:text-blue-600 group"
                                         >
                                             <Upload className="w-6 h-6 group-hover:scale-110 transition-transform" />
-                                            <span className="text-[10px] font-bold uppercase tracking-wider">Upload</span>
+                                            <span className="text-[10px] font-bold uppercase tracking-wider">{t("menu.upload", "Upload")}</span>
                                             <input
                                                 id="imagesUpload"
                                                 type="file"
@@ -536,17 +538,17 @@ const AdminMenu = () => {
                             <div className="flex items-center gap-8 pt-2">
                                 <label className="flex items-center gap-3 cursor-pointer">
                                     <input type="checkbox" checked={formData.taxIncluded} onChange={e => setFormData({ ...formData, taxIncluded: e.target.checked })} className="w-5 h-5 border-neutral-400 rounded text-blue-600 focus:ring-blue-500 bg-white" />
-                                    <span className="text-sm font-medium text-neutral-800">Tax Included</span>
+                                    <span className="text-sm font-medium text-neutral-800">{t("menu.tax_included", "Tax Included")}</span>
                                 </label>
                                 <label className="flex items-center gap-3 cursor-pointer">
                                     <input type="checkbox" checked={formData.available} onChange={e => setFormData({ ...formData, available: e.target.checked })} className="w-5 h-5 border-neutral-400 rounded text-[#0e8388] focus:ring-[#0e8388] bg-white accent-[#0e8388]" />
-                                    <span className="text-sm font-medium text-neutral-800">Available</span>
+                                    <span className="text-sm font-medium text-neutral-800">{t("menu.available_status", "Available")}</span>
                                 </label>
                             </div>
                             <div className="pt-8 flex justify-end gap-4 mt-2 border-t border-transparent">
-                                <button type="button" onClick={() => setIsModalOpen(false)} className="px-8 py-3 bg-white border border-[#1a73e8] text-[#1a73e8] font-semibold rounded-full hover:bg-blue-50 transition-colors shadow-sm">Cancel</button>
+                                <button type="button" onClick={() => setIsModalOpen(false)} className="px-8 py-3 bg-white border border-[#1a73e8] text-[#1a73e8] font-semibold rounded-full hover:bg-blue-50 transition-colors shadow-sm">{t("common.cancel", "Cancel")}</button>
                                 <button type="submit" className="px-8 py-3 bg-[#1a73e8] text-white font-semibold rounded-full hover:bg-blue-700 transition-colors shadow-sm">
-                                    {editingItem ? "Update Item" : "Save Item"}
+                                    {editingItem ? t("menu.update_item", "Update Item") : t("menu.save_item", "Save Item")}
                                 </button>
                             </div>
                         </form>
@@ -559,24 +561,24 @@ const AdminMenu = () => {
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm overflow-y-auto">
                     <div className="bg-white border border-neutral-200 rounded-[8px] shadow-xl w-full max-w-sm overflow-hidden my-auto">
                         <div className="flex items-center justify-between p-4 border-b border-neutral-200">
-                            <h3 className="text-lg font-medium text-neutral-900">{editingCategory ? "Edit Category" : "Add Category"}</h3>
+                            <h3 className="text-lg font-medium text-neutral-900">{editingCategory ? t("menu.edit_category", "Edit Category") : t("menu.add_category", "Add Category")}</h3>
                             <button type="button" onClick={() => setIsCategoryModalOpen(false)} className="text-neutral-400 hover:text-neutral-900 transition-colors">
                                 <X className="w-5 h-5" />
                             </button>
                         </div>
                         <form onSubmit={handleSaveCategory} className="p-4 space-y-4">
                             <div>
-                                <label className="block text-sm font-medium text-neutral-600 mb-1">Category Name</label>
+                                <label className="block text-sm font-medium text-neutral-600 mb-1">{t("menu.category_name", "Category Name")}</label>
                                 <input required type="text" value={categoryFormData.name} onChange={e => setCategoryFormData({ ...categoryFormData, name: e.target.value })} className="w-full bg-white border border-neutral-200 rounded-[4px] px-3 py-2 text-neutral-900 focus:outline-none focus:border-primary" />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-neutral-600 mb-1">Display Order</label>
+                                <label className="block text-sm font-medium text-neutral-600 mb-1">{t("menu.display_order", "Display Order")}</label>
                                 <input required type="number" value={categoryFormData.order} onChange={e => setCategoryFormData({ ...categoryFormData, order: parseInt(e.target.value) })} className="w-full bg-white border border-neutral-200 rounded-[4px] px-3 py-2 text-neutral-900 focus:outline-none focus:border-primary" />
                             </div>
                             <div className="pt-4 flex justify-end gap-3 border-t border-neutral-200">
-                                <button type="button" onClick={() => setIsCategoryModalOpen(false)} className="px-4 py-2 text-sm font-medium text-neutral-600 hover:text-neutral-900 transition-colors">Cancel</button>
+                                <button type="button" onClick={() => setIsCategoryModalOpen(false)} className="px-4 py-2 text-sm font-medium text-neutral-600 hover:text-neutral-900 transition-colors">{t("common.cancel", "Cancel")}</button>
                                 <button type="submit" className="px-4 py-2 bg-primary text-primary-foreground text-sm font-medium rounded-[4px] hover:bg-primary/90 transition-colors">
-                                    {editingCategory ? "Save Changes" : "Add Category"}
+                                    {editingCategory ? t("menu.save_changes", "Save Changes") : t("menu.add_category", "Add Category")}
                                 </button>
                             </div>
                         </form>
@@ -600,13 +602,13 @@ const AdminMenu = () => {
                                     onClick={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
                                     className="flex-1 py-3 bg-neutral-100 hover:bg-neutral-200 text-neutral-700 font-bold rounded-[12px] transition-all"
                                 >
-                                    Cancel
+                                    {t("common.cancel", "Cancel")}
                                 </button>
                                 <button
                                     onClick={confirmModal.onConfirm}
                                     className="flex-1 py-3 bg-rose-500 hover:bg-rose-600 text-white font-bold rounded-[12px] transition-all shadow-lg shadow-rose-100"
                                 >
-                                    Delete
+                                    {t("common.delete", "Delete")}
                                 </button>
                             </div>
                         </div>

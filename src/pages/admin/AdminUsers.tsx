@@ -7,6 +7,7 @@ import {
     MoreVertical, ChevronDown, X, Loader2, RefreshCw,
     Crown, BadgeCheck, User, AlertCircle
 } from 'lucide-react';
+import { useTranslation } from "react-i18next";
 
 type FilterTab = 'all' | 'pending' | 'approved' | 'rejected';
 
@@ -59,6 +60,7 @@ interface EditModalState {
 }
 
 const AdminUsers = () => {
+    const { t } = useTranslation();
     const { token, user: currentUser } = useAuth();
     const [users, setUsers] = useState<AuthUser[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -79,7 +81,7 @@ const AdminUsers = () => {
             if (!res.ok) throw new Error('Failed to fetch');
             setUsers(await res.json());
         } catch {
-            toast.error('Failed to load users');
+            toast.error(t("users.load_failed", 'Failed to load users'));
         } finally {
             setIsLoading(false);
         }
@@ -157,11 +159,11 @@ const AdminUsers = () => {
                 }),
             });
             if (!res.ok) throw new Error('Failed to save');
-            toast.success('User updated successfully');
+            toast.success(t("users.update_success", 'User updated successfully'));
             setEditModal(null);
             fetchUsers();
         } catch {
-            toast.error('Failed to update user');
+            toast.error(t("users.update_failed", 'Failed to update user'));
         } finally {
             setIsSaving(false);
         }
@@ -174,10 +176,10 @@ const AdminUsers = () => {
                 headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
                 body: JSON.stringify({ status: 'approved', role: 'staff', staffRole }),
             });
-            toast.success(`${u.name} approved as ${staffRole}`);
+            toast.success(t("users.approve_success", '{{name}} approved as {{role}}', { name: u.name, role: staffRole }));
             fetchUsers();
         } catch {
-            toast.error('Failed to approve user');
+            toast.error(t("users.approve_failed", 'Failed to approve user'));
         }
         setOpenMenuId(null);
     };
@@ -189,10 +191,10 @@ const AdminUsers = () => {
                 headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
                 body: JSON.stringify({ status: 'rejected' }),
             });
-            toast.success(`${u.name} rejected`);
+            toast.success(t("users.reject_success", '{{name}} rejected', { name: u.name }));
             fetchUsers();
         } catch {
-            toast.error('Failed to reject user');
+            toast.error(t("users.reject_failed", 'Failed to reject user'));
         }
         setOpenMenuId(null);
     };
@@ -205,30 +207,30 @@ const AdminUsers = () => {
     };
 
     return (
-        <AdminLayout title="User Management">
+        <AdminLayout title={t("dashboard.users", "User Management")}>
             <div className="space-y-6 pb-10">
                 {/* Header */}
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <div>
-                        <h2 className="text-2xl font-black tracking-tight text-neutral-900">User Management</h2>
-                        <p className="text-sm text-neutral-500 mt-1">Manage staff roles, access, and approval requests</p>
+                        <h2 className="text-2xl font-black tracking-tight text-neutral-900">{t("dashboard.users", "User Management")}</h2>
+                        <p className="text-sm text-neutral-500 mt-1">{t("users.management_desc", "Manage staff roles, access, and approval requests")}</p>
                     </div>
                     <button
                         onClick={fetchUsers}
                         className="inline-flex items-center gap-2 px-4 py-2 rounded-[8px] border border-neutral-200 bg-white text-sm font-semibold text-neutral-700 hover:bg-neutral-50 transition-colors"
                     >
                         <RefreshCw className="w-4 h-4" />
-                        Refresh
+                        {t("users.refresh", "Refresh")}
                     </button>
                 </div>
 
                 {/* Stats Row */}
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                     {[
-                        { label: 'Total Users', count: tabCounts.all, color: 'text-neutral-700', bg: 'bg-neutral-100', icon: <Users className="w-5 h-5" /> },
-                        { label: 'Pending', count: tabCounts.pending, color: 'text-amber-700', bg: 'bg-amber-50', icon: <Clock className="w-5 h-5 text-amber-500" /> },
-                        { label: 'Approved', count: tabCounts.approved, color: 'text-primary', bg: 'bg-primary/10', icon: <UserCheck className="w-5 h-5 text-primary" /> },
-                        { label: 'Rejected', count: tabCounts.rejected, color: 'text-rose-700', bg: 'bg-rose-50', icon: <UserX className="w-5 h-5 text-rose-500" /> },
+                        { label: t("users.total_users", 'Total Users'), count: tabCounts.all, color: 'text-neutral-700', bg: 'bg-neutral-100', icon: <Users className="w-5 h-5" /> },
+                        { label: t("users.pending", 'Pending'), count: tabCounts.pending, color: 'text-amber-700', bg: 'bg-amber-50', icon: <Clock className="w-5 h-5 text-amber-500" /> },
+                        { label: t("users.approved", 'Approved'), count: tabCounts.approved, color: 'text-primary', bg: 'bg-primary/10', icon: <UserCheck className="w-5 h-5 text-primary" /> },
+                        { label: t("users.rejected", 'Rejected'), count: tabCounts.rejected, color: 'text-rose-700', bg: 'bg-rose-50', icon: <UserX className="w-5 h-5 text-rose-500" /> },
                     ].map((s) => (
                         <div key={s.label} className={`${s.bg} rounded-[8px] p-4 flex items-center gap-3`}>
                             {s.icon}
@@ -250,7 +252,7 @@ const AdminUsers = () => {
                                 onClick={() => setFilter(tab)}
                                 className={`px-3 py-1.5 rounded-[4px] text-xs font-bold capitalize transition-all whitespace-nowrap ${filter === tab ? 'bg-white shadow text-neutral-900' : 'text-neutral-500 hover:text-neutral-700'}`}
                             >
-                                {tab} {tabCounts[tab] > 0 && (
+                                {t(`users.${tab}`, tab)} {tabCounts[tab] > 0 && (
                                     <span className={`ml-1 px-1.5 py-0.5 rounded-full text-[10px] ${tab === 'pending' ? 'bg-amber-100 text-amber-700' : 'bg-neutral-200 text-neutral-600'}`}>
                                         {tabCounts[tab]}
                                     </span>
@@ -265,7 +267,7 @@ const AdminUsers = () => {
                         <input
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
-                            placeholder="Search by name, username, phone or email..."
+                            placeholder={t("users.search_placeholder", "Search by name, username, phone or email...")}
                             className="w-full pl-9 pr-4 py-2 text-sm rounded-[8px] border border-neutral-200 bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                         />
                     </div>
@@ -280,19 +282,19 @@ const AdminUsers = () => {
                     ) : filtered.length === 0 ? (
                         <div className="flex flex-col items-center justify-center h-48 text-neutral-400">
                             <Users className="w-10 h-10 mb-2" />
-                            <p className="font-medium">No users found</p>
+                            <p className="font-medium">{t("users.no_users_found", "No users found")}</p>
                         </div>
                     ) : (
                         <div className="overflow-x-auto">
                             <table className="w-full text-sm text-left">
                                 <thead className="text-xs font-bold uppercase text-neutral-500 bg-neutral-50 border-b border-neutral-200">
                                     <tr>
-                                        <th className="px-6 py-4">User</th>
-                                        <th className="px-6 py-4">Role</th>
-                                        <th className="px-6 py-4">Staff Role</th>
-                                        <th className="px-6 py-4">Status</th>
-                                        <th className="px-6 py-4">Modules</th>
-                                        <th className="px-6 py-4 text-right">Actions</th>
+                                        <th className="px-6 py-4">{t("users.user", "User")}</th>
+                                        <th className="px-6 py-4">{t("users.role", "Role")}</th>
+                                        <th className="px-6 py-4">{t("users.staff_role", "Staff Role")}</th>
+                                        <th className="px-6 py-4">{t("users.status", "Status")}</th>
+                                        <th className="px-6 py-4">{t("users.modules", "Modules")}</th>
+                                        <th className="px-6 py-4 text-right">{t("common.actions", "Actions")}</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-neutral-100">
@@ -310,7 +312,7 @@ const AdminUsers = () => {
                                                         <div>
                                                             <p className="font-semibold text-neutral-900 flex items-center gap-1.5">
                                                                 {u.name}
-                                                                {isSelf && <span className="text-[10px] bg-primary/10 text-primary px-1.5 py-0.5 rounded-[4px] font-bold">You</span>}
+                                                                {isSelf && <span className="text-[10px] bg-primary/10 text-primary px-1.5 py-0.5 rounded-[4px] font-bold">{t("users.you", "You")}</span>}
                                                             </p>
                                                             <p className="text-[10px] font-medium text-neutral-500">@{u.username} • {u.phone}</p>
                                                         </div>
@@ -318,23 +320,23 @@ const AdminUsers = () => {
                                                 </td>
                                                 <td className="px-6 py-4">
                                                     <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold border ${roleCfg.color}`}>
-                                                        {roleCfg.icon}{roleCfg.label}
+                                                        {roleCfg.icon}{t(`users.role_${u.role}`, roleCfg.label)}
                                                     </span>
                                                 </td>
                                                 <td className="px-6 py-4">
-                                                    <span className="text-neutral-600 capitalize">{u.staffRole || '—'}</span>
+                                                    <span className="text-neutral-600 capitalize">{t(`users.staff_role_${u.staffRole}`, u.staffRole || '—')}</span>
                                                 </td>
                                                 <td className="px-6 py-4">
                                                     <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold border ${statusCfg.color}`}>
-                                                        {statusCfg.icon}{statusCfg.label}
+                                                        {statusCfg.icon}{t(`users.${u.status}`, statusCfg.label)}
                                                     </span>
                                                 </td>
                                                 <td className="px-6 py-4">
                                                     {u.role === 'superadmin' ? (
-                                                        <span className="text-xs text-neutral-400 italic">All modules</span>
+                                                        <span className="text-xs text-neutral-400 italic">{t("users.all_modules", "All modules")}</span>
                                                     ) : (
                                                         <span className="text-xs text-neutral-600 font-medium">
-                                                            {u.allowedModules.length} module{u.allowedModules.length !== 1 ? 's' : ''}
+                                                            {u.allowedModules.length} {t("users.modules", "Modules")}
                                                         </span>
                                                     )}
                                                 </td>
@@ -354,12 +356,12 @@ const AdminUsers = () => {
                                                                     className="w-full text-left px-4 py-2.5 text-sm text-neutral-700 hover:bg-neutral-50 font-medium flex items-center gap-2"
                                                                 >
                                                                     <Shield className="w-4 h-4 text-blue-500" />
-                                                                    Edit Roles & Access
+                                                                    {t("users.edit_roles_access", "Edit Roles & Access")}
                                                                 </button>
                                                                 {u.status === 'pending' && (
                                                                     <>
                                                                         <div className="border-t border-neutral-100 px-4 py-2">
-                                                                            <p className="text-[10px] font-bold uppercase text-neutral-400 mb-1">Quick Approve As</p>
+                                                                            <p className="text-[10px] font-bold uppercase text-neutral-400 mb-1">{t("users.quick_approve_as", "Quick Approve As")}</p>
                                                                             {STAFF_ROLES.map((sr) => (
                                                                                 <button
                                                                                     key={sr.value}
@@ -367,7 +369,7 @@ const AdminUsers = () => {
                                                                                     className="w-full text-left px-2 py-1.5 text-xs text-neutral-700 hover:bg-primary/10 hover:text-primary rounded-[4px] transition-colors flex items-center gap-2"
                                                                                 >
                                                                                     <UserCheck className="w-3 h-3" />
-                                                                                    {sr.label}
+                                                                                    {t(`users.staff_role_${sr.value}`, sr.label)}
                                                                                 </button>
                                                                             ))}
                                                                         </div>
@@ -377,7 +379,7 @@ const AdminUsers = () => {
                                                                                 className="w-full text-left px-4 py-2.5 text-sm text-rose-600 hover:bg-rose-50 font-medium flex items-center gap-2"
                                                                             >
                                                                                 <UserX className="w-4 h-4" />
-                                                                                Reject
+                                                                                {t("users.reject", "Reject")}
                                                                             </button>
                                                                         </div>
                                                                     </>
@@ -423,7 +425,7 @@ const AdminUsers = () => {
                             {/* Personal Info */}
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="col-span-2">
-                                    <label className="block text-xs font-bold uppercase tracking-wider text-neutral-500 mb-2">Full Name</label>
+                                    <label className="block text-xs font-bold uppercase tracking-wider text-neutral-500 mb-2">{t("users.full_name", "Full Name")}</label>
                                     <input
                                         type="text"
                                         value={editModal.name}
@@ -432,7 +434,7 @@ const AdminUsers = () => {
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-bold uppercase tracking-wider text-neutral-500 mb-2">Username</label>
+                                    <label className="block text-xs font-bold uppercase tracking-wider text-neutral-500 mb-2">{t("users.username", "Username")}</label>
                                     <input
                                         type="text"
                                         value={editModal.username}
@@ -441,7 +443,7 @@ const AdminUsers = () => {
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-bold uppercase tracking-wider text-neutral-500 mb-2">Phone</label>
+                                    <label className="block text-xs font-bold uppercase tracking-wider text-neutral-500 mb-2">{t("users.phone", "Phone")}</label>
                                     <input
                                         type="text"
                                         value={editModal.phone}
@@ -453,7 +455,7 @@ const AdminUsers = () => {
 
                             {/* Role */}
                             <div>
-                                <label className="block text-xs font-bold uppercase tracking-wider text-neutral-500 mb-2">Role</label>
+                                <label className="block text-xs font-bold uppercase tracking-wider text-neutral-500 mb-2">{t("users.role", "Role")}</label>
                                 <div className="flex gap-2">
                                     {['user', 'staff', 'superadmin'].map((r) => (
                                         <button
@@ -461,7 +463,7 @@ const AdminUsers = () => {
                                             onClick={() => setEditModal((prev) => prev ? { ...prev, role: r } : prev)}
                                             className={`flex-1 py-2 rounded-[8px] text-xs font-bold capitalize border transition-all ${editModal.role === r ? 'bg-primary text-white border-primary shadow-md shadow-primary/20' : 'bg-neutral-50 text-neutral-600 border-neutral-200 hover:border-neutral-300'}`}
                                         >
-                                            {r}
+                                            {t(`users.role_${r}`, r)}
                                         </button>
                                     ))}
                                 </div>
@@ -470,7 +472,7 @@ const AdminUsers = () => {
                             {/* Staff Role (only when role is staff) */}
                             {editModal.role === 'staff' && (
                                 <div>
-                                    <label className="block text-xs font-bold uppercase tracking-wider text-neutral-500 mb-2">Staff Position</label>
+                                    <label className="block text-xs font-bold uppercase tracking-wider text-neutral-500 mb-2">{t("users.staff_position", "Staff Position")}</label>
                                     <div className="grid grid-cols-3 gap-2">
                                         {STAFF_ROLES.map((sr) => (
                                             <button
@@ -478,7 +480,7 @@ const AdminUsers = () => {
                                                 onClick={() => setEditModal((prev) => prev ? { ...prev, staffRole: sr.value } : prev)}
                                                 className={`py-2 px-3 rounded-[8px] text-xs font-bold border transition-all ${editModal.staffRole === sr.value ? 'bg-blue-500 text-white border-blue-500' : 'bg-neutral-50 text-neutral-600 border-neutral-200 hover:border-neutral-300'}`}
                                             >
-                                                {sr.label}
+                                                {t(`users.staff_role_${sr.value}`, sr.label)}
                                             </button>
                                         ))}
                                     </div>
@@ -487,7 +489,7 @@ const AdminUsers = () => {
 
                             {/* Status */}
                             <div>
-                                <label className="block text-xs font-bold uppercase tracking-wider text-neutral-500 mb-2">Account Status</label>
+                                <label className="block text-xs font-bold uppercase tracking-wider text-neutral-500 mb-2">{t("users.account_status", "Account Status")}</label>
                                 <div className="flex gap-2">
                                     {['pending', 'approved', 'rejected'].map((s) => (
                                         <button
@@ -500,7 +502,7 @@ const AdminUsers = () => {
                                                 : 'bg-neutral-50 text-neutral-600 border-neutral-200 hover:border-neutral-300'
                                                 }`}
                                         >
-                                            {s}
+                                            {t(`users.${s}`, s)}
                                         </button>
                                     ))}
                                 </div>
@@ -508,11 +510,11 @@ const AdminUsers = () => {
 
                             {/* Reset Password */}
                             <div className="pt-2 border-t border-neutral-100">
-                                <label className="block text-xs font-bold uppercase tracking-wider text-neutral-500 mb-2">Reset Password</label>
+                                <label className="block text-xs font-bold uppercase tracking-wider text-neutral-500 mb-2">{t("users.reset_password", "Reset Password")}</label>
                                 <div className="relative">
                                     <input
                                         type="text"
-                                        placeholder="Enter new password (leave blank to keep current)"
+                                        placeholder={t("users.password_placeholder", "Enter new password (leave blank to keep current)")}
                                         value={editModal.password || ''}
                                         onChange={(e) => setEditModal(prev => prev ? { ...prev, password: e.target.value } : prev)}
                                         className="w-full px-4 py-2.5 rounded-[8px] border border-neutral-200 focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all text-sm font-medium pr-10"
@@ -523,27 +525,27 @@ const AdminUsers = () => {
                                         </div>
                                     </div>
                                 </div>
-                                <p className="text-[10px] text-neutral-400 mt-1.5 font-medium italic">* Leaving this blank will NOT change the user's current password.</p>
+                                <p className="text-[10px] text-neutral-400 mt-1.5 font-medium italic">{t("users.password_hint", "* Leaving this blank will NOT change the user's current password.")}</p>
                             </div>
 
                             {/* Module Access (not shown for superadmin) */}
                             {editModal.role !== 'superadmin' && (
                                 <div>
                                     <div className="flex items-center justify-between mb-2">
-                                        <label className="block text-xs font-bold uppercase tracking-wider text-neutral-500">Module Access</label>
+                                        <label className="block text-xs font-bold uppercase tracking-wider text-neutral-500">{t("users.module_access", "Module Access")}</label>
                                         <div className="flex gap-2">
                                             <button
                                                 onClick={() => setEditModal((prev) => prev ? { ...prev, allowedModules: ALL_MODULES.map(m => m.id) } : prev)}
                                                 className="text-[10px] text-primary font-bold hover:underline"
                                             >
-                                                Select All
+                                                {t("users.select_all", "Select All")}
                                             </button>
                                             <span className="text-neutral-300">|</span>
                                             <button
                                                 onClick={() => setEditModal((prev) => prev ? { ...prev, allowedModules: [] } : prev)}
                                                 className="text-[10px] text-neutral-500 font-bold hover:underline"
                                             >
-                                                Clear
+                                                {t("users.clear", "Clear")}
                                             </button>
                                         </div>
                                     </div>
@@ -559,7 +561,7 @@ const AdminUsers = () => {
                                                     <div className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 ${isChecked ? 'bg-primary border-primary' : 'border-neutral-300'}`}>
                                                         {isChecked && <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>}
                                                     </div>
-                                                    {m.label}
+                                                    {t(`modules.${m.id}`, m.label)}
                                                 </button>
                                             );
                                         })}
@@ -574,7 +576,7 @@ const AdminUsers = () => {
                                 onClick={() => setEditModal(null)}
                                 className="px-5 py-2 rounded-[8px] text-sm font-semibold text-neutral-600 border border-neutral-200 hover:bg-neutral-100 transition-colors"
                             >
-                                Cancel
+                                {t("common.cancel", "Cancel")}
                             </button>
                             <button
                                 onClick={handleSave}
@@ -582,7 +584,7 @@ const AdminUsers = () => {
                                 className="px-5 py-2 rounded-[8px] text-sm font-bold bg-primary text-white shadow-md shadow-primary/20 hover:brightness-110 transition-all active:scale-95 disabled:opacity-60 flex items-center gap-2"
                             >
                                 {isSaving && <Loader2 className="w-4 h-4 animate-spin" />}
-                                Save Changes
+                                {t("menu.save_changes", "Save Changes")}
                             </button>
                         </div>
                     </div>

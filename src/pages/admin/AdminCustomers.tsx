@@ -3,6 +3,7 @@ import AdminLayout from "../../components/admin/AdminLayout";
 import { Search, User, MessageSquare, Phone, MapPin, Eye, X, Send } from "lucide-react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
+import { useTranslation } from "react-i18next";
 
 interface OrderItem {
     title: string;
@@ -31,6 +32,7 @@ const AdminCustomers = () => {
     const [customers, setCustomers] = useState<Customer[]>([]);
     const [searchQuery, setSearchQuery] = useState("");
     const [isLoading, setIsLoading] = useState(true);
+    const { t } = useTranslation();
 
     const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
     const [smsMessage, setSmsMessage] = useState("");
@@ -51,7 +53,7 @@ const AdminCustomers = () => {
             }
         } catch (error) {
             console.error("Failed to fetch customers:", error);
-            toast.error("Failed to fetch customers");
+            toast.error(t("pos.failed_to_fetch_customers", "Failed to fetch customers"));
         } finally {
             setIsLoading(false);
         }
@@ -80,15 +82,15 @@ const AdminCustomers = () => {
             });
 
             if (res.ok) {
-                toast.success("Message sent successfully!");
+                toast.success(t("customers.msg_sent", "Message sent successfully!"));
                 setSmsMessage("");
                 setSelectedCustomer(null);
             } else {
-                toast.error("Failed to send message. Check MimSMS configuration.");
+                toast.error(t("customers.msg_failed", "Failed to send message. Check MimSMS configuration."));
             }
         } catch (error) {
             console.error(error);
-            toast.error("An error occurred while sending SMS.");
+            toast.error(t("pos.an_error_occurred_while_sending_sms", "An error occurred while sending SMS."));
         } finally {
             setIsSendingSMS(false);
         }
@@ -112,15 +114,15 @@ const AdminCustomers = () => {
 
             if (res.ok) {
                 const data = await res.json();
-                toast.success(`Bulk message sent to ${data.count} customers successfully!`);
+                toast.success(t("customers.bulk_msg_sent", "Bulk message sent to {{count}} customers successfully!", { count: data.count }));
                 setBulkSmsMessage("");
                 setIsBulkSmsModalOpen(false);
             } else {
-                toast.error("Failed to send bulk message. Check configuration.");
+                toast.error(t("pos.failed_to_send_bulk_message_check_config", "Failed to send bulk message. Check configuration."));
             }
         } catch (error) {
             console.error(error);
-            toast.error("An error occurred while sending bulk SMS.");
+            toast.error(t("pos.an_error_occurred_while_sending_bulk_sms", "An error occurred while sending bulk SMS."));
         } finally {
             setIsSendingBulkSms(false);
         }
@@ -134,7 +136,7 @@ const AdminCustomers = () => {
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-500" />
                         <input
                             type="text"
-                            placeholder="Search customers by name or phone..."
+                            placeholder={t("customers.search_placeholder", "Search customers by name or phone...")}
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             className="w-full bg-white border border-neutral-200 text-neutral-900 rounded-[4px] pl-10 pr-4 py-2 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all placeholder:text-neutral-400"
@@ -149,7 +151,7 @@ const AdminCustomers = () => {
                         className="flex items-center justify-center gap-2 px-4 py-2 bg-indigo-500 hover:bg-indigo-600 text-white rounded-[4px] font-medium transition-colors shrink-0"
                     >
                         <MessageSquare className="w-5 h-5" />
-                        Send Bulk SMS
+                        {t("customers.send_bulk_sms", "Send Bulk SMS")}
                     </button>
                 </div>
 
@@ -168,11 +170,11 @@ const AdminCustomers = () => {
                                         </div>
                                         <div>
                                             <h3 className="font-semibold text-neutral-900">{customer.name}</h3>
-                                            <p className="text-xs text-neutral-500">Joined {new Date(customer.createdAt).toLocaleDateString()}</p>
+                                            <p className="text-xs text-neutral-500">{t("customers.joined", "Joined")} {new Date(customer.createdAt).toLocaleDateString()}</p>
                                         </div>
                                     </div>
                                     <div className={`bg-${customer.orders?.length > 0 ? 'emerald-100' : 'neutral-200'} text-${customer.orders?.length > 0 ? 'emerald-700' : 'neutral-600'} text-xs px-2.5 py-1 rounded-full font-medium`}>
-                                        {customer.orders?.length || 0} Orders
+                                        {customer.orders?.length || 0} {t("customers.orders_count", "Orders")}
                                     </div>
                                 </div>
                                 <div className="space-y-2 mb-6">
@@ -190,7 +192,7 @@ const AdminCustomers = () => {
                                         onClick={() => setSelectedCustomer(customer)}
                                         className="flex-1 flex items-center justify-center gap-2 py-2 bg-neutral-100 hover:bg-neutral-200 text-neutral-700 text-sm font-medium rounded-[4px] transition-colors border border-neutral-200 hover:border-neutral-300"
                                     >
-                                        <Eye className="w-4 h-4" /> View Details
+                                        <Eye className="w-4 h-4" /> {t("customers.view_details", "View Details")}
                                     </button>
                                 </div>
                             </div>
@@ -198,8 +200,8 @@ const AdminCustomers = () => {
                         {filteredCustomers.length === 0 && (
                             <div className="col-span-full py-12 text-center border border-dashed border-neutral-300 rounded-[8px]">
                                 <User className="w-12 h-12 text-neutral-400 mx-auto mb-3" />
-                                <h3 className="text-lg font-medium text-neutral-700 mb-1">No customers found</h3>
-                                <p className="text-neutral-500 text-sm">Try adjusting your search query.</p>
+                                <h3 className="text-lg font-medium text-neutral-700 mb-1">{t("customers.no_customers_found", "No customers found")}</h3>
+                                <p className="text-neutral-500 text-sm">{t("customers.try_adjusting_search", "Try adjusting your search query.")}</p>
                             </div>
                         )}
                     </div>
@@ -225,7 +227,7 @@ const AdminCustomers = () => {
                         >
                             <div className="flex items-center justify-between p-6 border-b border-neutral-200 shrink-0">
                                 <div>
-                                    <h2 className="text-xl font-bold text-neutral-900">{selectedCustomer.name}'s Profile</h2>
+                                    <h2 className="text-xl font-bold text-neutral-900">{selectedCustomer.name}'s {t("customers.profile", "Profile")}</h2>
                                     <p className="text-sm text-neutral-500">{selectedCustomer.phone} • {selectedCustomer.address}</p>
                                 </div>
                                 <button
@@ -240,7 +242,7 @@ const AdminCustomers = () => {
                                 {/* Order History Column */}
                                 <div className="flex-1">
                                     <h3 className="text-lg font-semibold text-neutral-900 mb-4 flex items-center gap-2">
-                                        <Eye className="w-5 h-5 text-indigo-400" /> Order History
+                                        <Eye className="w-5 h-5 text-indigo-400" /> {t("customers.order_history", "Order History")}
                                     </h3>
                                     <div className="space-y-4">
                                         {selectedCustomer.orders?.length > 0 ? selectedCustomer.orders.map(order => (
@@ -267,7 +269,7 @@ const AdminCustomers = () => {
                                                 </div>
                                             </div>
                                         )) : (
-                                            <p className="text-neutral-500 text-sm">No orders yet.</p>
+                                            <p className="text-neutral-500 text-sm">{t("customers.no_orders_yet", "No orders yet.")}</p>
                                         )}
                                     </div>
                                 </div>
@@ -275,11 +277,11 @@ const AdminCustomers = () => {
                                 {/* Send SMS Column */}
                                 <div className="w-full md:w-80 shrink-0">
                                     <h3 className="text-lg font-semibold text-neutral-900 mb-4 flex items-center gap-2">
-                                        <MessageSquare className="w-5 h-5 text-indigo-400" /> Send Message
+                                        <MessageSquare className="w-5 h-5 text-indigo-400" /> {t("customers.send_message", "Send Message")}
                                     </h3>
                                     <div className="bg-neutral-50 border border-neutral-200 rounded-[4px] p-4">
                                         <p className="text-xs text-neutral-500 mb-4 leading-relaxed">
-                                            Send a direct SMS to <span className="text-neutral-900 font-medium">{selectedCustomer.phone}</span> using the MimSMS API integration.
+                                            {t("customers.send_direct_sms", "Send a direct SMS to")} <span className="text-neutral-900 font-medium">{selectedCustomer.phone}</span> {t("customers.using_mimsms", "using the MimSMS API integration.")}
                                         </p>
                                         <form onSubmit={handleSendSMS} className="space-y-4">
                                             <textarea
@@ -287,7 +289,7 @@ const AdminCustomers = () => {
                                                 rows={4}
                                                 value={smsMessage}
                                                 onChange={(e) => setSmsMessage(e.target.value)}
-                                                placeholder="Type your message here..."
+                                                placeholder={t("customers.type_message", "Type your message here...")}
                                                 className="w-full bg-white border border-neutral-200 rounded-[4px] p-3 text-sm text-neutral-900 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 resize-none"
                                             ></textarea>
                                             <button
@@ -300,7 +302,7 @@ const AdminCustomers = () => {
                                                 ) : (
                                                     <Send className="w-4 h-4" />
                                                 )}
-                                                Send SMS
+                                                {t("customers.send_sms_btn", "Send SMS")}
                                             </button>
                                         </form>
                                     </div>
@@ -330,8 +332,8 @@ const AdminCustomers = () => {
                         >
                             <div className="flex items-center justify-between p-6 border-b border-neutral-200 shrink-0">
                                 <div>
-                                    <h2 className="text-xl font-bold text-neutral-900">Send Bulk SMS</h2>
-                                    <p className="text-sm text-neutral-500">Send a promotional or alert message to multiple customers</p>
+                                    <h2 className="text-xl font-bold text-neutral-900">{t("customers.send_bulk_sms", "Send Bulk SMS")}</h2>
+                                    <p className="text-sm text-neutral-500">{t("customers.bulk_sms_desc", "Send a promotional or alert message to multiple customers")}</p>
                                 </div>
                                 <button
                                     onClick={() => setIsBulkSmsModalOpen(false)}
@@ -344,7 +346,7 @@ const AdminCustomers = () => {
                             <div className="flex-1 overflow-y-auto p-6 flex flex-col gap-6 custom-scrollbar">
                                 <div>
                                     <h3 className="text-sm font-medium text-neutral-700 mb-2 flex items-center justify-between">
-                                        <span>Target Customers ({selectedBulkCustomers.length})</span>
+                                        <span>{t("customers.target_customers", "Target Customers")} ({selectedBulkCustomers.length})</span>
                                     </h3>
                                     <div className="bg-neutral-50 border border-neutral-200 p-3 rounded-[4px] flex flex-wrap gap-2 max-h-48 overflow-y-auto custom-scrollbar">
                                         {selectedBulkCustomers.length > 0 ? (
@@ -360,20 +362,20 @@ const AdminCustomers = () => {
                                                 </div>
                                             ))
                                         ) : (
-                                            <p className="text-xs text-neutral-500 w-full text-center py-2">No customers selected</p>
+                                            <p className="text-xs text-neutral-500 w-full text-center py-2">{t("customers.no_customers_selected", "No customers selected")}</p>
                                         )}
                                     </div>
                                 </div>
 
                                 <form onSubmit={handleSendBulkSMS} className="space-y-4">
                                     <div>
-                                        <label className="block text-sm font-medium text-neutral-700 mb-2">Message Content</label>
+                                        <label className="block text-sm font-medium text-neutral-700 mb-2">{t("customers.msg_content", "Message Content")}</label>
                                         <textarea
                                             required
                                             rows={5}
                                             value={bulkSmsMessage}
                                             onChange={(e) => setBulkSmsMessage(e.target.value)}
-                                            placeholder="Type your bulk message here..."
+                                            placeholder={t("customers.type_bulk_message", "Type your bulk message here...")}
                                             className="w-full bg-white border border-neutral-200 rounded-[4px] p-3 text-sm text-neutral-900 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 resize-none"
                                         ></textarea>
                                     </div>
@@ -387,7 +389,7 @@ const AdminCustomers = () => {
                                         ) : (
                                             <Send className="w-4 h-4" />
                                         )}
-                                        Send Bulk SMS ({selectedBulkCustomers.length})
+                                        {t("customers.send_bulk_sms", "Send Bulk SMS")} ({selectedBulkCustomers.length})
                                     </button>
                                 </form>
                             </div>

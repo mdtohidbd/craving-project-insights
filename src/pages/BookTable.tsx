@@ -67,7 +67,7 @@ const BookTable = () => {
     } catch (error) {
       console.error(error);
       setIsSubmitting(false);
-      toast.error("Failed to make a reservation. Please try again.");
+      toast.error(t("pos.failed_to_make_a_reservation_please_try_", "Failed to make a reservation. Please try again."));
     }
   };
 
@@ -108,7 +108,7 @@ const BookTable = () => {
                   <CalendarIcon className="w-5 h-5 text-[hsl(43_74%_48%)]" />
                 </div>
                 <div>
-                  <p className="text-xs text-primary-foreground/50 uppercase tracking-wider font-bold">Date</p>
+                  <p className="text-xs text-primary-foreground/50 uppercase tracking-wider font-bold">{t("pos.date", "Date")}</p>
                   <p className="font-medium">{reservationDetails.date}</p>
                 </div>
               </div>
@@ -118,7 +118,7 @@ const BookTable = () => {
                   <Clock className="w-5 h-5 text-[hsl(43_74%_48%)]" />
                 </div>
                 <div>
-                  <p className="text-xs text-primary-foreground/50 uppercase tracking-wider font-bold">Time</p>
+                  <p className="text-xs text-primary-foreground/50 uppercase tracking-wider font-bold">{t("pos.time", "Time")}</p>
                   <p className="font-medium">{reservationDetails.time}</p>
                 </div>
               </div>
@@ -128,13 +128,13 @@ const BookTable = () => {
                   <Users className="w-5 h-5 text-[hsl(43_74%_48%)]" />
                 </div>
                 <div>
-                  <p className="text-xs text-primary-foreground/50 uppercase tracking-wider font-bold">Guests</p>
-                  <p className="font-medium">{reservationDetails.guests} People</p>
+                  <p className="text-xs text-primary-foreground/50 uppercase tracking-wider font-bold">{t("pos.guests", "Guests")}</p>
+                  <p className="font-medium">{reservationDetails.guests} {t("pos.people", "People")}</p>
                 </div>
               </div>
 
               <div className="pt-4 border-t border-white/10 mt-2 flex justify-between items-center text-primary-foreground/70 text-sm">
-                <span>Booking ID</span>
+                <span>{t("pos.booking_id", "Booking ID")}</span>
                 <span className="font-bold text-[hsl(43_74%_48%)]">{reservationDetails.bookingId}</span>
               </div>
             </div>
@@ -171,7 +171,7 @@ const BookTable = () => {
              className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-[hsl(43_74%_48%)]/30 bg-[hsl(43_74%_48%)]/10 text-[hsl(43_74%_48%)] text-xs font-bold uppercase tracking-widest mb-6"
           >
             <UtensilsCrossed className="w-3.5 h-3.5" />
-            <span>Reservations</span>
+            <span>{t("pos.reservations", "Reservations")}</span>
           </motion.div>
           
           <motion.h1
@@ -216,7 +216,7 @@ const BookTable = () => {
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-2">
-                       <label className="text-[10px] uppercase tracking-[0.2em] font-black text-muted-foreground ml-1">Date</label>
+                       <label className="text-[10px] uppercase tracking-[0.2em] font-black text-muted-foreground ml-1">{t("pos.date", "Date")}</label>
                        <div className="relative group">
                          <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none z-10">
                             <CalendarIcon className="h-5 w-5 text-muted-foreground group-focus-within:text-accent transition-colors" />
@@ -245,7 +245,7 @@ const BookTable = () => {
                     </div>
 
                     <div className="space-y-2">
-                       <label className="text-[10px] uppercase tracking-[0.2em] font-black text-muted-foreground ml-1">Time</label>
+                       <label className="text-[10px] uppercase tracking-[0.2em] font-black text-muted-foreground ml-1">{t("pos.time", "Time")}</label>
                        <div className="relative group">
                          <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none z-10">
                             <Clock className="h-5 w-5 text-muted-foreground group-focus-within:text-accent transition-colors" />
@@ -274,20 +274,20 @@ const BookTable = () => {
                     </div>
 
                     <div className="md:col-span-2 space-y-2">
-                       <label className="text-[10px] uppercase tracking-[0.2em] font-black text-muted-foreground ml-1">Number of Guests</label>
+                       <label className="text-[10px] uppercase tracking-[0.2em] font-black text-muted-foreground ml-1">{t("pos.number_of_guests", "Number of Guests")}</label>
                        <div className="relative group">
                          <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                             <Users className="h-5 w-5 text-muted-foreground group-focus-within:text-accent transition-colors" />
                          </div>
                          <select required name="guests" className="w-full bg-[hsl(40_18%_96%)] border-2 border-transparent rounded-2xl pl-12 pr-12 py-4 text-primary font-bold focus:bg-white focus:border-accent/30 focus:ring-4 focus:ring-accent/5 transition-all outline-none appearance-none cursor-pointer">
-                            <option value="" className="font-normal text-muted-foreground">Select Guests</option>
-                            <option value="1">1 Person</option>
-                            <option value="2">2 People</option>
-                            <option value="3">3 People</option>
-                            <option value="4">4 People</option>
-                            <option value="5">5 People</option>
-                            <option value="6">6 People</option>
-                            <option value="7">7+ People</option>
+                            <option value="" className="font-normal text-muted-foreground">{t("pos.select_guests", "Select Guests")}</option>
+                            <option value="1">{t("pos.1_person", "1 Person")}</option>
+                            <option value="2">{t("pos.2_people", "2 People")}</option>
+                            <option value="3">{t("pos.3_people", "3 People")}</option>
+                            <option value="4">{t("pos.4_people", "4 People")}</option>
+                            <option value="5">{t("pos.5_people", "5 People")}</option>
+                            <option value="6">{t("pos.6_people", "6 People")}</option>
+                            <option value="7">{t("pos.7_people", "7+ People")}</option>
                          </select>
                          <div className="absolute inset-y-0 right-0 pr-5 flex items-center pointer-events-none">
                             <svg className="w-4 h-4 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
@@ -305,7 +305,7 @@ const BookTable = () => {
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-2">
-                       <label className="text-[10px] uppercase tracking-[0.2em] font-black text-muted-foreground ml-1">Full Name</label>
+                       <label className="text-[10px] uppercase tracking-[0.2em] font-black text-muted-foreground ml-1">{t("pos.full_name", "Full Name")}</label>
                        <div className="relative group">
                          <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                             <User className="h-5 w-5 text-muted-foreground group-focus-within:text-accent transition-colors" />
@@ -315,7 +315,7 @@ const BookTable = () => {
                     </div>
 
                     <div className="space-y-2">
-                       <label className="text-[10px] uppercase tracking-[0.2em] font-black text-muted-foreground ml-1">Phone Number</label>
+                       <label className="text-[10px] uppercase tracking-[0.2em] font-black text-muted-foreground ml-1">{t("pos.phone_number", "Phone Number")}</label>
                        <div className="relative group">
                          <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                             <Phone className="h-5 w-5 text-muted-foreground group-focus-within:text-accent transition-colors" />
@@ -325,7 +325,7 @@ const BookTable = () => {
                     </div>
 
                     <div className="md:col-span-2 space-y-2">
-                       <label className="text-[10px] uppercase tracking-[0.2em] font-black text-muted-foreground ml-1">Special Requests (Optional)</label>
+                       <label className="text-[10px] uppercase tracking-[0.2em] font-black text-muted-foreground ml-1">{t("pos.special_requests_optional", "Special Requests (Optional)")}</label>
                        <div className="relative group">
                          <div className="absolute top-4 left-0 pl-4 pointer-events-none">
                             <MessageSquare className="h-5 w-5 text-muted-foreground group-focus-within:text-accent transition-colors" />
@@ -366,30 +366,30 @@ const BookTable = () => {
               <div className="bg-primary p-6 sm:p-8 rounded-[2rem] text-primary-foreground relative overflow-hidden shadow-2xl">
                 <div className="absolute -top-10 -right-10 w-40 h-40 bg-[hsl(43_74%_48%)]/10 rounded-full blur-2xl pointer-events-none"></div>
                 
-                <h4 className="text-lg sm:text-xl font-serif font-bold mb-5 sm:mb-6">Working Hours</h4>
+                <h4 className="text-lg sm:text-xl font-serif font-bold mb-5 sm:mb-6">{t("pos.working_hours", "Working Hours")}</h4>
                 <div className="space-y-4 mb-8">
                   <div className="flex justify-between items-center text-sm border-b border-white/10 pb-3">
-                    <span className="text-white/60">Mon - Thu</span>
-                    <span className="font-semibold">10:00 AM - 10:00 PM</span>
+                    <span className="text-white/60">{t("pos.mon_thu", "Mon - Thu")}</span>
+                    <span className="font-semibold">{t("pos.10_00_am_10_00_pm", "10:00 AM - 10:00 PM")}</span>
                   </div>
                   <div className="flex justify-between items-center text-sm border-b border-white/10 pb-3">
-                    <span className="text-white/60">Fri - Sat</span>
-                    <span className="font-semibold text-[hsl(43_74%_48%)]">10:00 AM - 11:30 PM</span>
+                    <span className="text-white/60">{t("pos.fri_sat", "Fri - Sat")}</span>
+                    <span className="font-semibold text-[hsl(43_74%_48%)]">{t("pos.10_00_am_11_30_pm", "10:00 AM - 11:30 PM")}</span>
                   </div>
                   <div className="flex justify-between items-center text-sm border-b border-white/10 pb-3">
-                    <span className="text-white/60">Sunday</span>
-                    <span className="font-semibold">Closed</span>
+                    <span className="text-white/60">{t("pos.sunday", "Sunday")}</span>
+                    <span className="font-semibold">{t("pos.closed", "Closed")}</span>
                   </div>
                 </div>
 
-                <h4 className="text-xl font-serif font-bold mb-6 mt-8">Contact Us</h4>
+                <h4 className="text-xl font-serif font-bold mb-6 mt-8">{t("pos.contact_us", "Contact Us")}</h4>
                 <div className="space-y-4">
                   <div className="flex items-center gap-4">
                     <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center shrink-0">
                       <Phone className="w-4 h-4 text-[hsl(43_74%_48%)]" />
                     </div>
                     <div>
-                      <p className="text-xs text-white/50 uppercase tracking-widest">Phone</p>
+                      <p className="text-xs text-white/50 uppercase tracking-widest">{t("pos.phone", "Phone")}</p>
                       <p className="font-medium">+880 123 456 7890</p>
                     </div>
                   </div>
@@ -400,7 +400,7 @@ const BookTable = () => {
               <div className="rounded-[2rem] overflow-hidden aspect-[4/3] bg-[hsl(40_18%_90%)] relative hidden lg:block">
                  <img src="https://images.unsplash.com/photo-1544148103-0773bf10d330?q=80&w=2670&auto=format&fit=crop" alt="Restaurant interior" className="w-full h-full object-cover" />
                  <div className="absolute inset-0 bg-gradient-to-t from-primary/80 to-transparent flex items-end p-6">
-                    <p className="text-primary-foreground font-serif text-lg font-medium leading-tight">Authentic flavors, <br/><span className="text-[hsl(43_74%_48%)] italic">Luxurious ambiance.</span></p>
+                    <p className="text-primary-foreground font-serif text-lg font-medium leading-tight">{t("pos.authentic_flavors", "Authentic flavors,")}<br/><span className="text-[hsl(43_74%_48%)] italic">{t("pos.luxurious_ambiance", "Luxurious ambiance.")}</span></p>
                  </div>
               </div>
 

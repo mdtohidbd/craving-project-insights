@@ -8,6 +8,8 @@ import {
 import { toast } from "sonner";
 import { useAuth } from "../../context/AuthContext";
 import { useModules } from "../../context/ModuleContext";
+import { LanguageSwitcher } from "../LanguageSwitcher";
+import { useTranslation } from "react-i18next";
 
 interface AdminLayoutProps {
     children: React.ReactNode;
@@ -15,6 +17,7 @@ interface AdminLayoutProps {
 }
 
 const AdminLayout = ({ children, title }: AdminLayoutProps) => {
+    const { t } = useTranslation();
     const [isNotificationOpen, setIsNotificationOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
     const location = useLocation();
@@ -138,27 +141,28 @@ const AdminLayout = ({ children, title }: AdminLayoutProps) => {
     const handleLogout = () => {
         logout();
         navigate('/admin/login');
-        toast.success('Logged out successfully');
+        toast.success(t("pos.logged_out_successfully", "Logged out successfully"));
     };
 
     const allNavItems = [
-        { label: "Dashboard", path: "/admin", icon: <LayoutDashboard className="w-5 h-5" />, module: "dashboard" },
-        { label: "Tables", path: "/admin/tables", icon: <Table className="w-5 h-5" />, module: "tables" },
-        { label: "POS System", path: "/admin/pos", icon: <CreditCard className="w-5 h-5" />, module: "pos" },
-        { label: "Orders", path: "/admin/orders", icon: <ShoppingCart className="w-5 h-5" />, module: "orders" },
-        { label: "Delivery", path: "/admin/delivery", icon: <Truck className="w-5 h-5" />, module: "delivery" },
-        { label: "Customers", path: "/admin/customers", icon: <Users className="w-5 h-5" />, module: "customers" },
-        { label: "Menu Items", path: "/admin/menu", icon: <List className="w-5 h-5" />, module: "menu" },
-        { label: "Inventory", path: "/admin/inventory", icon: <Package className="w-5 h-5" />, module: "inventory" },
-        { label: "Reservations", path: "/admin/reservations", icon: <Calendar className="w-5 h-5" />, module: "reservations" },
-        { label: "Notifications", path: "/admin/notifications", icon: <Bell className="w-5 h-5" />, module: "notifications" },
-        { label: "Messages", path: "/admin/messages", icon: <MessageSquare className="w-5 h-5" />, module: "messages" },
-        { label: "Settings", path: "/admin/settings", icon: <Settings className="w-5 h-5" />, module: "settings" },
-        { label: "Users",       path: "/admin/users",       icon: <ShieldCheck className="w-5 h-5" />, module: "users",       superAdminOnly: true },
-        { label: "Staff",       path: "/admin/staff",       icon: <UserCog className="w-5 h-5" />,   module: "staff",       superAdminOnly: true },
-        { label: "Deliverymen", path: "/admin/deliverymen", icon: <Users className="w-5 h-5" />,       module: "deliverymen", superAdminOnly: true },
-        { label: "Modules",     path: "/admin/modules",     icon: <Layers className="w-5 h-5" />,    module: "modules",     superAdminOnly: true },
+        { label: t("dashboard.dashboard", "Dashboard"), path: "/admin", icon: <LayoutDashboard className="w-5 h-5" />, module: "dashboard" },
+        { label: t("dashboard.tables", "Tables"), path: "/admin/tables", icon: <Table className="w-5 h-5" />, module: "tables" },
+        { label: t("dashboard.pos_system", "POS System"), path: "/admin/pos", icon: <CreditCard className="w-5 h-5" />, module: "pos" },
+        { label: t("dashboard.orders", "Orders"), path: "/admin/orders", icon: <ShoppingCart className="w-5 h-5" />, module: "orders" },
+        { label: t("dashboard.delivery", "Delivery"), path: "/admin/delivery", icon: <Truck className="w-5 h-5" />, module: "delivery" },
+        { label: t("dashboard.customers", "Customers"), path: "/admin/customers", icon: <Users className="w-5 h-5" />, module: "customers" },
+        { label: t("dashboard.menu_items", "Menu Items"), path: "/admin/menu", icon: <List className="w-5 h-5" />, module: "menu" },
+        { label: t("dashboard.inventory", "Inventory"), path: "/admin/inventory", icon: <Package className="w-5 h-5" />, module: "inventory" },
+        { label: t("dashboard.reservations", "Reservations"), path: "/admin/reservations", icon: <Calendar className="w-5 h-5" />, module: "reservations" },
+        { label: t("dashboard.notifications", "Notifications"), path: "/admin/notifications", icon: <Bell className="w-5 h-5" />, module: "notifications" },
+        { label: t("dashboard.messages", "Messages"), path: "/admin/messages", icon: <MessageSquare className="w-5 h-5" />, module: "messages" },
+        { label: t("dashboard.settings", "Settings"), path: "/admin/settings", icon: <Settings className="w-5 h-5" />, module: "settings" },
+        { label: t("dashboard.users", "Users"),       path: "/admin/users",       icon: <ShieldCheck className="w-5 h-5" />, module: "users",       superAdminOnly: true },
+        { label: t("dashboard.staff", "Staff"),       path: "/admin/staff",       icon: <UserCog className="w-5 h-5" />,   module: "staff",       superAdminOnly: true },
+        { label: t("dashboard.deliverymen", "Deliverymen"), path: "/admin/deliverymen", icon: <Users className="w-5 h-5" />,       module: "deliverymen", superAdminOnly: true },
+        { label: t("dashboard.modules", "Modules"),     path: "/admin/modules",     icon: <Layers className="w-5 h-5" />,    module: "modules",     superAdminOnly: true },
     ];
+
 
     const navItems = allNavItems.filter((item) => {
         if ((item as any).superAdminOnly) return isSuperAdmin;
@@ -188,8 +192,8 @@ const AdminLayout = ({ children, title }: AdminLayoutProps) => {
                                     S
                                 </div>
                                 <div className="hidden sm:flex flex-col">
-                                    <span className="text-base font-black tracking-tight leading-none text-neutral-900 group-hover:text-primary transition-colors">Skybridge</span>
-                                    <span className="text-[10px] uppercase font-black text-primary tracking-[0.2em] mt-1.5 opacity-80">Management</span>
+                                    <span className="text-base font-black tracking-tight leading-none text-neutral-900 group-hover:text-primary transition-colors">{t("pos.skybridge", "Skybridge")}</span>
+                                    <span className="text-[10px] uppercase font-black text-primary tracking-[0.2em] mt-1.5 opacity-80">{t("pos.management", "Management")}</span>
                                 </div>
                             </Link>
                             <div className="h-8 w-px bg-neutral-200/60 hidden sm:block mx-2" />
@@ -199,6 +203,7 @@ const AdminLayout = ({ children, title }: AdminLayoutProps) => {
                         </div>
 
                         <div className="flex items-center gap-3">
+                            <LanguageSwitcher />
                             {/* User Info */}
                             {user && (
                                 <div className="hidden sm:flex items-center gap-2 border-r border-neutral-200 pr-3">
@@ -230,8 +235,8 @@ const AdminLayout = ({ children, title }: AdminLayoutProps) => {
                                 {isNotificationOpen && (
                                     <div className="absolute right-0 mt-3 w-80 bg-white border border-neutral-200 rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200 origin-top-right z-50">
                                         <div className="p-4 border-b border-neutral-100 flex items-center justify-between bg-neutral-50/50">
-                                            <h3 className="font-bold text-neutral-900 text-sm">Notifications</h3>
-                                            <Link to="/admin/notifications" onClick={() => setIsNotificationOpen(false)} className="text-[11px] font-bold text-primary hover:underline">View All</Link>
+                                            <h3 className="font-bold text-neutral-900 text-sm">{t("pos.notifications", "Notifications")}</h3>
+                                            <Link to="/admin/notifications" onClick={() => setIsNotificationOpen(false)} className="text-[11px] font-bold text-primary hover:underline">{t("pos.view_all", "View All")}</Link>
                                         </div>
                                         <div className="max-h-[350px] overflow-y-auto custom-scrollbar">
                                             {notifications.length > 0 ? (
@@ -250,7 +255,7 @@ const AdminLayout = ({ children, title }: AdminLayoutProps) => {
                                             ) : (
                                                 <div className="p-8 text-center">
                                                     <Bell className="w-8 h-8 text-neutral-200 mx-auto mb-2" />
-                                                    <p className="text-sm text-neutral-400">All caught up!</p>
+                                                    <p className="text-sm text-neutral-400">{t("pos.all_caught_up", "All caught up!")}</p>
                                                 </div>
                                             )}
                                         </div>
@@ -258,7 +263,7 @@ const AdminLayout = ({ children, title }: AdminLayoutProps) => {
                                             onClick={markAllAsRead}
                                             className="w-full py-3 text-[11px] font-bold text-neutral-500 hover:text-neutral-900 hover:bg-neutral-50 transition-colors border-t border-neutral-100 uppercase tracking-wider"
                                         >
-                                            Mark all as read
+                                            {t("notifications.mark_all_read", "Mark all as read")}
                                         </button>
                                     </div>
                                 )}

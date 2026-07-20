@@ -24,7 +24,7 @@ const Checkout = () => {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (cart.length === 0) {
-      toast.error("Your cart is empty");
+      toast.error(t("pos.your_cart_is_empty", "Your cart is empty"));
       return;
     }
 
@@ -105,7 +105,7 @@ const Checkout = () => {
     } catch (err) {
       console.error(err);
       setIsSubmitting(false);
-      toast.error("Failed to place order. Please try again.");
+      toast.error(t("pos.failed_to_place_order_please_try_again", "Failed to place order. Please try again."));
     }
   };
 
@@ -190,25 +190,25 @@ const Checkout = () => {
                           <div className="w-10 h-10 rounded-full bg-accent text-primary flex items-center justify-center relative z-10 shadow-lg">
                             <Package className="w-5 h-5" />
                           </div>
-                          <span className="text-[11px] font-bold text-primary uppercase tracking-tighter">Order<br />Placed</span>
+                          <span className="text-[11px] font-bold text-primary uppercase tracking-tighter">{t("pos.order", "Order")}<br />{t("pos.placed", "Placed")}</span>
                         </div>
                         <div className="flex flex-col items-center gap-3 text-center">
                           <div className="w-10 h-10 rounded-full bg-white border-2 border-gray-100 text-gray-300 flex items-center justify-center relative z-10">
                             <ChefHat className="w-5 h-5" />
                           </div>
-                          <span className="text-[11px] font-bold text-gray-400 uppercase tracking-tighter">In the<br />Kitchen</span>
+                          <span className="text-[11px] font-bold text-gray-400 uppercase tracking-tighter">{t("pos.in_the", "In the")}<br />{t("pos.kitchen", "Kitchen")}</span>
                         </div>
                         <div className="flex flex-col items-center gap-3 text-center">
                           <div className="w-10 h-10 rounded-full bg-white border-2 border-gray-100 text-gray-300 flex items-center justify-center relative z-10">
                             <Truck className="w-5 h-5" />
                           </div>
-                          <span className="text-[11px] font-bold text-gray-400 uppercase tracking-tighter">Out for<br />Delivery</span>
+                          <span className="text-[11px] font-bold text-gray-400 uppercase tracking-tighter">{t("pos.out_for", "Out for")}<br />{t("pos.delivery", "Delivery")}</span>
                         </div>
                         <div className="flex flex-col items-center gap-3 text-center">
                           <div className="w-10 h-10 rounded-full bg-white border-2 border-gray-100 text-gray-300 flex items-center justify-center relative z-10">
                             <ThumbsUp className="w-5 h-5" />
                           </div>
-                          <span className="text-[11px] font-bold text-gray-400 uppercase tracking-tighter">Enjoy your<br />Meal</span>
+                          <span className="text-[11px] font-bold text-gray-400 uppercase tracking-tighter">{t("pos.enjoy_your", "Enjoy your")}<br />{t("pos.meal", "Meal")}</span>
                         </div>
                       </div>
                     </div>
@@ -226,8 +226,8 @@ const Checkout = () => {
                           <Package className="w-5 h-5" />
                         </div>
                         <div>
-                          <p className="text-xs font-bold text-primary uppercase tracking-wider">Order Placed</p>
-                          <p className="text-[10px] text-accent font-semibold uppercase tracking-widest mt-0.5">Completed</p>
+                          <p className="text-xs font-bold text-primary uppercase tracking-wider">{t("pos.order_placed", "Order Placed")}</p>
+                          <p className="text-[10px] text-accent font-semibold uppercase tracking-widest mt-0.5">{t("pos.completed", "Completed")}</p>
                         </div>
                       </div>
 
@@ -237,8 +237,8 @@ const Checkout = () => {
                           <ChefHat className="w-5 h-5" />
                         </div>
                         <div>
-                          <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">In the Kitchen</p>
-                          <p className="text-[10px] text-muted-foreground uppercase tracking-widest mt-0.5">Pending</p>
+                          <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">{t("pos.in_the_kitchen", "In the Kitchen")}</p>
+                          <p className="text-[10px] text-muted-foreground uppercase tracking-widest mt-0.5">{t("pos.pending", "Pending")}</p>
                         </div>
                       </div>
 
@@ -248,8 +248,8 @@ const Checkout = () => {
                           <Truck className="w-5 h-5" />
                         </div>
                         <div>
-                          <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Out for Delivery</p>
-                          <p className="text-[10px] text-muted-foreground uppercase tracking-widest mt-0.5">Pending</p>
+                          <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">{t("pos.out_for_delivery", "Out for Delivery")}</p>
+                          <p className="text-[10px] text-muted-foreground uppercase tracking-widest mt-0.5">{t("pos.pending", "Pending")}</p>
                         </div>
                       </div>
 
@@ -259,8 +259,8 @@ const Checkout = () => {
                           <ThumbsUp className="w-5 h-5" />
                         </div>
                         <div>
-                          <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Enjoy your Meal</p>
-                          <p className="text-[10px] text-muted-foreground uppercase tracking-widest mt-0.5">Pending</p>
+                          <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">{t("pos.enjoy_your_meal", "Enjoy your Meal")}</p>
+                          <p className="text-[10px] text-muted-foreground uppercase tracking-widest mt-0.5">{t("pos.pending", "Pending")}</p>
                         </div>
                       </div>
                     </div>
@@ -281,7 +281,7 @@ const Checkout = () => {
                           <User className="w-5 h-5 text-primary/40" />
                         </div>
                         <div>
-                          <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest mb-1">Customer</p>
+                          <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest mb-1">{t("pos.customer", "Customer")}</p>
                           <p className="font-bold text-primary">{orderDetails.customerInfo.name}</p>
                           <p className="text-sm text-muted-foreground">{orderDetails.customerInfo.phone}</p>
                         </div>
@@ -293,7 +293,7 @@ const Checkout = () => {
                           <MapPin className="w-5 h-5 text-primary/40" />
                         </div>
                         <div>
-                          <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest mb-1">Address</p>
+                          <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest mb-1">{t("pos.address", "Address")}</p>
                           <p className="font-bold text-primary leading-tight">{orderDetails.customerInfo.address}</p>
                         </div>
                       </div>
@@ -302,7 +302,7 @@ const Checkout = () => {
 
                   {orderDetails.customerInfo.notes && (
                     <div className="mt-8 pt-6 border-t border-gray-50">
-                      <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest mb-2">Order Notes</p>
+                      <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest mb-2">{t("pos.order_notes", "Order Notes")}</p>
                       <p className="text-sm italic text-muted-foreground bg-gray-50 p-4 rounded-xl border border-gray-100">
                         "{orderDetails.customerInfo.notes}"
                       </p>
@@ -348,7 +348,7 @@ const Checkout = () => {
                     {/* Restaurant Branding */}
                     <div className="text-center mb-8 pb-6 border-b border-dashed border-gray-200">
                       <h2 className="text-3xl font-serif font-bold text-primary mb-1 uppercase">{settings.websiteName}</h2>
-                      <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.3em]">Exquisite Dining</p>
+                      <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.3em]">{t("pos.exquisite_dining", "Exquisite Dining")}</p>
                       <div className="mt-4 flex items-center justify-center gap-2 text-xs text-muted-foreground">
                         <Calendar className="w-3.5 h-3.5" />
                         {orderDetails.date}
@@ -358,18 +358,18 @@ const Checkout = () => {
                     {/* Order Details */}
                     <div className="space-y-6 mb-8">
                       <div className="flex justify-between items-center text-sm">
-                        <span className="text-muted-foreground font-medium uppercase tracking-widest text-[10px]">Order ID</span>
+                        <span className="text-muted-foreground font-medium uppercase tracking-widest text-[10px]">{t("pos.order_id", "Order ID")}</span>
                         <span className="font-bold font-mono text-primary">#{orderDetails.orderId.slice(-6).toUpperCase()}</span>
                       </div>
                       <div className="flex justify-between items-center text-sm">
-                        <span className="text-muted-foreground font-medium uppercase tracking-widest text-[10px]">Payment</span>
+                        <span className="text-muted-foreground font-medium uppercase tracking-widest text-[10px]">{t("pos.payment", "Payment")}</span>
                         <span className="font-bold text-primary">{orderDetails.paymentMethod}</span>
                       </div>
                     </div>
 
                     {/* Itemized List */}
                     <div className="space-y-4 mb-8">
-                      <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-2">Order Items</div>
+                      <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-2">{t("pos.order_items", "Order Items")}</div>
                       {orderDetails.items.map((item: any, idx: number) => (
                         <div key={idx} className="flex justify-between gap-4 group">
                           <div className="flex-1">
@@ -391,16 +391,16 @@ const Checkout = () => {
                     {/* Totals Section */}
                     <div className="pt-8 border-t border-dashed border-gray-200 space-y-4">
                       <div className="flex justify-between items-center text-sm">
-                        <span className="text-muted-foreground font-medium uppercase tracking-widest text-[10px]">Subtotal</span>
+                        <span className="text-muted-foreground font-medium uppercase tracking-widest text-[10px]">{t("pos.subtotal", "Subtotal")}</span>
                         <span className="font-bold text-primary">৳{Math.round(orderDetails.subtotal)}</span>
                       </div>
                       <div className="flex justify-between items-center text-sm">
-                        <span className="text-muted-foreground font-medium uppercase tracking-widest text-[10px]">Delivery</span>
+                        <span className="text-muted-foreground font-medium uppercase tracking-widest text-[10px]">{t("pos.delivery", "Delivery")}</span>
                         <span className="font-bold text-primary">৳{Math.round(orderDetails.deliveryFee)}</span>
                       </div>
                       
                       <div className="mt-6 p-6 bg-gray-50 rounded-[1.25rem] border border-gray-100 flex flex-col items-center gap-1 shadow-inner overflow-hidden">
-                        <span className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em]">Total Amount</span>
+                        <span className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.3em]">{t("pos.total_amount", "Total Amount")}</span>
                         <div className="flex items-center gap-2">
                           <span className="text-2xl font-serif font-bold text-accent">৳</span>
                           <span className="text-4xl font-serif font-bold text-primary tracking-tighter">
@@ -412,7 +412,7 @@ const Checkout = () => {
 
                     {/* Simple Message */}
                     <div className="mt-8 pt-6 border-t border-gray-50 text-center">
-                      <p className="text-[10px] text-muted-foreground uppercase tracking-[0.2em] font-black">Thank you for Choosing {settings.websiteName}</p>
+                      <p className="text-[10px] text-muted-foreground uppercase tracking-[0.2em] font-black">{t("pos.thank_you_for_choosing", "Thank you for Choosing")} {settings.websiteName}</p>
                     </div>
                   </div>
 
@@ -496,8 +496,8 @@ const Checkout = () => {
         <div className="container mx-auto px-4 sm:px-6 md:px-12 max-w-6xl">
           {cart.length === 0 ? (
             <div className="text-center py-20 bg-white rounded-3xl shadow-xl border border-black/5">
-              <h2 className="text-3xl font-serif font-bold text-primary mb-4">Your cart is empty</h2>
-              <p className="text-muted-foreground mb-8">Add some delicious items from our menu first.</p>
+              <h2 className="text-3xl font-serif font-bold text-primary mb-4">{t("pos.your_cart_is_empty", "Your cart is empty")}</h2>
+              <p className="text-muted-foreground mb-8">{t("pos.add_some_delicious_items_from_our_menu_f", "Add some delicious items from our menu first.")}</p>
               <button
                 onClick={() => navigate("/menu")}
                 className="bg-[hsl(43_74%_48%)] text-[hsl(195_30%_8%)] font-bold py-4 px-10 rounded-2xl shadow-[0_8px_20px_rgba(228,168,32,0.3)] hover:-translate-y-1 transition-all text-[13px] uppercase tracking-wider"
@@ -527,25 +527,25 @@ const Checkout = () => {
                     </h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-6">
                       <div className="space-y-2.5">
-                        <label className="text-[10px] uppercase tracking-[0.2em] font-black text-muted-foreground ml-1">Full Name</label>
+                        <label className="text-[10px] uppercase tracking-[0.2em] font-black text-muted-foreground ml-1">{t("pos.full_name", "Full Name")}</label>
                         <div className="relative group">
                           <User className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within:text-accent transition-colors" />
                           <input name="name" required type="text" className="w-full bg-[hsl(40_18%_96%)] border-2 border-transparent rounded-2xl pl-12 pr-5 py-4 text-primary font-bold focus:bg-white focus:border-accent/30 focus:ring-4 focus:ring-accent/5 transition-all outline-none placeholder:text-muted-foreground/40 placeholder:font-normal" placeholder="Enter your full name" />
                         </div>
                       </div>
                       <div className="space-y-2.5">
-                        <label className="text-[10px] uppercase tracking-[0.2em] font-black text-muted-foreground ml-1">Phone Number</label>
+                        <label className="text-[10px] uppercase tracking-[0.2em] font-black text-muted-foreground ml-1">{t("pos.phone_number", "Phone Number")}</label>
                         <div className="relative group">
                           <div className="absolute left-5 top-1/2 -translate-y-1/2 text-sm font-bold text-muted-foreground group-focus-within:text-accent transition-colors">+88</div>
                           <input name="phone" required type="tel" className="w-full bg-[hsl(40_18%_96%)] border-2 border-transparent rounded-2xl pl-14 pr-5 py-4 text-primary font-bold focus:bg-white focus:border-accent/30 focus:ring-4 focus:ring-accent/5 transition-all outline-none placeholder:text-muted-foreground/40 placeholder:font-normal" placeholder="017XXXXXXXX" />
                         </div>
                       </div>
                       <div className="md:col-span-2 space-y-2.5">
-                        <label className="text-[10px] uppercase tracking-[0.2em] font-black text-muted-foreground ml-1">Delivery Address</label>
+                        <label className="text-[10px] uppercase tracking-[0.2em] font-black text-muted-foreground ml-1">{t("pos.delivery_address", "Delivery Address")}</label>
                         <textarea name="address" required rows={3} className="w-full bg-[hsl(40_18%_96%)] border-2 border-transparent rounded-2xl px-6 py-4 text-primary font-bold focus:bg-white focus:border-accent/30 focus:ring-4 focus:ring-accent/5 transition-all outline-none resize-none placeholder:text-muted-foreground/40 placeholder:font-normal" placeholder="House no, Street name, Area, Landmark..."></textarea>
                       </div>
                       <div className="md:col-span-2 space-y-2.5">
-                        <label className="text-[10px] uppercase tracking-[0.2em] font-black text-muted-foreground ml-1">Chef Instructions (Optional)</label>
+                        <label className="text-[10px] uppercase tracking-[0.2em] font-black text-muted-foreground ml-1">{t("pos.chef_instructions_optional", "Chef Instructions (Optional)")}</label>
                         <textarea name="notes" rows={2} className="w-full bg-[hsl(40_18%_96%)] border-2 border-transparent rounded-2xl px-6 py-4 text-primary font-bold focus:bg-white focus:border-accent/30 focus:ring-4 focus:ring-accent/5 transition-all outline-none resize-none placeholder:text-muted-foreground/40 placeholder:font-normal" placeholder="Add any special requests or delivery notes..."></textarea>
                       </div>
                     </div>
@@ -586,7 +586,7 @@ const Checkout = () => {
                                     <Plus className="w-3.5 h-3.5" />
                                   </button>
                                 </div>
-                                <span className="text-xs text-muted-foreground font-medium">৳{Math.round(item.price)} per unit</span>
+                                <span className="text-xs text-muted-foreground font-medium">৳{Math.round(item.price)} {t("pos.per_unit", "per unit")}</span>
                               </div>
                             </div>
                           </div>
@@ -594,7 +594,7 @@ const Checkout = () => {
                           {/* Interactive Add-ons for Checkout */}
                           {item.availableAddOns && item.availableAddOns.length > 0 && (
                             <div className="mt-6 pt-5 border-t border-black/5">
-                              <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-[0.2em] mb-4">Customize Your Selection</p>
+                              <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-[0.2em] mb-4">{t("pos.customize_your_selection", "Customize Your Selection")}</p>
                               <div className="flex flex-wrap gap-2">
                                 {item.availableAddOns.map((addon, aIdx) => {
                                   const isSelected = item.addOns?.some(a => a.name === addon.name);
@@ -643,11 +643,11 @@ const Checkout = () => {
                             <img src="/images/bkash.svg" alt="bKash" className="w-10 h-10 object-contain" />
                           </div>
                           <div className="flex-1">
-                            <p className="font-black text-primary text-lg">bKash</p>
-                            <p className="text-sm text-muted-foreground font-medium">Safe & secure digital payment</p>
+                            <p className="font-black text-primary text-lg">{t("pos.bkash", "bKash")}</p>
+                            <p className="text-sm text-muted-foreground font-medium">{t("pos.safe_secure_digital_payment", "Safe & secure digital payment")}</p>
                           </div>
                           {paymentMethod === "bkash" && (
-                            <motion.div layoutId="active-badge" className="px-3 py-1 bg-accent text-primary text-[10px] font-black uppercase tracking-wider rounded-lg shadow-lg shadow-accent/20">Selected</motion.div>
+                            <motion.div layoutId="active-badge" className="px-3 py-1 bg-accent text-primary text-[10px] font-black uppercase tracking-wider rounded-lg shadow-lg shadow-accent/20">{t("pos.selected", "Selected")}</motion.div>
                           )}
                         </div>
                       </label>
@@ -662,11 +662,11 @@ const Checkout = () => {
                             <img src="/images/nagad.svg" alt="Nagad" className="w-10 h-10 object-contain" />
                           </div>
                           <div className="flex-1">
-                            <p className="font-black text-primary text-lg">Nagad</p>
-                            <p className="text-sm text-muted-foreground font-medium">Fast & reliable transaction</p>
+                            <p className="font-black text-primary text-lg">{t("pos.nagad", "Nagad")}</p>
+                            <p className="text-sm text-muted-foreground font-medium">{t("pos.fast_reliable_transaction", "Fast & reliable transaction")}</p>
                           </div>
                           {paymentMethod === "nagad" && (
-                            <motion.div layoutId="active-badge" className="px-3 py-1 bg-accent text-primary text-[10px] font-black uppercase tracking-wider rounded-lg shadow-lg shadow-accent/20">Selected</motion.div>
+                            <motion.div layoutId="active-badge" className="px-3 py-1 bg-accent text-primary text-[10px] font-black uppercase tracking-wider rounded-lg shadow-lg shadow-accent/20">{t("pos.selected", "Selected")}</motion.div>
                           )}
                         </div>
                       </label>
@@ -681,11 +681,11 @@ const Checkout = () => {
                             <Banknote className="w-7 h-7 text-emerald-600" />
                           </div>
                           <div className="flex-1">
-                            <p className="font-black text-primary text-lg">Cash on Delivery</p>
-                            <p className="text-sm text-muted-foreground font-medium">Pay with cash at your doorstep</p>
+                            <p className="font-black text-primary text-lg">{t("pos.cash_on_delivery", "Cash on Delivery")}</p>
+                            <p className="text-sm text-muted-foreground font-medium">{t("pos.pay_with_cash_at_your_doorstep", "Pay with cash at your doorstep")}</p>
                           </div>
                           {paymentMethod === "cod" && (
-                            <motion.div layoutId="active-badge" className="px-3 py-1 bg-accent text-primary text-[10px] font-black uppercase tracking-wider rounded-lg shadow-lg shadow-accent/20">Selected</motion.div>
+                            <motion.div layoutId="active-badge" className="px-3 py-1 bg-accent text-primary text-[10px] font-black uppercase tracking-wider rounded-lg shadow-lg shadow-accent/20">{t("pos.selected", "Selected")}</motion.div>
                           )}
                         </div>
                       </label>
@@ -709,7 +709,7 @@ const Checkout = () => {
                     <h3 className="text-xl font-serif font-bold relative z-10">
                       Order Summary
                     </h3>
-                    <p className="text-[10px] text-white/60 uppercase tracking-[0.2em] font-bold mt-1 relative z-10">Review your selections</p>
+                    <p className="text-[10px] text-white/60 uppercase tracking-[0.2em] font-bold mt-1 relative z-10">{t("pos.review_your_selections", "Review your selections")}</p>
                   </div>
 
                   <div className="p-8 md:p-10">
@@ -735,11 +735,11 @@ const Checkout = () => {
                               </div>
                             )}
                             <div className="flex items-center gap-2 mt-1.5">
-                              <span className="text-muted-foreground text-[11px] font-medium tracking-tight">৳{Math.round(item.price)} per unit</span>
+                              <span className="text-muted-foreground text-[11px] font-medium tracking-tight">৳{Math.round(item.price)} {t("pos.per_unit", "per unit")}</span>
                             </div>
                           </div>
                           <div className="font-bold text-primary text-right flex-shrink-0">
-                            <div className="text-[11px] text-muted-foreground font-medium mb-0.5">Subtotal</div>
+                            <div className="text-[11px] text-muted-foreground font-medium mb-0.5">{t("pos.subtotal", "Subtotal")}</div>
                             <div className="text-base font-serif">৳{Math.round(item.price * item.quantity)}</div>
                           </div>
                         </div>
@@ -749,11 +749,11 @@ const Checkout = () => {
                     {/* Pricing Breakdown */}
                     <div className="space-y-4 pt-6 border-t border-dashed border-gray-200">
                       <div className="flex justify-between items-center">
-                        <span className="text-sm text-muted-foreground font-medium uppercase tracking-widest">Subtotal</span>
+                        <span className="text-sm text-muted-foreground font-medium uppercase tracking-widest">{t("pos.subtotal", "Subtotal")}</span>
                         <span className="font-bold text-primary">৳{Math.round(totalAmount)}</span>
                       </div>
                       <div className="flex justify-between items-center">
-                        <span className="text-sm text-muted-foreground font-medium uppercase tracking-widest">Delivery Fee</span>
+                        <span className="text-sm text-muted-foreground font-medium uppercase tracking-widest">{t("pos.delivery_fee", "Delivery Fee")}</span>
                         <span className="font-bold text-primary">৳{Math.round(deliveryFee)}</span>
                       </div>
 
@@ -764,7 +764,7 @@ const Checkout = () => {
                         </div>
                         
                         <div className="flex flex-col gap-1">
-                          <span className="text-[11px] font-black text-muted-foreground uppercase tracking-[0.3em] text-center mb-2">Grand Total</span>
+                          <span className="text-[11px] font-black text-muted-foreground uppercase tracking-[0.3em] text-center mb-2">{t("pos.grand_total", "Grand Total")}</span>
                           <div className="flex items-center justify-center gap-2 py-4 bg-[hsl(40_18%_96%)] rounded-2xl border border-black/5 shadow-inner">
                             <span className="text-3xl font-serif font-bold text-accent">৳</span>
                             <span className="text-5xl font-serif font-bold text-primary tracking-tighter">
@@ -799,7 +799,7 @@ const Checkout = () => {
                         <div className="w-6 h-6 rounded-full border-2 border-white bg-gray-100 flex items-center justify-center"><CreditCard className="w-3 h-3" /></div>
                         <div className="w-6 h-6 rounded-full border-2 border-white bg-gray-100 flex items-center justify-center"><ShieldCheck className="w-3 h-3" /></div>
                       </div>
-                      <span className="text-[10px] font-bold uppercase tracking-widest">Secure Checkout</span>
+                      <span className="text-[10px] font-bold uppercase tracking-widest">{t("pos.secure_checkout", "Secure Checkout")}</span>
                     </div>
                   </div>
                 </div>

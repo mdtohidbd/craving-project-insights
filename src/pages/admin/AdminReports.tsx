@@ -4,10 +4,10 @@ import {
     TrendingUp, TrendingDown, DollarSign, ShoppingCart, Users, Calendar,
     Download, Filter, BarChart3, PieChart, Activity, ArrowUpRight, ArrowDownRight
 } from "lucide-react";
-import {
     LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip,
     ResponsiveContainer, BarChart, Bar, PieChart as RePieChart, Pie, Cell
 } from "recharts";
+import { useTranslation } from "react-i18next";
 
 interface ReportData {
     dailySales: { date: string; sales: number; orders: number }[];
@@ -25,6 +25,7 @@ interface ReportData {
 }
 
 const AdminReports = () => {
+    const { t } = useTranslation();
     const [reportData, setReportData] = useState<ReportData | null>(null);
     const [loading, setLoading] = useState(true);
     const [dateRange, setDateRange] = useState("7days");
@@ -91,7 +92,7 @@ const AdminReports = () => {
 
     if (loading || !reportData) {
         return (
-            <AdminLayout title="Reports">
+            <AdminLayout title={t("dashboard.reports", "Reports")}>
                 <div className="flex items-center justify-center h-[50vh]">
                     <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
                 </div>
@@ -100,7 +101,7 @@ const AdminReports = () => {
     }
 
     return (
-        <AdminLayout title="Reports">
+        <AdminLayout title={t("dashboard.reports", "Reports")}>
             <div className="space-y-6">
                 {/* Header Controls */}
                 <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
@@ -113,7 +114,7 @@ const AdminReports = () => {
                                     : "bg-white border border-neutral-200 text-neutral-600 hover:text-neutral-900"
                             }`}
                         >
-                            Overview
+                            {t("reports.overview", "Overview")}
                         </button>
                         <button
                             onClick={() => setReportType("sales")}
@@ -123,7 +124,7 @@ const AdminReports = () => {
                                     : "bg-white border border-neutral-200 text-neutral-600 hover:text-neutral-900"
                             }`}
                         >
-                            Sales
+                            {t("reports.sales", "Sales")}
                         </button>
                         <button
                             onClick={() => setReportType("items")}
@@ -133,7 +134,7 @@ const AdminReports = () => {
                                     : "bg-white border border-neutral-200 text-neutral-600 hover:text-neutral-900"
                             }`}
                         >
-                            Items
+                            {t("reports.items", "Items")}
                         </button>
                     </div>
                     
@@ -143,10 +144,10 @@ const AdminReports = () => {
                             onChange={(e) => setDateRange(e.target.value)}
                             className="bg-white border border-neutral-200 text-neutral-900 rounded-[4px] px-3 py-2 text-sm focus:outline-none focus:border-primary"
                         >
-                            <option value="7days">Last 7 Days</option>
-                            <option value="30days">Last 30 Days</option>
-                            <option value="90days">Last 90 Days</option>
-                            <option value="1year">Last Year</option>
+                            <option value="7days">{t("reports.last_7_days", "Last 7 Days")}</option>
+                            <option value="30days">{t("reports.last_30_days", "Last 30 Days")}</option>
+                            <option value="90days">{t("reports.last_90_days", "Last 90 Days")}</option>
+                            <option value="1year">{t("reports.last_year", "Last Year")}</option>
                         </select>
                         <button className="p-2 bg-white border border-neutral-200 text-neutral-600 rounded-[4px] hover:text-neutral-900 transition-colors">
                             <Download className="w-4 h-4" />
@@ -157,28 +158,28 @@ const AdminReports = () => {
                 {/* Summary Cards */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                     <MetricCard
-                        title="Total Revenue"
+                        title={t("reports.total_revenue", "Total Revenue")}
                         value={`৳${reportData.summary.totalRevenue.toLocaleString()}`}
                         change={reportData.summary.revenueChange}
                         isPositive={reportData.summary.revenueChange > 0}
                         icon={<DollarSign className="w-4 h-4 text-emerald-400" />}
                     />
                     <MetricCard
-                        title="Total Orders"
+                        title={t("reports.total_orders", "Total Orders")}
                         value={reportData.summary.totalOrders.toLocaleString()}
                         change={reportData.summary.ordersChange}
                         isPositive={reportData.summary.ordersChange > 0}
                         icon={<ShoppingCart className="w-4 h-4 text-blue-400" />}
                     />
                     <MetricCard
-                        title="Avg Order Value"
+                        title={t("reports.avg_order_value", "Avg Order Value")}
                         value={`৳${reportData.summary.averageOrderValue.toFixed(2)}`}
                         change={0}
                         isPositive={true}
                         icon={<TrendingUp className="w-4 h-4 text-amber-400" />}
                     />
                     <MetricCard
-                        title="Customers"
+                        title={t("reports.customers", "Customers")}
                         value={reportData.summary.customerCount.toLocaleString()}
                         change={0}
                         isPositive={true}
@@ -191,7 +192,7 @@ const AdminReports = () => {
                         {/* Sales Chart */}
                         <div className="bg-white border border-neutral-200 rounded-[8px] p-6">
                             <div className="flex items-center justify-between mb-6">
-                                <h2 className="text-lg font-semibold text-neutral-900">Daily Sales Trend</h2>
+                                <h2 className="text-lg font-semibold text-neutral-900">{t("reports.daily_sales_trend", "Daily Sales Trend")}</h2>
                                 <BarChart3 className="w-5 h-5 text-neutral-500" />
                             </div>
                             <div className="h-[300px]">
@@ -232,7 +233,7 @@ const AdminReports = () => {
                         {/* Category Sales Pie Chart */}
                         <div className="bg-white border border-neutral-200 rounded-[8px] p-6">
                             <div className="flex items-center justify-between mb-6">
-                                <h2 className="text-lg font-semibold text-neutral-900">Sales by Category</h2>
+                                <h2 className="text-lg font-semibold text-neutral-900">{t("reports.sales_by_category", "Sales by Category")}</h2>
                                 <PieChart className="w-5 h-5 text-neutral-400" />
                             </div>
                             <div className="h-[300px]">
@@ -267,14 +268,14 @@ const AdminReports = () => {
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         {/* Sales by Category Table */}
                         <div className="bg-white border border-neutral-200 rounded-[8px] p-6">
-                            <h2 className="text-lg font-semibold text-neutral-900 mb-6">Sales by Category</h2>
+                            <h2 className="text-lg font-semibold text-neutral-900 mb-6">{t("reports.sales_by_category", "Sales by Category")}</h2>
                             <div className="overflow-x-auto">
                                 <table className="w-full text-sm">
                                     <thead>
                                         <tr className="border-b border-neutral-200">
-                                            <th className="text-left py-3 text-neutral-600">Category</th>
-                                            <th className="text-right py-3 text-neutral-600">Revenue</th>
-                                            <th className="text-right py-3 text-neutral-600">Percentage</th>
+                                            <th className="text-left py-3 text-neutral-600">{t("reports.category", "Category")}</th>
+                                            <th className="text-right py-3 text-neutral-600">{t("reports.revenue", "Revenue")}</th>
+                                            <th className="text-right py-3 text-neutral-600">{t("reports.percentage", "Percentage")}</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -296,7 +297,7 @@ const AdminReports = () => {
 
                         {/* Payment Methods */}
                         <div className="bg-white border border-neutral-200 rounded-[8px] p-6">
-                            <h2 className="text-lg font-semibold text-neutral-900 mb-6">Payment Methods</h2>
+                            <h2 className="text-lg font-semibold text-neutral-900 mb-6">{t("reports.payment_methods", "Payment Methods")}</h2>
                             <div className="space-y-4">
                                 {reportData.paymentMethods.map((method) => (
                                     <div key={method.method} className="flex items-center justify-between">
@@ -305,8 +306,8 @@ const AdminReports = () => {
                                                 <DollarSign className="w-5 h-5 text-neutral-600" />
                                             </div>
                                             <div>
-                                                <p className="text-neutral-900 font-medium">{method.method}</p>
-                                                <p className="text-sm text-neutral-500">{method.count} transactions</p>
+                                                <p className="text-neutral-900 font-medium">{t(`payment.${method.method.toLowerCase()}{`, method.method)}}</p>
+                                                <p className="text-sm text-neutral-500">{t("reports.transactions", "{{count}} transactions", { count: method.count })}</p>
                                             </div>
                                         </div>
                                         <div className="text-right">
@@ -321,14 +322,14 @@ const AdminReports = () => {
 
                 {reportType === "items" && (
                     <div className="bg-white border border-neutral-200 rounded-[8px] p-6">
-                        <h2 className="text-lg font-semibold text-neutral-900 mb-6">Top Selling Items</h2>
+                        <h2 className="text-lg font-semibold text-neutral-900 mb-6">{t("reports.top_selling_items", "Top Selling Items")}</h2>
                         <div className="overflow-x-auto">
                             <table className="w-full text-sm">
                                 <thead>
                                     <tr className="border-b border-neutral-200">
-                                        <th className="text-left py-3 text-neutral-600">Item Name</th>
-                                        <th className="text-right py-3 text-neutral-600">Quantity Sold</th>
-                                        <th className="text-right py-3 text-neutral-600">Revenue</th>
+                                        <th className="text-left py-3 text-neutral-600">{t("reports.item_name", "Item Name")}</th>
+                                        <th className="text-right py-3 text-neutral-600">{t("reports.quantity_sold", "Quantity Sold")}</th>
+                                        <th className="text-right py-3 text-neutral-600">{t("reports.revenue", "Revenue")}</th>
                                     </tr>
                                 </thead>
                                 <tbody>

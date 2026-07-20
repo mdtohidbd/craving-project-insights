@@ -7,6 +7,7 @@ import {
     RefreshCw, ChefHat, CreditCard, Truck, Coffee, Briefcase,
     CheckCircle2, ArrowRight, AlertCircle, BadgeCheck
 } from 'lucide-react';
+import { useTranslation } from "react-i18next";
 
 const ALL_MODULES = [
     { id: 'dashboard', label: 'Dashboard' },
@@ -51,6 +52,7 @@ interface ApproveModal {
 type ActiveTab = 'pending' | 'active';
 
 const AdminStaff = () => {
+    const { t } = useTranslation();
     const { token, isSuperAdmin } = useAuth();
     const [pendingUsers, setPendingUsers] = useState<AuthUser[]>([]);
     const [activeStaff, setActiveStaff] = useState<AuthUser[]>([]);
@@ -74,7 +76,7 @@ const AdminStaff = () => {
             ]);
             if (pendRes.ok)  setPendingUsers(await pendRes.json());
             if (staffRes.ok) setActiveStaff(await staffRes.json());
-        } catch { toast.error('Failed to load staff data'); }
+        } catch { toast.error(t("staff.load_failed", 'Failed to load staff data')); }
         finally  { setIsLoading(false); }
     }, [API_URL, token]);
 
@@ -107,10 +109,10 @@ const AdminStaff = () => {
                 body: JSON.stringify({ status: 'approved', role: 'staff', staffRole: modal.staffRole, allowedModules: modal.allowedModules }),
             });
             if (!res.ok) throw new Error();
-            toast.success(`${modal.user.name} approved as ${modal.staffRole}`);
+            toast.success(t("staff.approve_success", '{{name}} approved as {{role}}', { name: modal.user.name, role: modal.staffRole }));
             setModal(null);
             fetchAll();
-        } catch { toast.error('Approval failed'); }
+        } catch { toast.error(t("staff.approve_failed", 'Approval failed')); }
         finally { setIsSaving(false); }
     };
 
@@ -123,9 +125,9 @@ const AdminStaff = () => {
                 body: JSON.stringify({ status: 'rejected' }),
             });
             if (!res.ok) throw new Error();
-            toast.success('User rejected');
+            toast.success(t("staff.reject_success", 'User rejected'));
             fetchAll();
-        } catch { toast.error('Rejection failed'); }
+        } catch { toast.error(t("staff.reject_failed", 'Rejection failed')); }
         finally { setRejectId(null); }
     };
 
@@ -145,7 +147,7 @@ const AdminStaff = () => {
     });
 
     return (
-        <AdminLayout title="Staff Management">
+        <AdminLayout title={t("dashboard.staff", "Staff Management")}>
             <div className="space-y-6 pb-10">
 
 
@@ -153,15 +155,15 @@ const AdminStaff = () => {
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                     <div className="bg-amber-50 border border-amber-100 rounded-[8px] p-4 flex items-center gap-3">
                         <Clock className="w-5 h-5 text-amber-500" />
-                        <div><p className="text-2xl font-black text-amber-700">{pendingUsers.length}</p><p className="text-xs text-amber-600 font-medium">Pending Approval</p></div>
+                        <div><p className="text-2xl font-black text-amber-700">{pendingUsers.length}</p><p className="text-xs text-amber-600 font-medium">{t("staff.pending_approval", "Pending Approval")}</p></div>
                     </div>
                     <div className="bg-primary/10 border border-emerald-100 rounded-[8px] p-4 flex items-center gap-3">
                         <BadgeCheck className="w-5 h-5 text-primary" />
-                        <div><p className="text-2xl font-black text-primary">{activeStaff.length}</p><p className="text-xs text-primary font-medium">Active Staff</p></div>
+                        <div><p className="text-2xl font-black text-primary">{activeStaff.length}</p><p className="text-xs text-primary font-medium">{t("staff.active_staff", "Active Staff")}</p></div>
                     </div>
                     <div className="bg-blue-50 border border-blue-100 rounded-[8px] p-4 flex items-center gap-3">
                         <Users className="w-5 h-5 text-blue-500" />
-                        <div><p className="text-2xl font-black text-blue-700">{pendingUsers.length + activeStaff.length}</p><p className="text-xs text-blue-600 font-medium">Total</p></div>
+                        <div><p className="text-2xl font-black text-blue-700">{pendingUsers.length + activeStaff.length}</p><p className="text-xs text-blue-600 font-medium">{t("staff.total", "Total")}</p></div>
                     </div>
                 </div>
 
@@ -175,18 +177,18 @@ const AdminStaff = () => {
                                     {tab === 'pending' && pendingUsers.length > 0 && (
                                         <span className="w-2.5 h-2.5 rounded-full bg-rose-500 shrink-0"></span>
                                     )}
-                                    {tab === 'pending' ? 'Pending Queue' : 'Active Staff'}
+                                    {tab === 'pending' ? t("staff.pending_queue", 'Pending Queue') : t("staff.active_staff", 'Active Staff')}
                                 </button>
                             ))}
                         </div>
                         <div className="flex gap-2 flex-1">
                             <div className="relative flex-1">
                                 <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
-                                <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by name, username, phone or email..."
+                                <input value={search} onChange={e => setSearch(e.target.value)} placeholder={t("staff.search_placeholder", "Search by name, username, phone or email...")}
                                     className="w-full pl-9 pr-4 py-2 text-sm rounded-[8px] border border-neutral-200 bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" />
                             </div>
                             <button onClick={fetchAll} className="inline-flex items-center gap-2 px-4 py-2 rounded-[8px] border border-neutral-200 bg-white text-sm font-semibold text-neutral-700 hover:bg-neutral-50 transition-colors shrink-0 shadow-sm">
-                                <RefreshCw className="w-4 h-4" /><span className="hidden sm:inline">Refresh</span>
+                                <RefreshCw className="w-4 h-4" /><span className="hidden sm:inline">{t("common.refresh", "Refresh")}</span>
                             </button>
                         </div>
                     </div>
@@ -197,7 +199,7 @@ const AdminStaff = () => {
                                 onClick={() => setRoleFilter('all')}
                                 className={`px-4 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-colors border ${roleFilter === 'all' ? 'bg-neutral-800 text-white border-neutral-800' : 'bg-white text-neutral-600 border-neutral-200 hover:bg-neutral-50'}`}
                             >
-                                All Staff
+                                {t("staff.all_staff", "All Staff")}
                             </button>
                             {STAFF_ROLES.map(role => (
                                 <button
@@ -206,7 +208,7 @@ const AdminStaff = () => {
                                     className={`px-4 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-colors border flex items-center gap-1.5 ${roleFilter === role.value ? role.color : 'bg-white text-neutral-600 border-neutral-200 hover:bg-neutral-50'}`}
                                 >
                                     {React.cloneElement(role.icon as React.ReactElement, { className: 'w-3.5 h-3.5' })}
-                                    {role.label}
+                                    {t(`staff.role_${role.value}`, role.label)}
                                 </button>
                             ))}
                         </div>
@@ -220,8 +222,8 @@ const AdminStaff = () => {
                     filteredPending.length === 0 ? (
                         <div className="flex flex-col items-center justify-center h-48 text-neutral-400 bg-white border border-neutral-200 rounded-[12px]">
                             <CheckCircle2 className="w-10 h-10 mb-2 text-emerald-300" />
-                            <p className="font-medium text-neutral-500">No pending requests</p>
-                            <p className="text-xs mt-1">All sign-ups have been processed</p>
+                            <p className="font-medium text-neutral-500">{t("staff.no_pending", "No pending requests")}</p>
+                            <p className="text-xs mt-1">{t("staff.all_processed", "All sign-ups have been processed")}</p>
                         </div>
                     ) : (
                         <div className="space-y-3">
@@ -235,7 +237,7 @@ const AdminStaff = () => {
                                             <p className="font-bold text-neutral-900">{u.name}</p>
                                             <p className="text-xs text-neutral-500">@{u.username} • {u.phone}</p>
                                             <span className="inline-flex items-center gap-1 mt-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-700 border border-amber-200">
-                                                <Clock className="w-2.5 h-2.5" /> Awaiting Approval
+                                                <Clock className="w-2.5 h-2.5" /> {t("staff.awaiting_approval", "Awaiting Approval")}
                                             </span>
                                         </div>
                                     </div>
@@ -245,11 +247,11 @@ const AdminStaff = () => {
                                                 disabled={rejectId === u._id}
                                                 className="flex items-center gap-1.5 px-4 py-2 rounded-[8px] border border-rose-200 text-rose-600 bg-rose-50 text-sm font-semibold hover:bg-rose-100 transition-colors disabled:opacity-50">
                                                 {rejectId === u._id ? <Loader2 className="w-4 h-4 animate-spin" /> : <UserX className="w-4 h-4" />}
-                                                Reject
+                                                {t("staff.reject", "Reject")}
                                             </button>
                                             <button onClick={() => openApprove(u)}
                                                 className="flex items-center gap-1.5 px-4 py-2 rounded-[8px] bg-primary text-white text-sm font-bold shadow-md shadow-emerald-200 hover:bg-primary/90 transition-colors">
-                                                <UserCheck className="w-4 h-4" />Approve
+                                                <UserCheck className="w-4 h-4" />{t("staff.approve", "Approve")}
                                             </button>
                                         </div>
                                     )}
@@ -262,7 +264,7 @@ const AdminStaff = () => {
                     filteredActive.length === 0 ? (
                         <div className="flex flex-col items-center justify-center h-48 text-neutral-400 bg-white border border-neutral-200 rounded-[12px]">
                             <Users className="w-10 h-10 mb-2" />
-                            <p className="font-medium text-neutral-500">No active staff yet</p>
+                            <p className="font-medium text-neutral-500">{t("staff.no_active", "No active staff yet")}</p>
                         </div>
                     ) : (
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -277,23 +279,23 @@ const AdminStaff = () => {
                                             </div>
                                             <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold border ${colorClass}`}>
                                                 {meta?.icon && React.cloneElement(meta.icon as React.ReactElement, { className: 'w-3 h-3' })}
-                                                {u.staffRole ? u.staffRole.charAt(0).toUpperCase() + u.staffRole.slice(1) : 'Staff'}
+                                                {u.staffRole ? t(`staff.role_${u.staffRole}`, u.staffRole.charAt(0).toUpperCase() + u.staffRole.slice(1)) : t("staff.staff", 'Staff')}
                                             </span>
                                         </div>
                                         <p className="font-bold text-neutral-900">{u.name}</p>
                                         <p className="text-[11px] font-medium text-neutral-600">@{u.username}</p>
                                         <p className="text-[11px] text-neutral-500 mb-3">{u.phone}</p>
                                         <div className="border-t border-neutral-100 pt-3">
-                                            <p className="text-[10px] font-bold uppercase text-neutral-400 mb-1.5">Module Access</p>
+                                            <p className="text-[10px] font-bold uppercase text-neutral-400 mb-1.5">{t("staff.module_access", "Module Access")}</p>
                                             <div className="flex flex-wrap gap-1">
                                                 {(u.allowedModules ?? []).slice(0, 4).map(m => (
-                                                    <span key={m} className="px-1.5 py-0.5 bg-neutral-100 text-neutral-600 text-[10px] font-semibold rounded-[4px] capitalize">{m}</span>
+                                                    <span key={m} className="px-1.5 py-0.5 bg-neutral-100 text-neutral-600 text-[10px] font-semibold rounded-[4px] capitalize">{t(`modules.${m}`, m)}</span>
                                                 ))}
                                                 {(u.allowedModules ?? []).length > 4 && (
-                                                    <span className="px-1.5 py-0.5 bg-primary/10 text-primary text-[10px] font-bold rounded-[4px]">+{u.allowedModules.length - 4} more</span>
+                                                    <span className="px-1.5 py-0.5 bg-primary/10 text-primary text-[10px] font-bold rounded-[4px]">+{u.allowedModules.length - 4} {t("staff.more", "more")}</span>
                                                 )}
                                                 {(u.allowedModules ?? []).length === 0 && (
-                                                    <span className="text-[10px] text-neutral-400 italic">No modules assigned</span>
+                                                    <span className="text-[10px] text-neutral-400 italic">{t("staff.no_modules", "No modules assigned")}</span>
                                                 )}
                                             </div>
                                         </div>
@@ -338,15 +340,17 @@ const AdminStaff = () => {
                             {/* Step 1: Choose Role */}
                             {modal.step === 'role' && (
                                 <div>
-                                    <p className="text-sm font-bold text-neutral-700 mb-4">Assign a staff position to <span className="text-primary">{modal.user.name}</span>:</p>
+                                    <p className="text-sm font-bold text-neutral-700 mb-4">
+                                        <span dangerouslySetInnerHTML={{ __html: t("staff.assign_position_to", "Assign a staff position to <span class='text-primary'>{{name}}</span>:", { name: modal.user.name }) }} />
+                                    </p>
                                     <div className="grid grid-cols-1 gap-2">
                                         {STAFF_ROLES.map(sr => (
                                             <button key={sr.value} onClick={() => selectRole(sr.value)}
                                                 className={`flex items-center gap-4 p-4 rounded-[8px] border-2 text-left transition-all hover:shadow-sm group ${modal.staffRole === sr.value ? `border-primary bg-primary/5` : 'border-neutral-200 hover:border-neutral-300'}`}>
                                                 <div className={`p-2.5 rounded-[8px] border ${sr.color}`}>{sr.icon}</div>
                                                 <div className="flex-1">
-                                                    <p className="font-bold text-neutral-900">{sr.label}</p>
-                                                    <p className="text-xs text-neutral-500">Default: {sr.defaultModules.length} modules</p>
+                                                    <p className="font-bold text-neutral-900">{t(`staff.role_${sr.value}`, sr.label)}</p>
+                                                    <p className="text-xs text-neutral-500">{t("staff.default_modules", "Default: {{count}} modules", { count: sr.defaultModules.length })}</p>
                                                 </div>
                                                 <ArrowRight className="w-4 h-4 text-neutral-300 group-hover:text-neutral-600 transition-colors" />
                                             </button>
@@ -359,11 +363,13 @@ const AdminStaff = () => {
                             {modal.step === 'modules' && (
                                 <div>
                                     <div className="flex items-center justify-between mb-4">
-                                        <p className="text-sm font-bold text-neutral-700">Choose module access for <span className="text-primary capitalize">{modal.staffRole}</span>:</p>
+                                        <p className="text-sm font-bold text-neutral-700">
+                                            <span dangerouslySetInnerHTML={{ __html: t("staff.choose_access_for", "Choose module access for <span class='text-primary capitalize'>{{role}}</span>:", { role: t(`staff.role_${modal.staffRole}`, modal.staffRole) }) }} />
+                                        </p>
                                         <div className="flex gap-2">
-                                            <button onClick={() => setModal(p => p ? { ...p, allowedModules: ALL_MODULES.map(m => m.id) } : p)} className="text-[10px] text-primary font-bold hover:underline">All</button>
+                                            <button onClick={() => setModal(p => p ? { ...p, allowedModules: ALL_MODULES.map(m => m.id) } : p)} className="text-[10px] text-primary font-bold hover:underline">{t("staff.all", "All")}</button>
                                             <span className="text-neutral-300">|</span>
-                                            <button onClick={() => setModal(p => p ? { ...p, allowedModules: [] } : p)} className="text-[10px] text-neutral-500 font-bold hover:underline">None</button>
+                                            <button onClick={() => setModal(p => p ? { ...p, allowedModules: [] } : p)} className="text-[10px] text-neutral-500 font-bold hover:underline">{t("staff.none", "None")}</button>
                                         </div>
                                     </div>
                                     <div className="grid grid-cols-2 gap-2">
@@ -375,7 +381,7 @@ const AdminStaff = () => {
                                                     <div className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 ${checked ? 'bg-primary border-primary' : 'border-neutral-300'}`}>
                                                         {checked && <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>}
                                                     </div>
-                                                    {m.label}
+                                                    {t(`modules.${m.id}`, m.label)}
                                                 </button>
                                             );
                                         })}
@@ -387,22 +393,22 @@ const AdminStaff = () => {
                             {modal.step === 'confirm' && (
                                 <div className="space-y-4">
                                     <div className="bg-primary/10 border border-primary/30 rounded-[8px] p-4">
-                                        <p className="text-sm font-bold text-emerald-800 mb-3">Review before approving</p>
+                                        <p className="text-sm font-bold text-emerald-800 mb-3">{t("staff.review_before", "Review before approving")}</p>
                                         <div className="space-y-2 text-sm">
-                                            <div className="flex justify-between"><span className="text-neutral-500">Name</span><span className="font-semibold text-neutral-900">{modal.user.name}</span></div>
-                                            <div className="flex justify-between"><span className="text-neutral-500">Username</span><span className="font-semibold text-neutral-900">@{modal.user.username}</span></div>
-                                            <div className="flex justify-between"><span className="text-neutral-500">Phone</span><span className="font-semibold text-neutral-900">{modal.user.phone}</span></div>
-                                            <div className="flex justify-between"><span className="text-neutral-500">Position</span><span className="font-semibold text-neutral-900 capitalize">{modal.staffRole}</span></div>
-                                            <div className="flex justify-between"><span className="text-neutral-500">Modules</span><span className="font-semibold text-neutral-900">{modal.allowedModules.length} modules</span></div>
+                                            <div className="flex justify-between"><span className="text-neutral-500">{t("staff.name", "Name")}</span><span className="font-semibold text-neutral-900">{modal.user.name}</span></div>
+                                            <div className="flex justify-between"><span className="text-neutral-500">{t("staff.username", "Username")}</span><span className="font-semibold text-neutral-900">@{modal.user.username}</span></div>
+                                            <div className="flex justify-between"><span className="text-neutral-500">{t("staff.phone", "Phone")}</span><span className="font-semibold text-neutral-900">{modal.user.phone}</span></div>
+                                            <div className="flex justify-between"><span className="text-neutral-500">{t("staff.position", "Position")}</span><span className="font-semibold text-neutral-900 capitalize">{t(`staff.role_${modal.staffRole}`, modal.staffRole as string)}</span></div>
+                                            <div className="flex justify-between"><span className="text-neutral-500">{t("staff.modules_assigned", "Modules")}</span><span className="font-semibold text-neutral-900">{modal.allowedModules.length} {t("staff.modules", "modules")}</span></div>
                                         </div>
                                     </div>
                                     <div>
-                                        <p className="text-xs font-bold uppercase text-neutral-400 mb-2">Assigned Modules</p>
+                                        <p className="text-xs font-bold uppercase text-neutral-400 mb-2">{t("staff.assigned_modules", "Assigned Modules")}</p>
                                         <div className="flex flex-wrap gap-1.5">
                                             {modal.allowedModules.map(m => (
-                                                <span key={m} className="px-2 py-1 bg-primary/10 text-primary text-xs font-semibold rounded-[4px] capitalize">{m}</span>
+                                                <span key={m} className="px-2 py-1 bg-primary/10 text-primary text-xs font-semibold rounded-[4px] capitalize">{t(`modules.${m}`, m)}</span>
                                             ))}
-                                            {modal.allowedModules.length === 0 && <span className="text-xs text-neutral-400 italic">No modules — staff won't see anything</span>}
+                                            {modal.allowedModules.length === 0 && <span className="text-xs text-neutral-400 italic">{t("staff.no_modules_warning", "No modules — staff won't see anything")}</span>}
                                         </div>
                                     </div>
                                 </div>
@@ -414,20 +420,20 @@ const AdminStaff = () => {
                             <button onClick={() => setModal(p => p ? { ...p, step: p.step === 'modules' ? 'role' : 'modules' } : p)}
                                 disabled={modal.step === 'role'}
                                 className="px-4 py-2 rounded-[8px] text-sm font-semibold text-neutral-600 border border-neutral-200 hover:bg-neutral-100 transition-colors disabled:opacity-30">
-                                Back
+                                {t("common.back", "Back")}
                             </button>
                             {modal.step === 'confirm' ? (
                                 <button onClick={submitApproval} disabled={isSaving}
                                     className="px-5 py-2 rounded-[8px] text-sm font-bold bg-primary text-white shadow-md shadow-emerald-200 hover:bg-primary/90 transition-all active:scale-95 disabled:opacity-60 flex items-center gap-2">
                                     {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
-                                    Confirm Approval
+                                    {t("staff.confirm_approval", "Confirm Approval")}
                                 </button>
                             ) : (
                                 <button
                                     onClick={() => setModal(p => p ? { ...p, step: p.step === 'role' ? 'modules' : 'confirm' } : p)}
                                     disabled={modal.step === 'role' && !modal.staffRole}
                                     className="px-5 py-2 rounded-[8px] text-sm font-bold bg-primary text-white shadow-md shadow-primary/20 hover:brightness-110 transition-all active:scale-95 disabled:opacity-40 flex items-center gap-2">
-                                    Next <ArrowRight className="w-4 h-4" />
+                                    {t("common.next", "Next")} <ArrowRight className="w-4 h-4" />
                                 </button>
                             )}
                         </div>

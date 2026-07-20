@@ -4,6 +4,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X } from "lucide-react";
 import { Cart } from "./Cart";
 import { useSettings } from "@/context/SettingsContext";
+import { LanguageSwitcher } from "./LanguageSwitcher";
+import { useTranslation } from "react-i18next";
 
 const navLinks = [
   { name: "Home", path: "/" },
@@ -17,6 +19,7 @@ const Navbar = ({ theme = "dark" }: { theme?: "light" | "dark" }) => {
   const [scrolled, setScrolled] = useState(false);
   const location = useLocation();
   const { settings } = useSettings();
+  const { t } = useTranslation();
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
@@ -59,7 +62,7 @@ const Navbar = ({ theme = "dark" }: { theme?: "light" | "dark" }) => {
                       }`}
                     style={location.pathname === link.path ? { color: "hsl(43 74% 48%)" } : {}}
                   >
-                    {link.name}
+                    {t(`nav.${link.name.toLowerCase().replace(' ', '_')}`, link.name)}
                   </span>
                   <span
                     className={`absolute bottom-0 left-0 h-[1.5px] transition-all duration-500 ${location.pathname === link.path
@@ -73,7 +76,10 @@ const Navbar = ({ theme = "dark" }: { theme?: "light" | "dark" }) => {
             </div>
 
             {/* CTA Button and Cart */}
-            <div className="hidden md:flex items-center gap-6">
+            <div className="hidden md:flex items-center gap-4 lg:gap-6">
+              <div className={`transition-colors ${scrolled || theme === "dark" ? "text-primary-foreground" : "text-primary"}`}>
+                <LanguageSwitcher />
+              </div>
               <Cart className={scrolled || theme === "dark" ? "text-primary-foreground" : "text-primary"} />
               <Link
                 to="/book-table"
@@ -123,8 +129,9 @@ const Navbar = ({ theme = "dark" }: { theme?: "light" | "dark" }) => {
                       }`}
                     style={location.pathname === link.path ? { color: "hsl(43 74% 48%)" } : {}}
                   >
-                    {link.name}
+                    {t(`nav.${link.name.toLowerCase().replace(' ', '_')}`, link.name)}
                   </Link>
+
                 </motion.div>
               ))}
               <motion.div

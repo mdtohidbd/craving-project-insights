@@ -11,8 +11,11 @@ interface InventoryItem {
 import React, { useState, useEffect } from "react";
 import AdminLayout from "../../components/admin/AdminLayout";
 import { Search, Plus, Filter, Edit, Trash2, Package, X } from "lucide-react";
+import { useTranslation } from "react-i18next";
+import { toast } from "sonner";
 
 const AdminInventory = () => {
+    const { t } = useTranslation();
     const [searchTerm, setSearchTerm] = useState("");
     const [inventoryItems, setInventoryItems] = useState<InventoryItem[]>([]);
     const [loading, setLoading] = useState(true);
@@ -57,18 +60,18 @@ const AdminInventory = () => {
     const handleDelete = (id: string) => {
         setConfirmModal({
             isOpen: true,
-            title: "Delete Inventory Item",
-            message: "Are you sure you want to delete this inventory item? This action cannot be undone.",
+            title: t("inventory.delete_title", "Delete Inventory Item"),
+            message: t("inventory.delete_message", "Are you sure you want to delete this inventory item? This action cannot be undone."),
             onConfirm: async () => {
                 try {
                     const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
                     await fetch(`${apiUrl}/inventory/${id}`, { method: "DELETE" });
                     fetchItems();
                     setConfirmModal(prev => ({ ...prev, isOpen: false }));
-                    toast.success("Inventory item deleted successfully");
+                    toast.success(t("inventory.item_deleted", "Inventory item deleted successfully"));
                 } catch (err) {
                     console.error("Failed to delete item:", err);
-                    toast.error("Failed to delete item");
+                    toast.error(t("inventory.delete_failed", "Failed to delete item"));
                 }
             }
         });
@@ -111,12 +114,12 @@ const AdminInventory = () => {
                 throw new Error(data.message || "Failed to save inventory item");
             }
 
-            toast.success(editingItem ? "Item updated successfully" : "Item added successfully");
+            toast.success(editingItem ? t("inventory.item_updated", "Item updated successfully") : t("inventory.item_added", "Item added successfully"));
             setIsModalOpen(false);
             fetchItems();
         } catch (err: any) {
             console.error("Failed to save item:", err);
-            toast.error(err.message || "Failed to save item");
+            toast.error(err.message || t("inventory.save_failed", "Failed to save item"));
         }
     };
 
@@ -126,7 +129,7 @@ const AdminInventory = () => {
     );
 
     return (
-        <AdminLayout title="Inventory">
+        <AdminLayout title={t("dashboard.inventory", "Inventory")}>
             <div className="space-y-6">
 
                 {/* Actions Bar */}
@@ -135,7 +138,7 @@ const AdminInventory = () => {
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
                         <input
                             type="text"
-                            placeholder="Search items or categories..."
+                            placeholder={t("inventory.search_placeholder", "Search items or categories...")}
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                             className="w-full bg-white border border-neutral-200 text-neutral-900 rounded-[4px] pl-10 pr-4 py-2 text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all placeholder:text-neutral-400"
@@ -145,14 +148,14 @@ const AdminInventory = () => {
                     <div className="flex items-center gap-3 w-full sm:w-auto">
                         <button className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 border border-neutral-200 bg-white text-sm font-medium rounded-[4px] hover:bg-neutral-50 transition-colors">
                             <Filter className="w-4 h-4" />
-                            Filter
+                            {t("inventory.filter", "Filter")}
                         </button>
                         <button
                             onClick={() => handleOpenModal()}
                             className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-primary text-primary-foreground text-sm font-medium rounded-[4px] hover:bg-primary/90 transition-colors"
                         >
                             <Plus className="w-4 h-4" />
-                            Add Item
+                            {t("inventory.add_item_btn", "Add Item")}
                         </button>
                     </div>
                 </div>
@@ -163,12 +166,12 @@ const AdminInventory = () => {
                         <table className="w-full text-sm text-left whitespace-nowrap">
                             <thead className="text-xs text-neutral-500 bg-neutral-50 uppercase border-b border-neutral-200">
                                 <tr>
-                                    <th className="px-6 py-4 font-medium">Item Name</th>
-                                    <th className="px-6 py-4 font-medium">Category</th>
-                                    <th className="px-6 py-4 font-medium">Price</th>
-                                    <th className="px-6 py-4 font-medium">Stock</th>
-                                    <th className="px-6 py-4 font-medium">Status</th>
-                                    <th className="px-6 py-4 font-medium text-right">Actions</th>
+                                    <th className="px-6 py-4 font-medium">{t("inventory.item_name", "Item Name")}</th>
+                                    <th className="px-6 py-4 font-medium">{t("inventory.category", "Category")}</th>
+                                    <th className="px-6 py-4 font-medium">{t("inventory.price", "Price")}</th>
+                                    <th className="px-6 py-4 font-medium">{t("inventory.stock", "Stock")}</th>
+                                    <th className="px-6 py-4 font-medium">{t("inventory.status", "Status")}</th>
+                                    <th className="px-6 py-4 font-medium text-right">{t("common.actions", "Actions")}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -185,7 +188,7 @@ const AdminInventory = () => {
                                                 ? 'bg-emerald-100 text-primary border border-primary/30'
                                                 : 'bg-rose-100 text-rose-700 border border-rose-200'
                                                 }`}>
-                                                {item.status}
+                                                {item.status === 'In Stock' ? t("inventory.in_stock", "In Stock") : (item.status === 'Low Stock' ? t("inventory.low_stock", "Low Stock") : t("inventory.out_of_stock", "Out of Stock"))}
                                             </span>
                                         </td>
                                         <td className="px-6 py-4 text-right">
@@ -206,23 +209,23 @@ const AdminInventory = () => {
                         {!loading && filteredData.length === 0 && (
                             <div className="p-8 text-center text-neutral-500">
                                 <Package className="w-8 h-8 mx-auto mb-3 opacity-50" />
-                                <p>No inventory items found.</p>
+                                <p>{t("inventory.no_items_found", "No inventory items found.")}</p>
                             </div>
                         )}
                         {loading && (
                             <div className="p-8 text-center text-neutral-500">
-                                <p>Loading inventory...</p>
+                                <p>{t("common.loading", "Loading...")}</p>
                             </div>
                         )}
                     </div>
 
                     {/* Pagination (Visual Only) */}
                     <div className="p-4 border-t border-neutral-200 flex items-center justify-between text-sm text-neutral-600">
-                        <span>Showing {filteredData.length} entries</span>
+                        <span>{t("inventory.showing", "Showing")} {filteredData.length} {t("inventory.entries", "entries")}</span>
                         <div className="flex gap-1">
-                            <button className="px-3 py-1 bg-neutral-100 rounded-[4px] hover:text-neutral-900 transition-colors">Prev</button>
+                            <button className="px-3 py-1 bg-neutral-100 rounded-[4px] hover:text-neutral-900 transition-colors">{t("inventory.prev", "Prev")}</button>
                             <button className="px-3 py-1 bg-primary/20 text-primary border border-primary/30 rounded-[4px]">1</button>
-                            <button className="px-3 py-1 bg-neutral-100 rounded-[4px] hover:text-neutral-900 transition-colors">Next</button>
+                            <button className="px-3 py-1 bg-neutral-100 rounded-[4px] hover:text-neutral-900 transition-colors">{t("inventory.next", "Next")}</button>
                         </div>
                     </div>
                 </div>
@@ -235,7 +238,7 @@ const AdminInventory = () => {
                         <div className="bg-white border border-neutral-200 rounded-[8px] shadow-xl w-full max-w-md overflow-hidden">
                             <div className="flex items-center justify-between p-4 border-b border-neutral-200">
                                 <h3 className="text-lg font-medium text-neutral-900">
-                                    {editingItem ? "Edit Item" : "Add Item"}
+                                    {editingItem ? t("inventory.edit_item", "Edit Item") : t("inventory.add_item", "Add Item")}
                                 </h3>
                                 <button onClick={() => setIsModalOpen(false)} className="text-neutral-400 hover:text-neutral-900 transition-colors">
                                     <X className="w-5 h-5" />
@@ -243,43 +246,43 @@ const AdminInventory = () => {
                             </div>
                             <form onSubmit={handleSave} className="p-4 space-y-4">
                                 <div>
-                                    <label className="block text-sm font-medium text-neutral-600 mb-1">Item Name</label>
+                                    <label className="block text-sm font-medium text-neutral-600 mb-1">{t("inventory.item_name", "Item Name")}</label>
                                     <input required type="text" value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} className="w-full bg-white border border-neutral-200 rounded-[4px] px-3 py-2 text-neutral-900 focus:outline-none focus:border-primary" />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-neutral-600 mb-1">Category</label>
+                                    <label className="block text-sm font-medium text-neutral-600 mb-1">{t("inventory.category", "Category")}</label>
                                     <input required type="text" value={formData.category} onChange={e => setFormData({ ...formData, category: e.target.value })} className="w-full bg-white border border-neutral-200 rounded-[4px] px-3 py-2 text-neutral-900 focus:outline-none focus:border-primary" />
                                 </div>
                                 <div className="flex gap-4">
                                     <div className="flex-1">
-                                        <label className="block text-sm font-medium text-neutral-600 mb-1">Stock</label>
+                                        <label className="block text-sm font-medium text-neutral-600 mb-1">{t("inventory.stock", "Stock")}</label>
                                         <input required type="number" value={formData.stock} onChange={e => setFormData({ ...formData, stock: parseInt(e.target.value) || 0 })} className="w-full bg-white border border-neutral-200 rounded-[4px] px-3 py-2 text-neutral-900 focus:outline-none focus:border-primary" />
                                     </div>
                                     <div className="flex-1">
-                                        <label className="block text-sm font-medium text-neutral-600 mb-1">Unit</label>
-                                        <input required type="text" placeholder="e.g. kg, pcs" value={formData.unit} onChange={e => setFormData({ ...formData, unit: e.target.value })} className="w-full bg-white border border-neutral-200 rounded-[4px] px-3 py-2 text-neutral-900 focus:outline-none focus:border-primary" />
+                                        <label className="block text-sm font-medium text-neutral-600 mb-1">{t("inventory.unit", "Unit")}</label>
+                                        <input required type="text" placeholder={t("inventory.unit_placeholder", "e.g. kg, pcs")} value={formData.unit} onChange={e => setFormData({ ...formData, unit: e.target.value })} className="w-full bg-white border border-neutral-200 rounded-[4px] px-3 py-2 text-neutral-900 focus:outline-none focus:border-primary" />
                                     </div>
                                 </div>
                                 <div className="flex gap-4">
                                     <div className="flex-1">
-                                        <label className="block text-sm font-medium text-neutral-600 mb-1">Price</label>
-                                        <input required type="text" placeholder="e.g. $10.00" value={formData.price} onChange={e => setFormData({ ...formData, price: e.target.value })} className="w-full bg-white border border-neutral-200 rounded-[4px] px-3 py-2 text-neutral-900 focus:outline-none focus:border-primary" />
+                                        <label className="block text-sm font-medium text-neutral-600 mb-1">{t("inventory.price", "Price")}</label>
+                                        <input required type="text" placeholder={t("inventory.price_placeholder", "e.g. $10.00")} value={formData.price} onChange={e => setFormData({ ...formData, price: e.target.value })} className="w-full bg-white border border-neutral-200 rounded-[4px] px-3 py-2 text-neutral-900 focus:outline-none focus:border-primary" />
                                     </div>
                                     <div className="flex-1">
-                                        <label className="block text-sm font-medium text-neutral-600 mb-1">Status</label>
+                                        <label className="block text-sm font-medium text-neutral-600 mb-1">{t("inventory.status", "Status")}</label>
                                         <select value={formData.status} onChange={e => setFormData({ ...formData, status: e.target.value })} className="w-full bg-white border border-neutral-200 rounded-[4px] px-3 py-2 text-neutral-900 focus:outline-none focus:border-primary appearance-none">
-                                            <option value="In Stock">In Stock</option>
-                                            <option value="Low Stock">Low Stock</option>
-                                            <option value="Out of Stock">Out of Stock</option>
+                                            <option value="In Stock">{t("inventory.in_stock", "In Stock")}</option>
+                                            <option value="Low Stock">{t("inventory.low_stock", "Low Stock")}</option>
+                                            <option value="Out of Stock">{t("inventory.out_of_stock", "Out of Stock")}</option>
                                         </select>
                                     </div>
                                 </div>
                                 <div className="pt-4 flex justify-end gap-3 border-t border-neutral-200">
                                     <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 text-sm font-medium text-neutral-600 hover:text-neutral-900 transition-colors">
-                                        Cancel
+                                        {t("common.cancel", "Cancel")}
                                     </button>
                                     <button type="submit" className="px-4 py-2 bg-primary text-primary-foreground text-sm font-medium rounded-[4px] hover:bg-primary/90 transition-colors">
-                                        {editingItem ? "Save Changes" : "Add Item"}
+                                        {editingItem ? t("menu.save_changes", "Save Changes") : t("inventory.add_item_btn", "Add Item")}
                                     </button>
                                 </div>
                             </form>
@@ -304,13 +307,13 @@ const AdminInventory = () => {
                                     onClick={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
                                     className="flex-1 py-3 bg-neutral-100 hover:bg-neutral-200 text-neutral-700 font-bold rounded-[12px] transition-all"
                                 >
-                                    Cancel
+                                    {t("common.cancel", "Cancel")}
                                 </button>
                                 <button
                                     onClick={confirmModal.onConfirm}
                                     className="flex-1 py-3 bg-rose-500 hover:bg-rose-600 text-white font-bold rounded-[12px] transition-all shadow-lg shadow-rose-100"
                                 >
-                                    Delete
+                                    {t("common.delete", "Delete")}
                                 </button>
                             </div>
                         </div>
