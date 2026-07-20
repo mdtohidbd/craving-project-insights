@@ -241,14 +241,14 @@ const AdminLogin = () => {
                             <p className="text-xs text-neutral-500 font-bold uppercase tracking-wider text-center mb-4">
                                 Quick Login (Demo)
                             </p>
-                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                            <div className="flex flex-wrap justify-center gap-2 sm:gap-3">
                                 {[
-                                    { label: 'Admin', user: 'admin123', pass: 'password123', icon: Shield, color: 'text-rose-600', bg: 'bg-rose-50', hover: 'hover:border-rose-300 hover:shadow-rose-100', border: 'border-rose-100' },
-                                    { label: 'Manager', user: 'manager123', pass: 'password123', icon: Briefcase, color: 'text-blue-600', bg: 'bg-blue-50', hover: 'hover:border-blue-300 hover:shadow-blue-100', border: 'border-blue-100' },
-                                    { label: 'Cashier', user: 'cashier123', pass: 'password123', icon: Calculator, color: 'text-emerald-600', bg: 'bg-emerald-50', hover: 'hover:border-emerald-300 hover:shadow-emerald-100', border: 'border-emerald-100' },
-                                    { label: 'Chef', user: 'chef123', pass: 'password123', icon: ChefHat, color: 'text-orange-600', bg: 'bg-orange-50', hover: 'hover:border-orange-300 hover:shadow-orange-100', border: 'border-orange-100' },
-                                    { label: 'Waiter', user: 'waiter123', pass: 'password123', icon: Coffee, color: 'text-purple-600', bg: 'bg-purple-50', hover: 'hover:border-purple-300 hover:shadow-purple-100', border: 'border-purple-100' },
-                                    { label: 'Delivery', user: 'delivery123', pass: 'password123', icon: Truck, color: 'text-cyan-600', bg: 'bg-cyan-50', hover: 'hover:border-cyan-300 hover:shadow-cyan-100', border: 'border-cyan-100' },
+                                    { label: 'Admin', user: 'admin123', pass: 'password123', icon: Shield, color: 'text-rose-600', bg: 'bg-rose-50/80', hover: 'hover:bg-rose-100 hover:border-rose-300 hover:shadow-rose-100', border: 'border-rose-200/60' },
+                                    { label: 'Manager', user: 'manager123', pass: 'password123', icon: Briefcase, color: 'text-blue-600', bg: 'bg-blue-50/80', hover: 'hover:bg-blue-100 hover:border-blue-300 hover:shadow-blue-100', border: 'border-blue-200/60' },
+                                    { label: 'Cashier', user: 'cashier123', pass: 'password123', icon: Calculator, color: 'text-emerald-600', bg: 'bg-emerald-50/80', hover: 'hover:bg-emerald-100 hover:border-emerald-300 hover:shadow-emerald-100', border: 'border-emerald-200/60' },
+                                    { label: 'Chef', user: 'chef123', pass: 'password123', icon: ChefHat, color: 'text-orange-600', bg: 'bg-orange-50/80', hover: 'hover:bg-orange-100 hover:border-orange-300 hover:shadow-orange-100', border: 'border-orange-200/60' },
+                                    { label: 'Waiter', user: 'waiter123', pass: 'password123', icon: Coffee, color: 'text-purple-600', bg: 'bg-purple-50/80', hover: 'hover:bg-purple-100 hover:border-purple-300 hover:shadow-purple-100', border: 'border-purple-200/60' },
+                                    { label: 'Delivery', user: 'delivery123', pass: 'password123', icon: Truck, color: 'text-cyan-600', bg: 'bg-cyan-50/80', hover: 'hover:bg-cyan-100 hover:border-cyan-300 hover:shadow-cyan-100', border: 'border-cyan-200/60' },
                                 ].map((role) => {
                                     const Icon = role.icon;
                                     return (
@@ -259,12 +259,10 @@ const AdminLogin = () => {
                                                 e.preventDefault();
                                                 handleQuickLogin(role.user, role.pass);
                                             }}
-                                            className={`flex flex-col items-center justify-center gap-2 p-3 rounded-xl border ${role.bg} ${role.border} ${role.hover} transition-all duration-300 hover:-translate-y-1 hover:shadow-md group`}
+                                            className={`flex flex-row items-center justify-center gap-1.5 px-3 py-1.5 rounded-full border ${role.bg} ${role.border} ${role.hover} transition-all duration-300 hover:-translate-y-0.5 hover:shadow-sm group`}
                                         >
-                                            <div className={`p-2 rounded-lg bg-white shadow-sm group-hover:scale-110 transition-transform ${role.color}`}>
-                                                <Icon className="w-4 h-4" />
-                                            </div>
-                                            <span className={`text-[11px] font-extrabold tracking-wide uppercase ${role.color}`}>
+                                            <Icon className={`w-3.5 h-3.5 group-hover:scale-110 transition-transform ${role.color}`} />
+                                            <span className={`text-[10px] sm:text-[11px] font-bold tracking-wide uppercase ${role.color}`}>
                                                 {role.label}
                                             </span>
                                         </button>

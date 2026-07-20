@@ -3,10 +3,10 @@
     "brainsync": {
       "command": "node",
       "args": [
-        "c:\\Users\\HP\\.antigravity-ide\\extensions\\dawoodahmad.brainsync-3.0.12-universal\\dist\\mcp-server.js"
+        "c:\\Users\\KILLBIT\\.antigravity\\extensions\\dawoodahmad.brainsync-3.0.12-universal\\dist\\mcp-server.js"
       ],
       "env": {
-        "BRAINSYNC_ENV_FILE": "C:\\Users\\HP\\.bsync_core\\craving-project-insights\\mcp-secret-env.json"
+        "BRAINSYNC_ENV_FILE": "C:\\Users\\KILLBIT\\.bsync_core\\craving-project-insights\\mcp-secret-env.json"
       }
     }
   }
