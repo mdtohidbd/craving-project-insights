@@ -60,9 +60,7 @@ export const MobileBottomNav = () => {
         </Link>
 
         {/* Adding Language Switcher instead of standard link to keep it in UI easily accessible */}
-        <div className="flex flex-col items-center justify-center w-full py-2 rounded-xl transition-all duration-300 text-primary-foreground/70 hover:text-primary-foreground hover:bg-white/5">
-          <LanguageSwitcher />
-        </div>
+        <LanguageSwitcher isMobileNav={true} />
 
         <Link
           to="/admin/login"
