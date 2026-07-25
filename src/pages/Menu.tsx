@@ -11,6 +11,7 @@ import { MenuItem } from "@/types";
 import { Skeleton } from "@/components/ui/skeleton";
 import { applyCustomImages } from "@/utils/menuUtils";
 import { generateSlug } from "@/utils/slugUtils";
+import { useTranslation } from "react-i18next";
 
 import menuMojito from "@/assets/menu-mojito.jpg";
 import menuCoconut from "@/assets/menu-coconut.jpg";
@@ -79,6 +80,7 @@ export const imageMap: Record<string, any> = {
 export const resolveImage = (img: string) => imageMap[img] || img;
 
 const Menu = () => {
+  const { t } = useTranslation();
   const { addToCart, cart, updateQuantity } = useCart();
   const [categories, setCategories] = useState<string[]>([]);
   const [activeCategory, setActiveCategory] = useState("");

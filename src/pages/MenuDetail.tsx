@@ -9,6 +9,7 @@ import { MenuItem } from "@/types";
 import { applyCustomImages } from "@/utils/menuUtils";
 import { resolveImage } from "./Menu";
 import { generateSlug } from "@/utils/slugUtils";
+import { useTranslation } from "react-i18next";
 
 const DiamondStar = ({ className }: { className?: string }) => (
   <svg viewBox="0 0 24 24" className={className} fill="currentColor">
@@ -28,6 +29,7 @@ const getShapeClass = (index: number) => {
 };
 
 const MenuDetail = () => {
+  const { t } = useTranslation();
   const { slug } = useParams();
   const { addToCart, cart, updateQuantity } = useCart();
   const [quantity, setQuantity] = useState(1);

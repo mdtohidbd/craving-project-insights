@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { useTranslation } from 'react-i18next';
 import { Eye, EyeOff, ChefHat, Loader2, AlertCircle, CheckCircle2, Shield, Briefcase, Calculator, Coffee, Truck } from 'lucide-react';
 
 type Mode = 'login' | 'register';
@@ -8,6 +9,7 @@ type Mode = 'login' | 'register';
 const AdminLogin = () => {
     const navigate = useNavigate();
     const { login, register } = useAuth();
+    const { t } = useTranslation();
 
     const [mode, setMode] = useState<Mode>('login');
     const [name, setName] = useState('');

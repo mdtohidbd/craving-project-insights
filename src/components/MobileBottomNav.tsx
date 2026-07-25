@@ -2,7 +2,6 @@ import { Link, useLocation } from "react-router-dom";
 import { Home, Utensils, CalendarPlus, User, Phone, Globe } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { LanguageSwitcher } from "./LanguageSwitcher";
 
 export const MobileBottomNav = () => {
   const location = useLocation();
@@ -59,8 +58,7 @@ export const MobileBottomNav = () => {
           <span className="text-[10px] font-bold tracking-wide">{t("nav.book_table")}</span>
         </Link>
 
-        {/* Adding Language Switcher instead of standard link to keep it in UI easily accessible */}
-        <LanguageSwitcher isMobileNav={true} />
+
 
         <Link
           to="/admin/login"

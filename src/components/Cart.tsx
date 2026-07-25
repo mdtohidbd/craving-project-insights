@@ -12,8 +12,10 @@ import { toast } from "sonner";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import { useTranslation } from "react-i18next";
 
 export const Cart = ({ className, textLabel }: { className?: string, textLabel?: string }) => {
+  const { t } = useTranslation();
   const { cart, removeFromCart, updateQuantity, clearCart, totalItems, totalAmount } = useCart();
   const [isOpen, setIsOpen] = useState(false);
   const [bouncing, setBouncing] = useState(false);
@@ -23,8 +25,8 @@ export const Cart = ({ className, textLabel }: { className?: string, textLabel?:
   useEffect(() => {
     if (totalItems > 0) {
       setBouncing(true);
-      const t = setTimeout(() => setBouncing(false), 600);
-      return () => clearTimeout(t);
+      const timer = setTimeout(() => setBouncing(false), 600);
+      return () => clearTimeout(timer);
     }
   }, [totalItems]);
 

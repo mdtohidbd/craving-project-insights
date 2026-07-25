@@ -48,6 +48,7 @@ const AdminUsers        = lazy(() => import('./pages/admin/AdminUsers'));
 const AdminModules      = lazy(() => import('./pages/admin/AdminModules'));
 const AdminStaff        = lazy(() => import('./pages/admin/AdminStaff'));
 const AdminDeliverymen  = lazy(() => import('./pages/admin/AdminDeliverymen'));
+const AdminReports      = lazy(() => import('./pages/admin/AdminReports'));
 
 const queryClient = new QueryClient();
 
@@ -92,20 +93,21 @@ const App = () => (
                   <Route path="/"            element={<Index />} />
                   <Route path="/about"       element={<About />} />
                   <Route path="/menu"        element={<Menu />} />
+                  <Route path="/menu/pdf"    element={<MenuPDFView />} />
                   <Route path="/menu/:slug"  element={<MenuDetail />} />
-                  <Route path="/blog"        element={<Blog />} />
-                  <Route path="/blog/:id"    element={<BlogDetail />} />
-                  <Route path="/contact"     element={<Contact />} />
                   <Route path="/checkout"    element={<Checkout />} />
+                  <Route path="/contact"     element={<Contact />} />
                   <Route path="/book-table"  element={<BookTable />} />
                   <Route path="/track-order" element={<OrderTracking />} />
-                  <Route path="/menu/pdf"    element={<MenuPDFView />} />
+                  <Route path="/blog"        element={<Blog />} />
+                  <Route path="/blog/:id"    element={<BlogDetail />} />
 
                   {/* ── Admin Auth (no guard) ──────────────────────────────── */}
                   <Route path="/admin/login" element={<Suspense fallback={<PageLoader />}><AdminLogin /></Suspense>} />
 
                   {/* ── Protected + Module-Guarded Admin Routes ────────────── */}
                   <Route path="/admin"                element={<AdminRoute moduleId="dashboard"><AdminDashboard /></AdminRoute>} />
+                  <Route path="/admin/reports"        element={<AdminRoute moduleId="dashboard"><AdminReports /></AdminRoute>} />
                   <Route path="/admin/tables"         element={<AdminRoute moduleId="tables"><AdminTables /></AdminRoute>} />
                   <Route path="/admin/orders"         element={<AdminRoute moduleId="orders"><AdminOrders /></AdminRoute>} />
                   <Route path="/admin/customers"      element={<AdminRoute moduleId="customers"><AdminCustomers /></AdminRoute>} />

@@ -537,13 +537,7 @@ const AdminTables = () => {
                                     table.status === "Occupied" ? 'bg-white/50 text-[#be123c]' :
                                     'bg-white/50 text-[#1d4ed8]'
                                 }`}>
-<<<<<<< HEAD
-                                    {table.status === "Free" ? t("tables.free", "FREE") : (table.status === "Cleaning" ? t("tables.cleaning", "Cleaning") : table.status)}
-=======
-                                    {table.status === "Occupied" && tableOrderStatuses[table._id] 
-                                        ? formatOrderStatus(tableOrderStatuses[table._id]) 
-                                        : table.status}
->>>>>>> 98f55d56826eafecbc830c180b238d375e141efa
+                                    {table.status === "Free" ? t("tables.free", "FREE") : (table.status === "Occupied" && tableOrderStatuses[table._id] ? formatOrderStatus(tableOrderStatuses[table._id]) : (table.status === "Cleaning" ? t("tables.cleaning", "Cleaning") : table.status))}
                                 </div>
                             </div>
                             
@@ -686,26 +680,14 @@ const AdminTables = () => {
                         </div>
 
                         {/* Status Row */}
-<<<<<<< HEAD
                         <div className="flex justify-between items-center mb-8">
                             <span className="text-neutral-500 font-bold">{t("tables.status", "Status")}</span>
                             <div className={`px-4 py-1.5 rounded-full text-xs font-black ${
-=======
-                        <div className="flex justify-between items-center mb-6">
-                            <span className="text-neutral-500 font-bold text-sm">Status</span>
-                            <div className={`px-3 py-1 rounded-full text-[10px] font-black ${
->>>>>>> 98f55d56826eafecbc830c180b238d375e141efa
                                 selectedTable.status === "Free" ? 'bg-primary/10 text-primary' :
                                 selectedTable.status === "Reserved" ? 'bg-purple-50 text-purple-600' :
                                 'bg-rose-50 text-rose-600'
                             }`}>
-<<<<<<< HEAD
-                                {selectedTable.status === "Free" ? t("tables.available", "Available") : t(`tables.status_${selectedTable.status.toLowerCase()}`, selectedTable.status)}
-=======
-                                {selectedTable.status === "Free" ? "Available" : 
-                                 selectedTable.status === "Occupied" && tableOrderStatuses[selectedTable._id] ? formatOrderStatus(tableOrderStatuses[selectedTable._id]) : 
-                                 selectedTable.status}
->>>>>>> 98f55d56826eafecbc830c180b238d375e141efa
+                                {selectedTable.status === "Free" ? t("tables.available", "Available") : (selectedTable.status === "Occupied" && tableOrderStatuses[selectedTable._id] ? formatOrderStatus(tableOrderStatuses[selectedTable._id]) : t(`tables.status_${selectedTable.status.toLowerCase()}`, selectedTable.status))}
                             </div>
                         </div>
 
@@ -736,7 +718,6 @@ const AdminTables = () => {
                         {/* Action Buttons */}
                         <div className="space-y-3">
                             {selectedTable.status === "Occupied" ? (
-<<<<<<< HEAD
                                 <div className="space-y-4">
                                     <div className="flex gap-4">
                                         <button
@@ -747,16 +728,6 @@ const AdminTables = () => {
                                             <span>{t("tables.add_items", "Add Items")}</span>
                                         </button>
                                     </div>
-=======
-                                <div className="flex gap-2.5">
-                                    <button
-                                        onClick={() => handleStatusAction('addItems')}
-                                        className="flex-1 py-2.5 bg-[#1d7cf2] hover:bg-[#1a6ed9] text-white font-black rounded-xl transition-all flex items-center justify-center gap-1.5 uppercase tracking-wider text-[10px]"
-                                    >
-                                        <Plus className="w-3.5 h-3.5" />
-                                        <span>Add Items</span>
-                                    </button>
->>>>>>> 98f55d56826eafecbc830c180b238d375e141efa
                                     <button
                                         onClick={() => {
                                             if (selectedTable._id) {
@@ -765,77 +736,52 @@ const AdminTables = () => {
                                                 toast.error(t("tables.no_active_order_ref", "No active order reference found"));
                                             }
                                         }}
-                                        className="flex-1 py-2.5 bg-primary hover:bg-emerald-600 text-white font-black rounded-xl transition-all flex items-center justify-center gap-1.5 uppercase tracking-wider text-[10px]"
+                                        className="flex-1 w-full py-4 bg-primary hover:bg-emerald-600 text-white font-black rounded-[12px] transition-all flex items-center justify-center gap-2 uppercase tracking-widest text-[11px]"
                                     >
-<<<<<<< HEAD
                                         <Receipt className="w-5 h-5" />
                                         <span>{t("tables.complete_payment", "Complete Payment")}</span>
-=======
-                                        <Receipt className="w-3.5 h-3.5" />
-                                        <span>Pay Now</span>
->>>>>>> 98f55d56826eafecbc830c180b238d375e141efa
                                     </button>
                                 </div>
                             ) : selectedTable.status === "Cleaning" ? (
                                 <button
                                     onClick={() => handleStatusAction('markFree')}
-                                    className="w-full py-2.5 bg-primary hover:bg-emerald-600 text-white font-black rounded-xl transition-all flex items-center justify-center gap-1.5 uppercase tracking-wider text-[10px]"
+                                    className="w-full py-4 bg-primary hover:bg-emerald-600 text-white font-black rounded-[12px] transition-all flex items-center justify-center gap-2 uppercase tracking-widest text-[11px]"
                                 >
-<<<<<<< HEAD
                                     <CheckCircle className="w-5 h-5" />
                                     <span>{t("tables.mark_free", "Mark Free")}</span>
-=======
-                                    <CheckCircle className="w-3.5 h-3.5" />
-                                    <span>Mark Free</span>
->>>>>>> 98f55d56826eafecbc830c180b238d375e141efa
                                 </button>
                             ) : (
-                                <div className="flex gap-2.5">
+                                <div className="flex gap-4">
                                     <button
                                         onClick={() => handleStatusAction('newOrder')}
-                                        className="flex-1 py-2.5 bg-[#1d7cf2] hover:bg-[#1a6ed9] text-white font-bold rounded-xl transition-all flex items-center justify-center gap-1.5 text-xs"
+                                        className="flex-1 py-4 bg-[#1d7cf2] hover:bg-[#1a6ed9] text-white font-bold rounded-[12px] transition-all flex items-center justify-center gap-2 text-sm"
                                     >
-<<<<<<< HEAD
                                         <Plus className="w-5 h-5" />
                                         <span>{t("tables.new_order", "New Order")}</span>
-=======
-                                        <Plus className="w-4 h-4" />
-                                        <span>New Order</span>
->>>>>>> 98f55d56826eafecbc830c180b238d375e141efa
                                     </button>
                                     <button
                                         onClick={() => handleStatusAction(selectedTable.status === "Free" ? 'reserve' : 'markFree')}
-                                        className="flex-1 py-2.5 bg-neutral-100 hover:bg-neutral-200 text-neutral-800 font-bold rounded-xl transition-all flex items-center justify-center gap-1.5 text-xs"
+                                        className="flex-1 py-4 bg-neutral-100 hover:bg-neutral-200 text-neutral-800 font-bold rounded-[12px] transition-all flex items-center justify-center gap-2 text-sm"
                                     >
-<<<<<<< HEAD
                                         {selectedTable.status === "Free" ? <Clock className="w-5 h-5" /> : <CheckCircle className="w-5 h-5" />}
                                         <span>{selectedTable.status === "Free" ? t("tables.reserve", "Reserve") : t("tables.mark_free", "Mark Free")}</span>
-=======
-                                        {selectedTable.status === "Free" ? <Clock className="w-4 h-4" /> : <CheckCircle className="w-4 h-4" />}
-                                        <span>{selectedTable.status === "Free" ? "Reserve" : "Mark Free"}</span>
->>>>>>> 98f55d56826eafecbc830c180b238d375e141efa
                                     </button>
                                 </div>
                             )}
 
-                            <div className="flex gap-2.5 pt-3 border-t border-neutral-100 items-center">
+                            <div className="flex gap-4 pt-4 border-t border-neutral-100 items-center">
                                 <button
                                     onClick={() => handleStatusAction('edit')}
-                                    className="flex-1 py-2 bg-neutral-50 hover:bg-neutral-100 text-neutral-600 font-bold rounded-xl border border-neutral-100 transition-all flex items-center justify-center gap-1.5 text-xs"
+                                    className="flex-1 py-3 bg-neutral-50 hover:bg-neutral-100 text-neutral-600 font-bold rounded-[12px] border border-neutral-100 transition-all flex items-center justify-center gap-2 text-sm"
                                 >
-<<<<<<< HEAD
                                     <Edit className="w-4 h-4" />
                                     <span>{t("tables.edit_table", "Edit Table")}</span>
-=======
-                                    <Edit className="w-3.5 h-3.5" />
-                                    <span>Edit</span>
->>>>>>> 98f55d56826eafecbc830c180b238d375e141efa
                                 </button>
                                 <button
                                     onClick={() => handleStatusAction('delete')}
-                                    className="px-4 py-2 bg-rose-50 hover:bg-rose-100 text-rose-500 rounded-xl flex items-center justify-center transition-all shrink-0"
+                                    className="px-6 py-3 bg-rose-50 hover:bg-rose-100 text-rose-500 rounded-[12px] flex items-center justify-center transition-all shrink-0"
                                 >
-                                    <Trash2 className="w-3.5 h-3.5" />
+                                    <Trash2 className="w-4 h-4" />
                                 </button>
                             </div>
                         </div>

@@ -7,8 +7,10 @@ import Footer from "@/components/Footer";
 import { useCart } from "@/context/CartContext";
 import { useSettings } from "@/context/SettingsContext";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 
 const Checkout = () => {
+  const { t } = useTranslation();
   const { cart, totalAmount, clearCart, updateQuantity, toggleAddOn } = useCart();
   const { settings } = useSettings();
   const navigate = useNavigate();
@@ -116,7 +118,7 @@ const Checkout = () => {
   if (isSuccess) {
     return (
       <div className="min-h-screen bg-[hsl(40_18%_96%)] flex flex-col relative overflow-hidden">
-        <div className="print-hidden">
+        <div className="print:hidden">
           <Navbar theme="light" />
         </div>
 
@@ -132,7 +134,7 @@ const Checkout = () => {
             className="w-full max-w-4xl mx-auto"
           >
             {/* Back to Home Button at the Top */}
-            <div className="flex justify-start mb-6 print-hidden">
+            <div className="flex justify-start mb-6 print:hidden">
               <button
                 onClick={() => navigate("/")}
                 className="inline-flex items-center gap-2 px-5 py-2.5 bg-white hover:bg-neutral-50 text-primary font-bold text-xs uppercase tracking-wider rounded-full shadow-[0_4px_12px_rgba(0,0,0,0.05)] border border-neutral-100 hover:-translate-y-0.5 transition-all duration-300"
@@ -143,7 +145,7 @@ const Checkout = () => {
             </div>
 
             {/* Header Success Section */}
-            <div className="text-center mb-12 print-hidden">
+            <div className="text-center mb-12 print:hidden">
               <motion.div
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
@@ -163,7 +165,7 @@ const Checkout = () => {
 
             <div className="grid lg:grid-cols-5 gap-8 items-start">
               {/* Left Column: Order Status and Details */}
-              <div className="lg:col-span-3 space-y-6 print-hidden">
+              <div className="lg:col-span-3 space-y-6 print:hidden">
                 {/* Order Progress Tracker */}
                 <div className="bg-white rounded-[2.5rem] p-6 sm:p-8 md:p-10 shadow-[0_15px_50px_rgba(0,0,0,0.04)] border border-black/5">
                   <div className="flex justify-between items-center mb-8">
@@ -425,7 +427,7 @@ const Checkout = () => {
                 </div>
 
                 {/* Notification Hint */}
-                <div className="text-center mt-6 text-xs text-muted-foreground print-hidden flex items-center justify-center gap-2">
+                <div className="text-center mt-6 text-xs text-muted-foreground print:hidden flex items-center justify-center gap-2">
                   <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                   Your order status will be updated via SMS.
                 </div>
@@ -433,7 +435,7 @@ const Checkout = () => {
             </div>
           </motion.div>
         </div>
-        <div className="print-hidden">
+        <div className="print:hidden">
           <Footer />
         </div>
 

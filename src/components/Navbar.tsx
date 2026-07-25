@@ -4,7 +4,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X } from "lucide-react";
 import { Cart } from "./Cart";
 import { useSettings } from "@/context/SettingsContext";
-import { LanguageSwitcher } from "./LanguageSwitcher";
 import { useTranslation } from "react-i18next";
 
 const navLinks = [
@@ -77,9 +76,6 @@ const Navbar = ({ theme = "dark" }: { theme?: "light" | "dark" }) => {
 
             {/* CTA Button and Cart */}
             <div className="hidden md:flex items-center gap-4 lg:gap-6">
-              <div className={`transition-colors ${scrolled || theme === "dark" ? "text-primary-foreground" : "text-primary"}`}>
-                <LanguageSwitcher />
-              </div>
               <Cart className={scrolled || theme === "dark" ? "text-primary-foreground" : "text-primary"} />
               <Link
                 to="/book-table"

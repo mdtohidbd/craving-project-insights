@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Flame, ArrowRight } from "lucide-react";
 import { useSettings } from "@/context/SettingsContext";
+import { useTranslation } from "react-i18next";
 
 const quickLinks = [
   { name: "Home", path: "/" },
@@ -13,6 +14,7 @@ const quickLinks = [
 ];
 
 const Footer = () => {
+  const { t } = useTranslation();
   const { settings } = useSettings();
   const domain = settings.websiteName.toLowerCase().replace(/\s+/g, '') + ".com";
   return (

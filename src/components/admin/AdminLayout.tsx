@@ -146,6 +146,7 @@ const AdminLayout = ({ children, title }: AdminLayoutProps) => {
 
     const allNavItems = [
         { label: t("dashboard.dashboard", "Dashboard"), path: "/admin", icon: <LayoutDashboard className="w-5 h-5" />, module: "dashboard" },
+        { label: t("dashboard.reports", "Reports"), path: "/admin/reports", icon: <BarChart3 className="w-5 h-5" />, module: "dashboard" },
         { label: t("dashboard.tables", "Tables"), path: "/admin/tables", icon: <Table className="w-5 h-5" />, module: "tables" },
         { label: t("dashboard.pos_system", "POS System"), path: "/admin/pos", icon: <CreditCard className="w-5 h-5" />, module: "pos" },
         { label: t("dashboard.orders", "Orders"), path: "/admin/orders", icon: <ShoppingCart className="w-5 h-5" />, module: "orders" },

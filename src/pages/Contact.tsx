@@ -5,8 +5,10 @@ import { useSettings } from "@/context/SettingsContext";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { useToast } from "@/hooks/use-toast";
+import { useTranslation } from "react-i18next";
 
 const Contact = () => {
+  const { t } = useTranslation();
   const { settings } = useSettings();
   const { toast } = useToast();
   const [formData, setFormData] = useState({

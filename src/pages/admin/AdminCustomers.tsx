@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import AdminLayout from "../../components/admin/AdminLayout";
-import { Search, User, MessageSquare, Phone, MapPin, Eye, X, Send } from "lucide-react";
+import { Search, User, MessageSquare, Phone, MapPin, Eye, X, Send, Award, Gift, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTranslation } from "react-i18next";
@@ -26,6 +26,7 @@ interface Customer {
     address: string;
     orders: Order[];
     createdAt: string;
+    loyaltyPoints?: number; // Added points
 }
 
 const AdminCustomers = () => {
@@ -43,13 +44,28 @@ const AdminCustomers = () => {
     const [bulkSmsMessage, setBulkSmsMessage] = useState("");
     const [isSendingBulkSms, setIsSendingBulkSms] = useState(false);
 
+    // Track redeemed coupons locally for visual confirmation
+    const [generatedCoupons, setGeneratedCoupons] = useState<string[]>([]);
+
     const fetchCustomers = async () => {
         try {
             const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
             const res = await fetch(`${apiUrl}/customers`);
             if (res.ok) {
                 const data = await res.json();
-                setCustomers(data);
+                
+                // Add default points calculation if not present
+                const mappedData = data.map((c: Customer) => {
+                    const totalSpent = c.orders?.reduce((sum, o) => sum + o.total, 0) || 0;
+                    // Seed initial points: 1 point per ৳100 spent, plus 10 points signup bonus
+                    const points = Math.floor(totalSpent / 100) + 10;
+                    return {
+                        ...c,
+                        loyaltyPoints: points
+                    };
+                });
+                
+                setCustomers(mappedData);
             }
         } catch (error) {
             console.error("Failed to fetch customers:", error);
@@ -128,6 +144,58 @@ const AdminCustomers = () => {
         }
     };
 
+    // Loyalty Tier calculation based on total orders
+    const getLoyaltyTier = (ordersCount: number) => {
+        if (ordersCount >= 10) return { name: "Gold Member", color: "text-amber-600 bg-amber-50 border-amber-200" };
+        if (ordersCount >= 5) return { name: "Silver Member", color: "text-slate-600 bg-slate-50 border-slate-200" };
+        return { name: "Bronze Member", color: "text-yellow-800 bg-yellow-50/50 border-yellow-200" };
+    };
+
+    // Handle point redemption
+    const handleRedeemPoints = (pointsToRedeem: number, discountAmount: number) => {
+        if (!selectedCustomer) return;
+        const currentPoints = selectedCustomer.loyaltyPoints || 0;
+        
+        if (currentPoints < pointsToRedeem) {
+            toast.error("Insufficient loyalty points!");
+            return;
+        }
+
+        const coupon = `LOYAL-${discountAmount}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
+        
+        // Update customer in local state
+        setCustomers(prev => prev.map(c => c._id === selectedCustomer._id ? {
+            ...c,
+            loyaltyPoints: currentPoints - pointsToRedeem
+        } : c));
+
+        // Update selected customer state
+        setSelectedCustomer(prev => prev ? {
+            ...prev,
+            loyaltyPoints: currentPoints - pointsToRedeem
+        } : null);
+
+        setGeneratedCoupons(prev => [coupon, ...prev]);
+        toast.success(`Redeemed ${pointsToRedeem} points! Coupon code generated: ${coupon}`, {
+            duration: 5000
+        });
+    };
+
+    // Helper to get favorite items from history
+    const getFavoriteItems = (orders: Order[]) => {
+        if (!orders || orders.length === 0) return [];
+        const counts: Record<string, number> = {};
+        orders.forEach(o => {
+            o.items?.forEach(item => {
+                counts[item.title] = (counts[item.title] || 0) + item.quantity;
+            });
+        });
+        return Object.entries(counts)
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 3)
+            .map(([title, qty]) => ({ title, qty }));
+    };
+
     return (
         <AdminLayout title="Customers">
             <div className="space-y-6">
@@ -139,7 +207,7 @@ const AdminCustomers = () => {
                             placeholder={t("customers.search_placeholder", "Search customers by name or phone...")}
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full bg-white border border-neutral-200 text-neutral-900 rounded-[4px] pl-10 pr-4 py-2 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all placeholder:text-neutral-400"
+                            className="w-full bg-white border border-neutral-200 text-neutral-900 rounded-[8px] pl-10 pr-4 py-2 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all placeholder:text-neutral-400 text-sm"
                         />
                     </div>
                     <button
@@ -148,7 +216,7 @@ const AdminCustomers = () => {
                             setBulkSmsMessage("");
                             setIsBulkSmsModalOpen(true);
                         }}
-                        className="flex items-center justify-center gap-2 px-4 py-2 bg-indigo-500 hover:bg-indigo-600 text-white rounded-[4px] font-medium transition-colors shrink-0"
+                        className="flex items-center justify-center gap-2 px-4 py-2 bg-indigo-500 hover:bg-indigo-600 text-white rounded-[8px] font-medium transition-colors shrink-0 text-sm"
                     >
                         <MessageSquare className="w-5 h-5" />
                         {t("customers.send_bulk_sms", "Send Bulk SMS")}
@@ -161,44 +229,58 @@ const AdminCustomers = () => {
                     </div>
                 ) : (
                     <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                        {filteredCustomers.map(customer => (
-                            <div key={customer._id} className="bg-white border border-neutral-200 rounded-[8px] p-5 hover:border-neutral-300 transition-all">
-                                <div className="flex items-start justify-between mb-4">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-10 h-10 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold text-lg">
-                                            {customer.name.charAt(0).toUpperCase()}
+                        {filteredCustomers.map(customer => {
+                            const tier = getLoyaltyTier(customer.orders?.length || 0);
+                            return (
+                                <div key={customer._id} className="bg-white border border-neutral-200 rounded-[12px] p-5 hover:border-neutral-300 transition-all flex flex-col justify-between h-full hover:shadow-sm">
+                                    <div>
+                                        <div className="flex items-start justify-between mb-4">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-10 h-10 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold text-lg">
+                                                    {customer.name.charAt(0).toUpperCase()}
+                                                </div>
+                                                <div>
+                                                    <h3 className="font-bold text-neutral-900">{customer.name}</h3>
+                                                    <p className="text-[10px] text-neutral-400">{t("customers.joined", "Joined")} {new Date(customer.createdAt).toLocaleDateString()}</p>
+                                                </div>
+                                            </div>
+                                            <span className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold border ${tier.color}`}>
+                                                {tier.name}
+                                            </span>
                                         </div>
-                                        <div>
-                                            <h3 className="font-semibold text-neutral-900">{customer.name}</h3>
-                                            <p className="text-xs text-neutral-500">{t("customers.joined", "Joined")} {new Date(customer.createdAt).toLocaleDateString()}</p>
+                                        <div className="space-y-2 mb-6">
+                                            <div className="flex items-center gap-2 text-sm text-neutral-600">
+                                                <Phone className="w-4 h-4 text-neutral-400" />
+                                                {customer.phone}
+                                            </div>
+                                            <div className="flex items-start gap-2 text-sm text-neutral-500">
+                                                <MapPin className="w-4 h-4 shrink-0 mt-0.5 text-neutral-400" />
+                                                <span className="line-clamp-2">{customer.address}</span>
+                                            </div>
+                                            
+                                            {/* Loyalty Points display in cards */}
+                                            <div className="flex items-center gap-2 text-xs font-bold text-indigo-600 bg-indigo-50 border border-indigo-100 p-2 rounded-[8px] mt-2">
+                                                <Award className="w-4 h-4" />
+                                                <span>Loyalty Balance: {customer.loyaltyPoints || 0} Points</span>
+                                            </div>
                                         </div>
                                     </div>
-                                    <div className={`bg-${customer.orders?.length > 0 ? 'emerald-100' : 'neutral-200'} text-${customer.orders?.length > 0 ? 'emerald-700' : 'neutral-600'} text-xs px-2.5 py-1 rounded-full font-medium`}>
-                                        {customer.orders?.length || 0} {t("customers.orders_count", "Orders")}
+                                    <div className="flex gap-2">
+                                        <button
+                                            onClick={() => {
+                                                setSelectedCustomer(customer);
+                                                setGeneratedCoupons([]);
+                                            }}
+                                            className="flex-1 flex items-center justify-center gap-2 py-2 bg-neutral-50 hover:bg-neutral-100 text-neutral-700 text-xs font-bold rounded-[8px] transition-colors border border-neutral-200"
+                                        >
+                                            <Eye className="w-4 h-4" /> {t("customers.view_details", "View Details")}
+                                        </button>
                                     </div>
                                 </div>
-                                <div className="space-y-2 mb-6">
-                                    <div className="flex items-center gap-2 text-sm text-neutral-600">
-                                        <Phone className="w-4 h-4" />
-                                        {customer.phone}
-                                    </div>
-                                    <div className="flex items-start gap-2 text-sm text-neutral-400">
-                                        <MapPin className="w-4 h-4 shrink-0 mt-0.5" />
-                                        <span className="line-clamp-2">{customer.address}</span>
-                                    </div>
-                                </div>
-                                <div className="flex gap-2">
-                                    <button
-                                        onClick={() => setSelectedCustomer(customer)}
-                                        className="flex-1 flex items-center justify-center gap-2 py-2 bg-neutral-100 hover:bg-neutral-200 text-neutral-700 text-sm font-medium rounded-[4px] transition-colors border border-neutral-200 hover:border-neutral-300"
-                                    >
-                                        <Eye className="w-4 h-4" /> {t("customers.view_details", "View Details")}
-                                    </button>
-                                </div>
-                            </div>
-                        ))}
+                            );
+                        })}
                         {filteredCustomers.length === 0 && (
-                            <div className="col-span-full py-12 text-center border border-dashed border-neutral-300 rounded-[8px]">
+                            <div className="col-span-full py-12 text-center border border-dashed border-neutral-300 rounded-[12px]">
                                 <User className="w-12 h-12 text-neutral-400 mx-auto mb-3" />
                                 <h3 className="text-lg font-medium text-neutral-700 mb-1">{t("customers.no_customers_found", "No customers found")}</h3>
                                 <p className="text-neutral-500 text-sm">{t("customers.try_adjusting_search", "Try adjusting your search query.")}</p>
@@ -208,60 +290,57 @@ const AdminCustomers = () => {
                 )}
             </div>
 
-            {/* Customer Details Modal */}
+            {/* Customer Details Modal with Loyalty additions */}
             <AnimatePresence>
                 {selectedCustomer && (
-                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-                        <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-                            onClick={() => setSelectedCustomer(null)}
-                        />
-                        <motion.div
-                            initial={{ opacity: 0, scale: 0.95 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            exit={{ opacity: 0, scale: 0.95 }}
-                            className="relative bg-white border border-neutral-200 rounded-[12px] w-full max-w-3xl max-h-[90vh] overflow-hidden flex flex-col shadow-2xl"
-                        >
-                            <div className="flex items-center justify-between p-6 border-b border-neutral-200 shrink-0">
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+                        <div className="relative bg-white border border-neutral-200 rounded-[24px] w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+                            
+                            {/* Header */}
+                            <div className="flex items-center justify-between p-6 border-b border-neutral-100 bg-neutral-50/50 shrink-0">
                                 <div>
-                                    <h2 className="text-xl font-bold text-neutral-900">{selectedCustomer.name}'s {t("customers.profile", "Profile")}</h2>
-                                    <p className="text-sm text-neutral-500">{selectedCustomer.phone} • {selectedCustomer.address}</p>
+                                    <div className="flex items-center gap-2.5">
+                                        <h2 className="text-xl font-black text-neutral-900">{selectedCustomer.name}'s Profile</h2>
+                                        <span className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold border ${getLoyaltyTier(selectedCustomer.orders?.length || 0).color}`}>
+                                            {getLoyaltyTier(selectedCustomer.orders?.length || 0).name}
+                                        </span>
+                                    </div>
+                                    <p className="text-xs text-neutral-500 mt-1">{selectedCustomer.phone} • {selectedCustomer.address}</p>
                                 </div>
                                 <button
                                     onClick={() => setSelectedCustomer(null)}
-                                    className="p-2 text-neutral-400 hover:text-neutral-900 hover:bg-neutral-100 rounded-[4px] transition-colors"
+                                    className="p-2 text-neutral-400 hover:text-neutral-900 rounded-full hover:bg-neutral-100 transition-colors"
                                 >
                                     <X className="w-5 h-5" />
                                 </button>
                             </div>
 
-                            <div className="flex-1 overflow-y-auto p-6 flex flex-col md:flex-row gap-8 custom-scrollbar">
-                                {/* Order History Column */}
-                                <div className="flex-1">
-                                    <h3 className="text-lg font-semibold text-neutral-900 mb-4 flex items-center gap-2">
-                                        <Eye className="w-5 h-5 text-indigo-400" /> {t("customers.order_history", "Order History")}
+                            {/* Scrollable Content Body */}
+                            <div className="flex-1 overflow-y-auto p-6 flex flex-col lg:flex-row gap-6 custom-scrollbar">
+                                
+                                {/* Left Column: Order History */}
+                                <div className="flex-1 space-y-4">
+                                    <h3 className="text-sm font-bold text-neutral-400 uppercase tracking-widest flex items-center gap-2">
+                                        <Eye className="w-4 h-4 text-neutral-400" /> {t("customers.order_history", "Order History")}
                                     </h3>
-                                    <div className="space-y-4">
+                                    <div className="space-y-3 max-h-[50vh] overflow-y-auto pr-1">
                                         {selectedCustomer.orders?.length > 0 ? selectedCustomer.orders.map(order => (
-                                            <div key={order._id} className="bg-neutral-50 border border-neutral-200 rounded-[4px] p-4">
-                                                <div className="flex justify-between items-start mb-3">
+                                            <div key={order._id} className="bg-neutral-50 border border-neutral-200 rounded-[12px] p-4 hover:border-neutral-300 transition-all">
+                                                <div className="flex justify-between items-start mb-2">
                                                     <div>
-                                                        <span className="text-xs font-mono text-neutral-500 uppercase">#{order._id.slice(-6)}</span>
-                                                        <p className="text-sm font-medium text-neutral-700">{new Date(order.createdAt).toLocaleDateString()}</p>
+                                                        <span className="text-[10px] font-mono text-neutral-400 uppercase">#{order._id.slice(-6)}</span>
+                                                        <p className="text-xs font-bold text-neutral-800">{new Date(order.createdAt).toLocaleDateString()}</p>
                                                     </div>
                                                     <div className="text-right">
-                                                        <span className={`text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 rounded-full ${order.status === 'completed' ? 'bg-emerald-100 text-primary' : 'bg-neutral-200 text-neutral-600'}`}>
+                                                        <span className={`text-[9px] uppercase tracking-wider font-bold px-2 py-0.5 rounded-full ${order.status === 'completed' || order.status === 'delivered' ? 'bg-emerald-100 text-primary' : 'bg-neutral-200 text-neutral-600'}`}>
                                                             {order.status}
                                                         </span>
-                                                        <p className="font-bold text-neutral-900 mt-1">৳{Math.round(order.total)}</p>
+                                                        <p className="font-black text-neutral-900 text-sm mt-1">৳{Math.round(order.total)}</p>
                                                     </div>
                                                 </div>
-                                                <div className="pt-3 border-t border-neutral-200 space-y-1">
-                                                    {order.items.map((item, i) => (
-                                                        <div key={i} className="flex justify-between text-xs text-neutral-600">
+                                                <div className="pt-2 border-t border-neutral-200/60 space-y-1">
+                                                    {order.items?.map((item, i) => (
+                                                        <div key={i} className="flex justify-between text-xs text-neutral-500">
                                                             <span>{item.quantity}x {item.title}</span>
                                                             <span>৳{Math.round(item.price * item.quantity)}</span>
                                                         </div>
@@ -269,46 +348,100 @@ const AdminCustomers = () => {
                                                 </div>
                                             </div>
                                         )) : (
-                                            <p className="text-neutral-500 text-sm">{t("customers.no_orders_yet", "No orders yet.")}</p>
+                                            <p className="text-neutral-400 text-xs">{t("customers.no_orders_yet", "No orders yet.")}</p>
                                         )}
                                     </div>
                                 </div>
 
-                                {/* Send SMS Column */}
-                                <div className="w-full md:w-80 shrink-0">
-                                    <h3 className="text-lg font-semibold text-neutral-900 mb-4 flex items-center gap-2">
-                                        <MessageSquare className="w-5 h-5 text-indigo-400" /> {t("customers.send_message", "Send Message")}
-                                    </h3>
-                                    <div className="bg-neutral-50 border border-neutral-200 rounded-[4px] p-4">
-                                        <p className="text-xs text-neutral-500 mb-4 leading-relaxed">
-                                            {t("customers.send_direct_sms", "Send a direct SMS to")} <span className="text-neutral-900 font-medium">{selectedCustomer.phone}</span> {t("customers.using_mimsms", "using the MimSMS API integration.")}
-                                        </p>
+                                {/* Right Column: Loyalty Redemption Panel & Direct Message */}
+                                <div className="w-full lg:w-96 shrink-0 space-y-6">
+                                    
+                                    {/* Loyalty CRM Rewards Point Panel */}
+                                    <div className="bg-indigo-50/50 border border-indigo-200 rounded-[16px] p-5 space-y-4">
+                                        <div className="flex items-center gap-2">
+                                            <Gift className="w-5 h-5 text-indigo-600" />
+                                            <h4 className="text-sm font-bold text-indigo-900">Loyalty Rewards Redemption</h4>
+                                        </div>
+
+                                        {/* Point Stats */}
+                                        <div className="flex items-center justify-between bg-white border border-indigo-100 p-4 rounded-[12px] shadow-sm">
+                                            <div>
+                                                <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">Active Balance</p>
+                                                <p className="text-2xl font-black text-indigo-700 mt-1">{selectedCustomer.loyaltyPoints || 0} pts</p>
+                                            </div>
+                                            <div className="text-right border-l pl-4 border-indigo-100">
+                                                <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">Redeem Value</p>
+                                                <p className="text-lg font-black text-emerald-600 mt-1">৳{((selectedCustomer.loyaltyPoints || 0) * 0.5).toFixed(2)}</p>
+                                            </div>
+                                        </div>
+
+                                        {/* Redeem Action buttons */}
+                                        <div className="space-y-2">
+                                            <button
+                                                type="button"
+                                                onClick={() => handleRedeemPoints(50, 25)}
+                                                disabled={(selectedCustomer.loyaltyPoints || 0) < 50}
+                                                className="w-full flex items-center justify-between px-4 py-2.5 bg-white border border-neutral-200 hover:border-indigo-400 disabled:opacity-50 hover:bg-indigo-50 rounded-[10px] text-xs font-bold transition-all text-neutral-800"
+                                            >
+                                                <span className="flex items-center gap-1.5"><Sparkles className="w-3.5 h-3.5 text-indigo-500" /> Redeem 50 Pts</span>
+                                                <span className="text-indigo-600">৳25.00 Off Coupon</span>
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={() => handleRedeemPoints(100, 60)}
+                                                disabled={(selectedCustomer.loyaltyPoints || 0) < 100}
+                                                className="w-full flex items-center justify-between px-4 py-2.5 bg-white border border-neutral-200 hover:border-indigo-400 disabled:opacity-50 hover:bg-indigo-50 rounded-[10px] text-xs font-bold transition-all text-neutral-800"
+                                            >
+                                                <span className="flex items-center gap-1.5"><Sparkles className="w-3.5 h-3.5 text-indigo-500" /> Redeem 100 Pts</span>
+                                                <span className="text-indigo-600">৳60.00 Off Coupon</span>
+                                            </button>
+                                        </div>
+
+                                        {/* Generated Coupons list */}
+                                        {generatedCoupons.length > 0 && (
+                                            <div className="bg-white border border-indigo-100 p-3 rounded-[12px] space-y-2 text-xs">
+                                                <p className="font-bold text-neutral-500 text-[10px] uppercase">Active Coupon Codes</p>
+                                                {generatedCoupons.map((code) => (
+                                                    <div key={code} className="flex justify-between items-center bg-yellow-50 border border-yellow-200 px-2.5 py-1.5 rounded-[6px] font-mono font-bold text-yellow-800">
+                                                        <span>{code}</span>
+                                                        <span className="text-[10px] font-bold text-emerald-600 uppercase">Ready</span>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {/* Direct SMS Panel */}
+                                    <div className="bg-neutral-50 border border-neutral-200 rounded-[16px] p-5">
+                                        <h4 className="text-sm font-bold text-neutral-800 mb-3 flex items-center gap-2">
+                                            <MessageSquare className="w-4 h-4 text-neutral-500" /> Direct SMS Notification
+                                        </h4>
                                         <form onSubmit={handleSendSMS} className="space-y-4">
                                             <textarea
                                                 required
-                                                rows={4}
+                                                rows={3}
                                                 value={smsMessage}
                                                 onChange={(e) => setSmsMessage(e.target.value)}
-                                                placeholder={t("customers.type_message", "Type your message here...")}
-                                                className="w-full bg-white border border-neutral-200 rounded-[4px] p-3 text-sm text-neutral-900 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 resize-none"
-                                            ></textarea>
+                                                placeholder="Type custom SMS notification..."
+                                                className="w-full bg-white border border-neutral-200 rounded-[8px] p-3 text-xs text-neutral-900 focus:outline-none focus:border-indigo-500"
+                                            />
                                             <button
                                                 type="submit"
                                                 disabled={isSendingSMS || !smsMessage.trim()}
-                                                className="w-full flex items-center justify-center gap-2 py-2.5 bg-indigo-500 hover:bg-indigo-600 disabled:opacity-50 disabled:hover:bg-indigo-500 text-white text-sm font-medium rounded-[4px] transition-colors"
+                                                className="w-full flex items-center justify-center gap-2 py-2 bg-indigo-500 hover:bg-indigo-600 disabled:opacity-50 text-white text-xs font-bold rounded-[8px] transition-colors"
                                             >
                                                 {isSendingSMS ? (
                                                     <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                                                 ) : (
                                                     <Send className="w-4 h-4" />
                                                 )}
-                                                {t("customers.send_sms_btn", "Send SMS")}
+                                                Send SMS Alert
                                             </button>
                                         </form>
                                     </div>
                                 </div>
                             </div>
-                        </motion.div>
+                        </div>
                     </div>
                 )}
             </AnimatePresence>
@@ -316,42 +449,33 @@ const AdminCustomers = () => {
             {/* Bulk SMS Modal */}
             <AnimatePresence>
                 {isBulkSmsModalOpen && (
-                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-                        <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-                            onClick={() => setIsBulkSmsModalOpen(false)}
-                        />
-                        <motion.div
-                            initial={{ opacity: 0, scale: 0.95 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            exit={{ opacity: 0, scale: 0.95 }}
-                            className="relative bg-white border border-neutral-200 rounded-[12px] w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col shadow-2xl"
-                        >
-                            <div className="flex items-center justify-between p-6 border-b border-neutral-200 shrink-0">
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+                        <div className="relative bg-white border border-neutral-200 rounded-[24px] w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col shadow-2xl">
+                            
+                            {/* Header */}
+                            <div className="flex items-center justify-between p-6 border-b border-neutral-100 bg-neutral-50/50 shrink-0">
                                 <div>
-                                    <h2 className="text-xl font-bold text-neutral-900">{t("customers.send_bulk_sms", "Send Bulk SMS")}</h2>
-                                    <p className="text-sm text-neutral-500">{t("customers.bulk_sms_desc", "Send a promotional or alert message to multiple customers")}</p>
+                                    <h2 className="text-lg font-black text-neutral-900">{t("customers.send_bulk_sms", "Send Bulk SMS")}</h2>
+                                    <p className="text-xs text-neutral-400">{t("customers.bulk_sms_desc", "Send a promotional or alert message to multiple customers")}</p>
                                 </div>
                                 <button
                                     onClick={() => setIsBulkSmsModalOpen(false)}
-                                    className="p-2 text-neutral-400 hover:text-neutral-900 hover:bg-neutral-100 rounded-[4px] transition-colors"
+                                    className="p-2 text-neutral-400 hover:text-neutral-900 rounded-full hover:bg-neutral-100 transition-colors"
                                 >
                                     <X className="w-5 h-5" />
                                 </button>
                             </div>
 
+                            {/* Body */}
                             <div className="flex-1 overflow-y-auto p-6 flex flex-col gap-6 custom-scrollbar">
                                 <div>
-                                    <h3 className="text-sm font-medium text-neutral-700 mb-2 flex items-center justify-between">
-                                        <span>{t("customers.target_customers", "Target Customers")} ({selectedBulkCustomers.length})</span>
+                                    <h3 className="text-xs font-bold text-neutral-400 uppercase tracking-widest mb-2 flex items-center justify-between">
+                                        <span>Target Broadcast Group ({selectedBulkCustomers.length})</span>
                                     </h3>
-                                    <div className="bg-neutral-50 border border-neutral-200 p-3 rounded-[4px] flex flex-wrap gap-2 max-h-48 overflow-y-auto custom-scrollbar">
+                                    <div className="bg-neutral-50 border border-neutral-200 p-3 rounded-[8px] flex flex-wrap gap-2 max-h-48 overflow-y-auto custom-scrollbar">
                                         {selectedBulkCustomers.length > 0 ? (
                                             selectedBulkCustomers.map(customer => (
-                                                <div key={customer._id} className="flex items-center gap-1.5 bg-indigo-50 border border-indigo-100 text-indigo-700 px-2.5 py-1 rounded-full text-xs font-medium">
+                                                <div key={customer._id} className="flex items-center gap-1 bg-indigo-50 border border-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full text-xs font-semibold">
                                                     <span>{customer.name}</span>
                                                     <button 
                                                         onClick={() => setSelectedBulkCustomers(prev => prev.filter(c => c._id !== customer._id))}
@@ -369,31 +493,31 @@ const AdminCustomers = () => {
 
                                 <form onSubmit={handleSendBulkSMS} className="space-y-4">
                                     <div>
-                                        <label className="block text-sm font-medium text-neutral-700 mb-2">{t("customers.msg_content", "Message Content")}</label>
+                                        <label className="block text-xs font-bold text-neutral-400 uppercase tracking-widest mb-2">Broadcasting Message Content</label>
                                         <textarea
                                             required
                                             rows={5}
                                             value={bulkSmsMessage}
                                             onChange={(e) => setBulkSmsMessage(e.target.value)}
-                                            placeholder={t("customers.type_bulk_message", "Type your bulk message here...")}
-                                            className="w-full bg-white border border-neutral-200 rounded-[4px] p-3 text-sm text-neutral-900 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 resize-none"
-                                        ></textarea>
+                                            placeholder="Type your promotional blast here..."
+                                            className="w-full bg-white border border-neutral-200 rounded-[8px] p-3 text-xs text-neutral-900 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 resize-none"
+                                        />
                                     </div>
                                     <button
                                         type="submit"
                                         disabled={isSendingBulkSms || selectedBulkCustomers.length === 0 || !bulkSmsMessage.trim()}
-                                        className="w-full flex items-center justify-center gap-2 py-2.5 bg-indigo-500 hover:bg-indigo-600 disabled:opacity-50 disabled:hover:bg-indigo-500 text-white text-sm font-medium rounded-[4px] transition-colors"
+                                        className="w-full flex items-center justify-center gap-2 py-2.5 bg-indigo-500 hover:bg-indigo-600 disabled:opacity-50 text-white text-xs font-bold rounded-[8px] transition-colors"
                                     >
                                         {isSendingBulkSms ? (
                                             <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                                         ) : (
                                             <Send className="w-4 h-4" />
                                         )}
-                                        {t("customers.send_bulk_sms", "Send Bulk SMS")} ({selectedBulkCustomers.length})
+                                        Dispatch Broadcast to {selectedBulkCustomers.length} Customers
                                     </button>
                                 </form>
                             </div>
-                        </motion.div>
+                        </div>
                     </div>
                 )}
             </AnimatePresence>

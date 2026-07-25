@@ -21,6 +21,7 @@ import {
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 
 interface OrderSummary {
     id: string;
@@ -30,6 +31,7 @@ interface OrderSummary {
 }
 
 const OrderTracking = () => {
+    const { t } = useTranslation();
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
     const [orderId, setOrderId] = useState(searchParams.get("id") || "");
