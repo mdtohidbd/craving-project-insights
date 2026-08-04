@@ -9,6 +9,7 @@ import {
     Settings, ShieldCheck, ToggleLeft, ToggleRight, Layers,
     AlertTriangle, RefreshCw, Loader2, Eye, EyeOff
 } from 'lucide-react';
+import { useTranslation } from "react-i18next";
 
 // Icon + description registry for each module
 const MODULE_META: Record<string, { icon: React.ReactNode; description: string; color: string; critical?: boolean }> = {
@@ -29,6 +30,7 @@ const MODULE_META: Record<string, { icon: React.ReactNode; description: string; 
 };
 
 const AdminModules = () => {
+    const { t } = useTranslation();
     const { modules, updateModules, isLoading, refreshModules } = useModules();
     const { token } = useAuth();
     const [saving, setSaving] = useState<string | null>(null);
@@ -67,9 +69,9 @@ const AdminModules = () => {
             const updates = Object.entries(pendingChanges).map(([id, enabled]) => ({ id, enabled }));
             await updateModules(updates, token!);
             setPendingChanges({});
-            toast.success('Module settings saved successfully');
+            toast.success(t("modules.save_success", 'Module settings saved successfully'));
         } catch {
-            toast.error('Failed to save module settings');
+            toast.error(t("modules.save_failed", 'Failed to save module settings'));
         } finally {
             setIsSavingAll(false);
         }
@@ -83,15 +85,14 @@ const AdminModules = () => {
     }).length;
 
     return (
-        <AdminLayout title="Module Control">
+        <AdminLayout title={t("dashboard.module_control", "Module Control")}>
             <div className="space-y-6 pb-10">
                 {/* Header */}
                 <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                     <div>
-                        <h2 className="text-2xl font-black tracking-tight text-neutral-900">Module Control</h2>
+                        <h2 className="text-2xl font-black tracking-tight text-neutral-900">{t("modules.module_control", "Module Control")}</h2>
                         <p className="text-sm text-neutral-500 mt-1">
-                            Globally enable or disable features for the entire restaurant.
-                            Staff permissions are checked after global settings.
+                            {t("modules.module_control_desc", "Globally enable or disable features for the entire restaurant. Staff permissions are checked after global settings.")}
                         </p>
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
@@ -106,7 +107,7 @@ const AdminModules = () => {
                                 onClick={discardChanges}
                                 className="px-4 py-2.5 rounded-[8px] border border-neutral-200 bg-white text-sm font-semibold text-neutral-600 hover:bg-neutral-50 transition-colors"
                             >
-                                Discard
+                                {t("common.discard", "Discard")}
                             </button>
                         )}
                         <button
@@ -119,7 +120,7 @@ const AdminModules = () => {
                             }`}
                         >
                             {isSavingAll && <Loader2 className="w-4 h-4 animate-spin" />}
-                            Save Changes
+                            {t("common.save_changes", "Save Changes")}
                         </button>
                     </div>
                 </div>
@@ -129,8 +130,7 @@ const AdminModules = () => {
                     <div className="flex items-center gap-3 px-4 py-3 bg-amber-50 border border-amber-200 rounded-[8px] text-sm text-amber-800">
                         <AlertTriangle className="w-4 h-4 shrink-0 text-amber-500" />
                         <span>
-                            You have <strong>{Object.keys(pendingChanges).length}</strong> unsaved change{Object.keys(pendingChanges).length > 1 ? 's' : ''}.
-                            Click <strong>Save Changes</strong> to apply.
+                            <span dangerouslySetInnerHTML={{ __html: t("modules.unsaved_changes", "You have <strong>{{count}}</strong> unsaved change(s). Click <strong>Save Changes</strong> to apply.", { count: Object.keys(pendingChanges).length }) }} />
                         </span>
                     </div>
                 )}
@@ -139,15 +139,15 @@ const AdminModules = () => {
                 <div className="grid grid-cols-3 gap-3">
                     <div className="bg-white border border-neutral-200 rounded-[8px] p-4 text-center shadow-sm">
                         <p className="text-3xl font-black text-neutral-900">{modules.length}</p>
-                        <p className="text-xs font-medium text-neutral-500 mt-1">Total Modules</p>
+                        <p className="text-xs font-medium text-neutral-500 mt-1">{t("modules.total_modules", "Total Modules")}</p>
                     </div>
                     <div className="bg-primary/10 border border-emerald-100 rounded-[8px] p-4 text-center shadow-sm">
                         <p className="text-3xl font-black text-primary">{enabledCount}</p>
-                        <p className="text-xs font-medium text-primary mt-1">Active</p>
+                        <p className="text-xs font-medium text-primary mt-1">{t("modules.active", "Active")}</p>
                     </div>
                     <div className="bg-rose-50 border border-rose-100 rounded-[8px] p-4 text-center shadow-sm">
                         <p className="text-3xl font-black text-rose-700">{modules.length - enabledCount}</p>
-                        <p className="text-xs font-medium text-rose-600 mt-1">Disabled</p>
+                        <p className="text-xs font-medium text-rose-600 mt-1">{t("modules.disabled", "Disabled")}</p>
                     </div>
                 </div>
 
@@ -177,14 +177,14 @@ const AdminModules = () => {
                                     {/* Pending badge */}
                                     {isPending && (
                                         <span className="absolute top-3 right-12 text-[10px] font-bold bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full border border-amber-200">
-                                            Unsaved
+                                            {t("modules.unsaved", "Unsaved")}
                                         </span>
                                     )}
 
                                     {/* Critical badge */}
                                     {meta?.critical && (
                                         <span className="absolute top-3 right-14 text-[10px] font-bold bg-neutral-100 text-neutral-500 px-2 py-0.5 rounded-full">
-                                            Core
+                                            {t("modules.core", "Core")}
                                         </span>
                                     )}
 
@@ -202,7 +202,7 @@ const AdminModules = () => {
                                                 mod.id === 'dashboard' ? 'opacity-40 cursor-not-allowed' : ''
                                             }`}
                                             disabled={mod.id === 'dashboard'}
-                                            title={mod.id === 'dashboard' ? 'Dashboard cannot be disabled' : undefined}
+                                            title={mod.id === 'dashboard' ? t("modules.dashboard_cannot_be_disabled", 'Dashboard cannot be disabled') : undefined}
                                         >
                                             {isEnabled ? (
                                                 <ToggleRight className="w-8 h-8 text-primary" />
@@ -212,8 +212,8 @@ const AdminModules = () => {
                                         </button>
                                     </div>
 
-                                    <h3 className="font-bold text-neutral-900 text-sm mb-1">{mod.label}</h3>
-                                    <p className="text-xs text-neutral-500 leading-relaxed">{meta?.description}</p>
+                                    <h3 className="font-bold text-neutral-900 text-sm mb-1">{t(`modules.${mod.id}`, mod.label)}</h3>
+                                    <p className="text-xs text-neutral-500 leading-relaxed">{t(`modules.${mod.id}_desc`, meta?.description || '')}</p>
 
                                     <div className={`mt-3 inline-flex items-center gap-1.5 text-[11px] font-bold px-2 py-1 rounded-full ${
                                         isEnabled
@@ -221,7 +221,7 @@ const AdminModules = () => {
                                             : 'bg-rose-100 text-rose-700'
                                     }`}>
                                         {isEnabled ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}
-                                        {isEnabled ? 'Enabled' : 'Disabled'}
+                                        {isEnabled ? t("modules.enabled", 'Enabled') : t("modules.disabled_btn", 'Disabled')}
                                     </div>
                                 </div>
                             );
@@ -231,12 +231,12 @@ const AdminModules = () => {
 
                 {/* Info box */}
                 <div className="bg-blue-50 border border-blue-100 rounded-[8px] p-4 text-sm text-blue-800">
-                    <p className="font-bold mb-1">How module control works</p>
+                    <p className="font-bold mb-1">{t("modules.how_it_works", "How module control works")}</p>
                     <ul className="list-disc list-inside space-y-1 text-blue-700 text-xs">
-                        <li>Disabling a module hides it from navigation and blocks access for <strong>all</strong> users including staff.</li>
-                        <li>Superadmins are shown a "Module Disabled" page — so they can notice and re-enable from here.</li>
-                        <li>Per-user module permissions (set in User Management) are enforced <em>after</em> global module checks.</li>
-                        <li>The <strong>Dashboard</strong> module cannot be disabled as it is the landing page.</li>
+                        <li dangerouslySetInnerHTML={{ __html: t("modules.how_it_works_1", "Disabling a module hides it from navigation and blocks access for <strong>all</strong> users including staff.") }} />
+                        <li>{t("modules.how_it_works_2", "Superadmins are shown a \"Module Disabled\" page — so they can notice and re-enable from here.")}</li>
+                        <li dangerouslySetInnerHTML={{ __html: t("modules.how_it_works_3", "Per-user module permissions (set in User Management) are enforced <em>after</em> global module checks.") }} />
+                        <li dangerouslySetInnerHTML={{ __html: t("modules.how_it_works_4", "The <strong>Dashboard</strong> module cannot be disabled as it is the landing page.") }} />
                     </ul>
                 </div>
             </div>

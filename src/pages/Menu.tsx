@@ -11,6 +11,7 @@ import { MenuItem } from "@/types";
 import { Skeleton } from "@/components/ui/skeleton";
 import { applyCustomImages } from "@/utils/menuUtils";
 import { generateSlug } from "@/utils/slugUtils";
+import { useTranslation } from "react-i18next";
 
 import menuMojito from "@/assets/menu-mojito.jpg";
 import menuCoconut from "@/assets/menu-coconut.jpg";
@@ -79,6 +80,7 @@ export const imageMap: Record<string, any> = {
 export const resolveImage = (img: string) => imageMap[img] || img;
 
 const Menu = () => {
+  const { t } = useTranslation();
   const { addToCart, cart, updateQuantity } = useCart();
   const [categories, setCategories] = useState<string[]>([]);
   const [activeCategory, setActiveCategory] = useState("");
@@ -246,7 +248,7 @@ const Menu = () => {
             className="text-5xl md:text-7xl lg:text-9xl font-serif font-bold leading-tight mb-3"
             style={{ color: "hsl(40 20% 96%)", letterSpacing: "-0.02em" }}
           >
-            Our <span className="italic" style={{ color: "hsl(43 74% 48%)" }}>Menu</span>
+            Our <span className="italic" style={{ color: "hsl(43 74% 48%)" }}>{t("pos.menu", "Menu")}</span>
           </motion.h1>
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -458,7 +460,7 @@ const Menu = () => {
                                         <motion.div key="add" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex items-center justify-between w-full">
                                           <span className="text-[12px]">{item.price?.replace('$', '৳').replace('.00', '')}</span>
                                           <div className="flex items-center gap-2 border-l pl-3 border-current/20">
-                                            <span>Add</span>
+                                            <span>{t("pos.add", "Add")}</span>
                                             <ShoppingCart size={13} className="opacity-70 group-hover:opacity-100" />
                                           </div>
                                         </motion.div>

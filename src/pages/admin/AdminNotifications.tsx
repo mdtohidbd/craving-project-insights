@@ -5,6 +5,7 @@ import {
     Bell, ShoppingCart, MessageSquare, AlertCircle,
     CheckCircle2, Clock, Trash2, Filter, Search, Calendar, Users
 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 interface Notification {
     _id: string;
@@ -17,6 +18,7 @@ interface Notification {
 }
 
 const AdminNotifications = () => {
+    const { t } = useTranslation();
     const { user, isSuperAdmin } = useAuth();
     const [notifications, setNotifications] = useState<Notification[]>([]);
     const [loading, setLoading] = useState(true);
@@ -109,14 +111,14 @@ const AdminNotifications = () => {
         const now = new Date();
         const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
 
-        if (diffInSeconds < 60) return 'Just now';
-        if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} min ago`;
-        if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} hr ago`;
+        if (diffInSeconds < 60) return t("notifications.just_now", 'Just now');
+        if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} ${t("notifications.min_ago", "min ago")}`;
+        if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} ${t("notifications.hr_ago", "hr ago")}`;
         return date.toLocaleDateString();
     };
 
     return (
-        <AdminLayout title="Notifications">
+        <AdminLayout title={t("dashboard.notifications", "Notifications")}>
             <div className="max-w-4xl mx-auto space-y-6 pb-20">
                 {/* Header Actions */}
                 <div className="flex flex-col sm:flex-row gap-4 items-center justify-between bg-white p-4 rounded-[8px] border border-neutral-200 shadow-sm sticky top-0 z-10">
@@ -130,7 +132,7 @@ const AdminNotifications = () => {
                                         : 'text-neutral-500 hover:text-neutral-900'
                                     }`}
                             >
-                                {f.replace('_', ' ')}
+                                {t(`notifications.filter_${f}`, f.replace('_', ' '))}
                             </button>
                         ))}
                     </div>
@@ -138,7 +140,7 @@ const AdminNotifications = () => {
                         onClick={markAllAsRead}
                         className="text-xs font-bold text-primary hover:text-primary/80 transition-colors px-4 py-2 uppercase tracking-wider"
                     >
-                        Mark all as read
+                        {t("notifications.mark_all_read", "Mark all as read")}
                     </button>
                 </div>
 
@@ -147,7 +149,7 @@ const AdminNotifications = () => {
                     {loading ? (
                         <div className="text-center py-20">
                             <Clock className="w-8 h-8 text-primary animate-spin mx-auto mb-2" />
-                            <p className="text-sm text-neutral-500">Loading notifications...</p>
+                            <p className="text-sm text-neutral-500">{t("notifications.loading", "Loading notifications...")}</p>
                         </div>
                     ) : filteredNotifications.map((notif) => (
                         <div
@@ -187,14 +189,14 @@ const AdminNotifications = () => {
                                                 onClick={() => markAsRead(notif._id)}
                                                 className="text-[11px] font-bold text-primary hover:underline uppercase tracking-wider"
                                             >
-                                                Mark as read
+                                                {t("notifications.mark_as_read", "Mark as read")}
                                             </button>
                                         )}
                                         <button
                                             onClick={() => deleteNotification(notif._id)}
                                             className="text-[11px] font-bold text-neutral-400 hover:text-rose-600 transition-colors uppercase tracking-wider"
                                         >
-                                            Delete
+                                            {t("common.delete", "Delete")}
                                         </button>
                                     </div>
                                 </div>
@@ -208,8 +210,8 @@ const AdminNotifications = () => {
                     {!loading && filteredNotifications.length === 0 && (
                         <div className="text-center py-20 bg-white rounded-[12px] border border-dashed border-neutral-300">
                             <Bell className="w-12 h-12 text-neutral-200 mx-auto mb-4" />
-                            <h3 className="text-lg font-bold text-neutral-400">No notifications found</h3>
-                            <p className="text-sm text-neutral-400 mt-1">Status: All caught up</p>
+                            <h3 className="text-lg font-bold text-neutral-400">{t("notifications.no_notifications", "No notifications found")}</h3>
+                            <p className="text-sm text-neutral-400 mt-1">{t("notifications.all_caught_up", "Status: All caught up")}</p>
                         </div>
                     )}
                 </div>

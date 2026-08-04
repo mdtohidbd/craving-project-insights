@@ -9,6 +9,7 @@ import {
 } from "recharts";
 import AdminLayout from "../../components/admin/AdminLayout";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 
 interface DashboardData {
     metrics: {
@@ -31,6 +32,7 @@ interface DashboardData {
 }
 
 const AdminDashboard = () => {
+    const { t } = useTranslation();
     const [data, setData] = useState<DashboardData | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [reportType, setReportType] = useState("overview");
@@ -80,7 +82,7 @@ const AdminDashboard = () => {
                 }
             } catch (error) {
                 console.error("Fetch dashboard error:", error);
-                toast.error("Failed to load dashboard data");
+                toast.error(t("pos.failed_to_load_dashboard_data", "Failed to load dashboard data"));
             } finally {
                 setIsLoading(false);
             }
@@ -90,7 +92,7 @@ const AdminDashboard = () => {
 
     if (isLoading || !data) {
         return (
-            <AdminLayout title="Overview">
+            <AdminLayout title={t("dashboard.overview", "Overview")}>
                 <div className="flex items-center justify-center h-[50vh]">
                     <div className="w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
                 </div>
@@ -99,7 +101,7 @@ const AdminDashboard = () => {
     }
 
     return (
-        <AdminLayout title="Overview">
+        <AdminLayout title={t("dashboard.overview", "Overview")}>
             <div className="space-y-8 pb-10">
                 {/* Pills Navigation - Premium Mushy Design */}
                 <div className="flex gap-2.5 p-1.5 bg-neutral-100/50 rounded-[12px] w-fit">
@@ -110,7 +112,7 @@ const AdminDashboard = () => {
                                 : "text-neutral-500 hover:text-neutral-900 hover:bg-white/40"
                             }`}
                     >
-                        OVERVIEW
+                        {t("dashboard.overview", "OVERVIEW")}
                     </button>
                     <button
                         onClick={() => setReportType("sales")}
@@ -119,7 +121,7 @@ const AdminDashboard = () => {
                                 : "text-neutral-500 hover:text-neutral-900 hover:bg-white/40"
                             }`}
                     >
-                        SALES REPORT
+                        {t("dashboard.sales_report", "SALES REPORT")}
                     </button>
                     <button
                         onClick={() => setReportType("items")}
@@ -128,7 +130,7 @@ const AdminDashboard = () => {
                                 : "text-neutral-500 hover:text-neutral-900 hover:bg-white/40"
                             }`}
                     >
-                        ITEM ANALYSIS
+                        {t("dashboard.item_analysis", "ITEM ANALYSIS")}
                     </button>
                     <button
                         onClick={() => setReportType("staff")}
@@ -137,7 +139,7 @@ const AdminDashboard = () => {
                                 : "text-neutral-500 hover:text-neutral-900 hover:bg-white/40"
                             }`}
                     >
-                        STAFF ANALYSIS
+                        {t("dashboard.staff_analysis", "STAFF ANALYSIS")}
                     </button>
                 </div>
 
@@ -146,28 +148,28 @@ const AdminDashboard = () => {
                         {/* Metrics */}
                         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
                             <MetricCard
-                                title="Today's Sales"
+                                title={t("dashboard.todays_sales", "Today's Sales")}
                                 value={`৳${Math.round(data.metrics.todaySales || 0)}`}
                                 trend=""
                                 isPositive={true}
                                 icon={<TrendingUp className="w-3.5 h-3.5 lg:w-4 lg:h-4 text-emerald-400" />}
                             />
                             <MetricCard
-                                title="This Month"
+                                title={t("dashboard.this_month", "This Month")}
                                 value={`৳${Math.round(data.metrics.monthlySales || 0)}`}
                                 trend=""
                                 isPositive={true}
                                 icon={<TrendingUp className="w-3.5 h-3.5 lg:w-4 lg:h-4 text-emerald-400" />}
                             />
                             <MetricCard
-                                title="Total Orders"
+                                title={t("dashboard.total_orders", "Total Orders")}
                                 value={(data.metrics.totalOrders || 0).toString()}
                                 trend=""
                                 isPositive={true}
                                 icon={<Package className="w-3.5 h-3.5 lg:w-4 lg:h-4 text-blue-400" />}
                             />
                             <MetricCard
-                                title="Active Orders"
+                                title={t("dashboard.active_orders", "Active Orders")}
                                 value={data.metrics.activeOrders.toString()}
                                 trend=""
                                 isPositive={true}
@@ -182,8 +184,8 @@ const AdminDashboard = () => {
                                 <div className="bg-white border border-neutral-200/60 rounded-[16px] p-8 shadow-sm hover:shadow-md transition-shadow duration-500">
                                     <div className="flex items-center justify-between mb-8">
                                         <div>
-                                            <h2 className="text-lg font-black text-neutral-900 tracking-tight">Daily Sales</h2>
-                                            <p className="text-[11px] font-bold text-neutral-400 uppercase tracking-widest mt-1">Revenue overview for the last 7 days</p>
+                                            <h2 className="text-lg font-black text-neutral-900 tracking-tight">{t("dashboard.daily_sales", "Daily Sales")}</h2>
+                                            <p className="text-[11px] font-bold text-neutral-400 uppercase tracking-widest mt-1">{t("dashboard.revenue_overview", "Revenue overview for the last 7 days")}</p>
                                         </div>
                                     </div>
                                     <div className="h-[300px] w-full">
@@ -227,18 +229,18 @@ const AdminDashboard = () => {
                                 <div className="bg-white border border-neutral-200/60 rounded-[16px] overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-500">
                                     <div className="p-8 border-b border-neutral-100 bg-neutral-50/30 flex items-center justify-between">
                                         <div>
-                                            <h2 className="text-lg font-black text-neutral-900 tracking-tight">Inventory Preview</h2>
-                                            <p className="text-[11px] font-bold text-neutral-400 uppercase tracking-widest mt-1">Manage your product stock levels</p>
+                                            <h2 className="text-lg font-black text-neutral-900 tracking-tight">{t("inventory.inventory_preview", "Inventory Preview")}</h2>
+                                            <p className="text-[11px] font-bold text-neutral-400 uppercase tracking-widest mt-1">{t("inventory.manage_stock_levels", "Manage your product stock levels")}</p>
                                         </div>
                                     </div>
                                     <div className="overflow-x-auto">
                                         <table className="w-full text-sm text-left">
                                             <thead className="text-xs text-neutral-500 bg-neutral-50 uppercase border-b border-neutral-200">
                                                 <tr>
-                                                    <th className="px-6 py-4 font-medium">Item Name</th>
-                                                    <th className="px-6 py-4 font-medium">Category</th>
-                                                    <th className="px-6 py-4 font-medium">Stock</th>
-                                                    <th className="px-6 py-4 font-medium">Status</th>
+                                                    <th className="px-6 py-4 font-medium">{t("inventory.item_name", "Item Name")}</th>
+                                                    <th className="px-6 py-4 font-medium">{t("inventory.category", "Category")}</th>
+                                                    <th className="px-6 py-4 font-medium">{t("inventory.stock", "Stock")}</th>
+                                                    <th className="px-6 py-4 font-medium">{t("inventory.status", "Status")}</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -252,13 +254,13 @@ const AdminDashboard = () => {
                                                                 ? 'bg-emerald-100 text-primary border border-primary/30'
                                                                 : 'bg-rose-100 text-rose-700 border border-rose-200'
                                                                 }`}>
-                                                                {item.status}
+                                                                {item.status === 'In Stock' ? t("inventory.in_stock", "In Stock") : (item.status === 'Low Stock' ? t("inventory.low_stock", "Low Stock") : t("inventory.out_of_stock", "Out of Stock"))}
                                                             </span>
                                                         </td>
                                                     </tr>
                                                 ))}
                                                 {data.inventoryData.length === 0 && (
-                                                    <tr><td colSpan={4} className="px-6 py-4 text-center text-neutral-500">No items found</td></tr>
+                                                    <tr><td colSpan={4} className="px-6 py-4 text-center text-neutral-500">{t("inventory.no_items_found", "No items found")}</td></tr>
                                                 )}
                                             </tbody>
                                         </table>
@@ -275,8 +277,8 @@ const AdminDashboard = () => {
                                                 <Phone className="w-6 h-6 text-rose-500" />
                                             </div>
                                             <div>
-                                                <h2 className="text-lg font-black text-neutral-900 tracking-tight">SMS Logs</h2>
-                                                <p className="text-[10px] font-bold text-rose-400 uppercase tracking-widest mt-0.5">Real-time alerts</p>
+                                                <h2 className="text-lg font-black text-neutral-900 tracking-tight">{t("dashboard.sms_logs", "SMS Logs")}</h2>
+                                                <p className="text-[10px] font-bold text-rose-400 uppercase tracking-widest mt-0.5">{t("dashboard.real_time_alerts", "Real-time alerts")}</p>
                                             </div>
                                         </div>
                                     </div>
@@ -303,7 +305,7 @@ const AdminDashboard = () => {
                                             </div>
                                         ))}
                                         {data.smsNotifications.length === 0 && (
-                                            <p className="text-neutral-500 text-sm text-center pt-8">No Recent SMS logs.</p>
+                                            <p className="text-neutral-500 text-sm text-center pt-8">{t("dashboard.no_sms_logs", "No Recent SMS logs.")}</p>
                                         )}
                                     </div>
                                 </div>
@@ -318,8 +320,8 @@ const AdminDashboard = () => {
                         <div className="bg-white border border-neutral-200 rounded-[8px] p-6 shadow-sm">
                             <div className="flex items-center justify-between mb-6">
                                 <div>
-                                    <h2 className="text-lg font-semibold text-neutral-900">Sales Distribution</h2>
-                                    <p className="text-sm text-neutral-500">Revenue share by category</p>
+                                    <h2 className="text-lg font-semibold text-neutral-900">{t("dashboard.sales_distribution", "Sales Distribution")}</h2>
+                                    <p className="text-sm text-neutral-500">{t("dashboard.revenue_share", "Revenue share by category")}</p>
                                 </div>
                                 <PieChartIcon className="w-5 h-5 text-neutral-400" />
                             </div>
@@ -350,7 +352,7 @@ const AdminDashboard = () => {
 
                         {/* Payment Methods */}
                         <div className="bg-white border border-neutral-200 rounded-[8px] p-6 shadow-sm">
-                            <h2 className="text-lg font-semibold text-neutral-900 mb-6">Payment Methods</h2>
+                            <h2 className="text-lg font-semibold text-neutral-900 mb-6">{t("dashboard.payment_methods", "Payment Methods")}</h2>
                             <div className="space-y-4">
                                 {reportData.paymentMethods.map((method) => (
                                     <div key={method.method} className="flex items-center justify-between p-3 rounded-[4px] hover:bg-neutral-50 transition-colors">
@@ -360,7 +362,7 @@ const AdminDashboard = () => {
                                             </div>
                                             <div>
                                                 <p className="text-neutral-900 font-medium">{method.method}</p>
-                                                <p className="text-sm text-neutral-500">{method.count} transactions</p>
+                                                <p className="text-sm text-neutral-500">{method.count} {t("dashboard.transactions", "transactions")}</p>
                                             </div>
                                         </div>
                                         <div className="text-right">
@@ -373,14 +375,14 @@ const AdminDashboard = () => {
 
                         {/* Sales by Category Table */}
                         <div className="lg:col-span-2 bg-white border border-neutral-200 rounded-[8px] p-6 shadow-sm">
-                            <h2 className="text-lg font-semibold text-neutral-900 mb-6">Category Breakdown</h2>
+                            <h2 className="text-lg font-semibold text-neutral-900 mb-6">{t("dashboard.category_breakdown", "Category Breakdown")}</h2>
                             <div className="overflow-x-auto">
                                 <table className="w-full text-sm">
                                     <thead>
                                         <tr className="border-b border-neutral-200">
-                                            <th className="text-left py-4 text-neutral-500 font-medium uppercase text-xs">Category</th>
-                                            <th className="text-right py-4 text-neutral-500 font-medium uppercase text-xs">Revenue</th>
-                                            <th className="text-right py-4 text-neutral-500 font-medium uppercase text-xs">Market Share</th>
+                                            <th className="text-left py-4 text-neutral-500 font-medium uppercase text-xs">{t("dashboard.category", "Category")}</th>
+                                            <th className="text-right py-4 text-neutral-500 font-medium uppercase text-xs">{t("dashboard.revenue", "Revenue")}</th>
+                                            <th className="text-right py-4 text-neutral-500 font-medium uppercase text-xs">{t("dashboard.market_share", "Market Share")}</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -417,18 +419,18 @@ const AdminDashboard = () => {
                                 <Package className="w-5 h-5 text-primary" />
                             </div>
                             <div>
-                                <h2 className="text-lg font-semibold text-neutral-900">Top Performing Items</h2>
-                                <p className="text-sm text-neutral-500">Based on sales volume and total revenue</p>
+                                <h2 className="text-lg font-semibold text-neutral-900">{t("dashboard.top_performing_items", "Top Performing Items")}</h2>
+                                <p className="text-sm text-neutral-500">{t("dashboard.top_items_desc", "Based on sales volume and total revenue")}</p>
                             </div>
                         </div>
                         <div className="overflow-x-auto">
                             <table className="w-full text-sm">
                                 <thead>
                                     <tr className="border-b border-neutral-200">
-                                        <th className="text-left py-4 text-neutral-500 font-medium uppercase text-xs">Rank</th>
-                                        <th className="text-left py-4 text-neutral-500 font-medium uppercase text-xs">Item Name</th>
-                                        <th className="text-right py-4 text-neutral-500 font-medium uppercase text-xs">Qty Sold</th>
-                                        <th className="text-right py-4 text-neutral-500 font-medium uppercase text-xs">Total Revenue</th>
+                                        <th className="text-left py-4 text-neutral-500 font-medium uppercase text-xs">{t("dashboard.rank", "Rank")}</th>
+                                        <th className="text-left py-4 text-neutral-500 font-medium uppercase text-xs">{t("dashboard.item_name", "Item Name")}</th>
+                                        <th className="text-right py-4 text-neutral-500 font-medium uppercase text-xs">{t("dashboard.qty_sold", "Qty Sold")}</th>
+                                        <th className="text-right py-4 text-neutral-500 font-medium uppercase text-xs">{t("dashboard.total_revenue", "Total Revenue")}</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -456,14 +458,14 @@ const AdminDashboard = () => {
                         {/* Staff Metrics */}
                         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
                             <MetricCard
-                                title="Active Staff"
+                                title={t("dashboard.active_staff", "Active Staff")}
                                 value={(data.staffData?.activeStaffCount || 0).toString()}
                                 trend=""
                                 isPositive={true}
                                 icon={<Users className="w-3.5 h-3.5 lg:w-4 lg:h-4 text-blue-500" />}
                             />
                             <MetricCard
-                                title="Active Deliverymen"
+                                title={t("dashboard.active_deliverymen", "Active Deliverymen")}
                                 value={(data.staffData?.activeDeliveryManCount || 0).toString()}
                                 trend=""
                                 isPositive={true}
@@ -474,7 +476,7 @@ const AdminDashboard = () => {
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                             {/* Staff Role Breakdown */}
                             <div className="bg-white border border-neutral-200 rounded-[8px] p-6 shadow-sm">
-                                <h2 className="text-lg font-semibold text-neutral-900 mb-6">Staff Distribution</h2>
+                                <h2 className="text-lg font-semibold text-neutral-900 mb-6">{t("dashboard.staff_distribution", "Staff Distribution")}</h2>
                                 <div className="space-y-4">
                                     {data.staffData?.staffRoleBreakdown.map((role) => (
                                         <div key={role.role} className="flex items-center justify-between p-3 rounded-[4px] hover:bg-neutral-50 transition-colors">
@@ -484,7 +486,7 @@ const AdminDashboard = () => {
                                                 </div>
                                                 <div>
                                                     <p className="text-neutral-900 font-medium capitalize">{role.role}</p>
-                                                    <p className="text-sm text-neutral-500">{role.count} members</p>
+                                                    <p className="text-sm text-neutral-500">{role.count} {t("dashboard.members", "members")}</p>
                                                 </div>
                                             </div>
                                             <div className="text-right">
@@ -493,7 +495,7 @@ const AdminDashboard = () => {
                                         </div>
                                     ))}
                                     {(!data.staffData?.staffRoleBreakdown || data.staffData.staffRoleBreakdown.length === 0) && (
-                                        <p className="text-neutral-500 text-sm text-center">No staff role data available.</p>
+                                        <p className="text-neutral-500 text-sm text-center">{t("dashboard.no_staff_role_data", "No staff role data available.")}</p>
                                     )}
                                 </div>
                             </div>
@@ -501,15 +503,15 @@ const AdminDashboard = () => {
                             {/* Deliveryman Performance */}
                             <div className="bg-white border border-neutral-200 rounded-[8px] p-6 shadow-sm">
                                 <div className="flex items-center gap-3 mb-6">
-                                    <h2 className="text-lg font-semibold text-neutral-900">Delivery Performance</h2>
+                                    <h2 className="text-lg font-semibold text-neutral-900">{t("dashboard.delivery_performance", "Delivery Performance")}</h2>
                                 </div>
                                 <div className="overflow-x-auto">
                                     <table className="w-full text-sm">
                                         <thead>
                                             <tr className="border-b border-neutral-200">
-                                                <th className="text-left py-4 text-neutral-500 font-medium uppercase text-xs">Name</th>
-                                                <th className="text-left py-4 text-neutral-500 font-medium uppercase text-xs">Phone</th>
-                                                <th className="text-right py-4 text-neutral-500 font-medium uppercase text-xs">Completed Orders</th>
+                                                <th className="text-left py-4 text-neutral-500 font-medium uppercase text-xs">{t("dashboard.name", "Name")}</th>
+                                                <th className="text-left py-4 text-neutral-500 font-medium uppercase text-xs">{t("dashboard.phone", "Phone")}</th>
+                                                <th className="text-right py-4 text-neutral-500 font-medium uppercase text-xs">{t("dashboard.completed_orders", "Completed Orders")}</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -519,14 +521,14 @@ const AdminDashboard = () => {
                                                     <td className="py-4 text-neutral-600">{dm.phone}</td>
                                                     <td className="text-right py-4">
                                                         <span className="inline-flex items-center justify-center px-2.5 py-1 rounded-full text-xs font-bold bg-primary/10 text-primary">
-                                                            {dm.completedOrders} orders
+                                                            {dm.completedOrders} {t("dashboard.orders", "orders")}
                                                         </span>
                                                     </td>
                                                 </tr>
                                             ))}
                                             {(!data.staffData?.deliveryManPerformance || data.staffData.deliveryManPerformance.length === 0) && (
                                                 <tr>
-                                                    <td colSpan={3} className="py-8 text-center text-neutral-500">No deliveryman data available.</td>
+                                                    <td colSpan={3} className="py-8 text-center text-neutral-500">{t("dashboard.no_deliveryman_data", "No deliveryman data available.")}</td>
                                                 </tr>
                                             )}
                                         </tbody>

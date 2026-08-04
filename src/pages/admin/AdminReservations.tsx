@@ -2,8 +2,10 @@ import React, { useState, useEffect } from "react";
 import AdminLayout from "@/components/admin/AdminLayout";
 import { toast } from "sonner";
 import { Search, Calendar as CalendarIcon, Filter, Trash2, CheckCircle, Clock, XCircle } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 const AdminReservations = () => {
+    const { t } = useTranslation();
     const [reservations, setReservations] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
@@ -33,11 +35,11 @@ const AdminReservations = () => {
                 const data = await response.json();
                 setReservations(data);
             } else {
-                toast.error("Failed to fetch reservations");
+                toast.error(t("reservations.fetch_failed", "Failed to fetch reservations"));
             }
         } catch (error) {
             console.error("Error fetching reservations:", error);
-            toast.error("Network error. Could not fetch reservations.");
+            toast.error(t("reservations.network_error", "Network error. Could not fetch reservations."));
         } finally {
             setIsLoading(false);
         }
@@ -53,22 +55,22 @@ const AdminReservations = () => {
             });
 
             if (response.ok) {
-                toast.success(`Reservation ${newStatus} successfully`);
+                toast.success(t("reservations.status_updated", "Reservation {{status}} successfully", { status: newStatus }));
                 fetchReservations();
             } else {
-                toast.error("Failed to update status");
+                toast.error(t("reservations.status_update_failed", "Failed to update status"));
             }
         } catch (error) {
             console.error("Error updating reservation:", error);
-            toast.error("Error updating status");
+            toast.error(t("reservations.status_update_error", "Error updating status"));
         }
     };
 
     const handleDelete = (id: string) => {
         setConfirmModal({
             isOpen: true,
-            title: "Delete Reservation",
-            message: "Are you sure you want to delete this reservation? This action cannot be undone.",
+            title: t("reservations.delete_title", "Delete Reservation"),
+            message: t("reservations.delete_message", "Are you sure you want to delete this reservation? This action cannot be undone."),
             onConfirm: async () => {
                 try {
                     const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
@@ -77,15 +79,15 @@ const AdminReservations = () => {
                     });
 
                     if (response.ok) {
-                        toast.success("Reservation deleted successfully");
+                        toast.success(t("reservations.delete_success", "Reservation deleted successfully"));
                         fetchReservations();
                         setConfirmModal(prev => ({ ...prev, isOpen: false }));
                     } else {
-                        toast.error("Failed to delete reservation");
+                        toast.error(t("reservations.delete_failed", "Failed to delete reservation"));
                     }
                 } catch (error) {
                     console.error("Error deleting reservation:", error);
-                    toast.error("Error deleting reservation");
+                    toast.error(t("reservations.delete_error", "Error deleting reservation"));
                 }
             }
         });
@@ -112,7 +114,7 @@ const AdminReservations = () => {
     };
 
     return (
-        <AdminLayout title="Table Reservations">
+        <AdminLayout title={t("dashboard.reservations", "Table Reservations")}>
             <div className="space-y-6">
                 
                 {/* Header Actions */}
@@ -121,7 +123,7 @@ const AdminReservations = () => {
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 w-5 h-5" />
                         <input 
                             type="text" 
-                            placeholder="Search by Name, Booking ID or Phone..." 
+                            placeholder={t("reservations.search_placeholder", "Search by Name, Booking ID or Phone...")}
                             className="w-full bg-white border border-neutral-200 rounded-[4px] pl-10 pr-4 py-2 text-neutral-900 focus:outline-none focus:border-primary/50 transition-colors placeholder:text-neutral-400"
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
@@ -135,10 +137,10 @@ const AdminReservations = () => {
                             value={statusFilter}
                             onChange={(e) => setStatusFilter(e.target.value)}
                         >
-                            <option value="all">All Status</option>
-                            <option value="pending">Pending</option>
-                            <option value="confirmed">Confirmed</option>
-                            <option value="cancelled">Cancelled</option>
+                            <option value="all">{t("reservations.all_status", "All Status")}</option>
+                            <option value="pending">{t("reservations.pending", "Pending")}</option>
+                            <option value="confirmed">{t("reservations.confirmed", "Confirmed")}</option>
+                            <option value="cancelled">{t("reservations.cancelled", "Cancelled")}</option>
                         </select>
                     </div>
                 </div>
@@ -149,12 +151,12 @@ const AdminReservations = () => {
                         <table className="w-full text-left border-collapse">
                             <thead>
                                 <tr className="bg-neutral-50 border-b border-neutral-200 text-neutral-500 text-sm uppercase tracking-wider">
-                                    <th className="px-6 py-4 font-medium">Booking ID & Name</th>
-                                    <th className="px-6 py-4 font-medium">Contact</th>
-                                    <th className="px-6 py-4 font-medium">Date & Time</th>
-                                    <th className="px-6 py-4 font-medium">Guests</th>
-                                    <th className="px-6 py-4 font-medium text-center">Status</th>
-                                    <th className="px-6 py-4 font-medium text-right">Actions</th>
+                                    <th className="px-6 py-4 font-medium">{t("reservations.booking_id_name", "Booking ID & Name")}</th>
+                                    <th className="px-6 py-4 font-medium">{t("reservations.contact", "Contact")}</th>
+                                    <th className="px-6 py-4 font-medium">{t("reservations.date_time", "Date & Time")}</th>
+                                    <th className="px-6 py-4 font-medium">{t("reservations.guests", "Guests")}</th>
+                                    <th className="px-6 py-4 font-medium text-center">{t("reservations.status", "Status")}</th>
+                                    <th className="px-6 py-4 font-medium text-right">{t("common.actions", "Actions")}</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-neutral-800">
@@ -162,13 +164,13 @@ const AdminReservations = () => {
                                     <tr>
                                         <td colSpan={6} className="px-6 py-8 text-center text-neutral-500">
                                             <div className="animate-spin w-6 h-6 border-2 border-primary border-t-transparent rounded-full mx-auto mb-2"></div>
-                                            Loading reservations...
+                                            {t("reservations.loading", "Loading reservations...")}
                                         </td>
                                     </tr>
                                 ) : filteredReservations.length === 0 ? (
                                     <tr>
                                         <td colSpan={6} className="px-6 py-8 text-center text-neutral-500">
-                                            No reservations found matching your criteria.
+                                            {t("reservations.no_reservations", "No reservations found matching your criteria.")}
                                         </td>
                                     </tr>
                                 ) : (
@@ -182,7 +184,7 @@ const AdminReservations = () => {
                                                 <p className="text-sm text-neutral-600">{res.phone}</p>
                                                 {res.requests && (
                                                     <p className="text-xs text-neutral-500 truncate max-w-[150px] mt-1" title={res.requests}>
-                                                        Note: {res.requests}
+                                                        {t("reservations.note", "Note")}: {res.requests}
                                                     </p>
                                                 )}
                                             </td>
@@ -203,7 +205,7 @@ const AdminReservations = () => {
                                             </td>
                                             <td className="px-6 py-4 text-center">
                                                 <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold uppercase tracking-wider ${getStatusStyle(res.status)}`}>
-                                                    {res.status}
+                                                    {res.status === 'confirmed' ? t("reservations.confirmed", "Confirmed") : (res.status === 'pending' ? t("reservations.pending", "Pending") : (res.status === 'cancelled' ? t("reservations.cancelled", "Cancelled") : res.status))}
                                                 </span>
                                             </td>
                                             <td className="px-6 py-4 text-right space-x-2">
@@ -211,14 +213,14 @@ const AdminReservations = () => {
                                                     <>
                                                         <button 
                                                             onClick={() => handleUpdateStatus(res._id, 'confirmed')}
-                                                            title="Confirm Booking"
+                                                            title={t("reservations.confirm_booking", "Confirm Booking")}
                                                             className="p-1.5 bg-green-100 text-green-700 hover:bg-green-200 rounded transition-colors"
                                                         >
                                                             <CheckCircle className="w-4 h-4" />
                                                         </button>
                                                         <button 
                                                             onClick={() => handleUpdateStatus(res._id, 'cancelled')}
-                                                            title="Cancel Booking"
+                                                            title={t("reservations.cancel_booking", "Cancel Booking")}
                                                             className="p-1.5 bg-yellow-100 text-yellow-700 hover:bg-yellow-200 rounded transition-colors"
                                                         >
                                                             <XCircle className="w-4 h-4" />
@@ -227,7 +229,7 @@ const AdminReservations = () => {
                                                 )}
                                                 <button 
                                                     onClick={() => handleDelete(res._id)}
-                                                    title="Delete Booking"
+                                                    title={t("reservations.delete_booking", "Delete Booking")}
                                                     className="p-1.5 bg-red-100 text-red-700 hover:bg-red-200 rounded transition-colors"
                                                 >
                                                     <Trash2 className="w-4 h-4" />

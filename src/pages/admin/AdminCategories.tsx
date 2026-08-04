@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import AdminLayout from "../../components/admin/AdminLayout";
 import { Plus, Edit, Trash2, Tag, X } from "lucide-react";
+import { useTranslation } from "react-i18next";
+import { toast } from "sonner";
 
 interface Category {
     _id: string; // From mongoose
@@ -10,6 +12,7 @@ interface Category {
 }
 
 const AdminCategories = () => {
+    const { t } = useTranslation();
     const [categories, setCategories] = useState<Category[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -55,7 +58,7 @@ const AdminCategories = () => {
                 // Validate MongoDB ObjectId format
                 const objectIdRegex = /^[0-9a-fA-F]{24}$/;
                 if (!objectIdRegex.test(id)) {
-                    toast.error("Invalid category ID. Cannot delete category.");
+                    toast.error(t("pos.invalid_category_id_cannot_delete_catego", "Invalid category ID. Cannot delete category."));
                     console.error("Invalid ObjectId:", id);
                     return;
                 }
@@ -69,10 +72,10 @@ const AdminCategories = () => {
                     }
                     fetchCategories();
                     setConfirmModal(prev => ({ ...prev, isOpen: false }));
-                    toast.success("Category deleted successfully");
+                    toast.success(t("pos.category_deleted_successfully", "Category deleted successfully"));
                 } catch (err) {
                     console.error("Failed to delete category:", err);
-                    toast.error("Failed to delete category. Please try again.");
+                    toast.error(t("pos.failed_to_delete_category_please_try_aga", "Failed to delete category. Please try again."));
                 }
             }
         });
@@ -125,13 +128,13 @@ const AdminCategories = () => {
                 <div className="bg-white border border-neutral-200 rounded-[8px] shadow-sm overflow-hidden">
                     {/* Header */}
                     <div className="flex items-center justify-between px-4 py-3 border-b border-neutral-200">
-                        <h2 className="text-lg font-semibold text-neutral-900">Categories</h2>
+                        <h2 className="text-lg font-semibold text-neutral-900">{t("categories.title", "Categories")}</h2>
                         <button
                             onClick={() => handleOpenModal()}
                             className="flex items-center justify-center gap-1.5 px-3 py-1.5 bg-primary text-primary-foreground text-sm font-medium rounded-[4px] hover:bg-primary/90 transition-colors"
                         >
                             <Plus className="w-4 h-4" />
-                            Add
+                            {t("menu.add", "Add")}
                         </button>
                     </div>
 
@@ -139,12 +142,12 @@ const AdminCategories = () => {
                     <div className="divide-y divide-neutral-200">
                         {loading ? (
                             <div className="p-8 text-center text-neutral-500">
-                                <p>Loading categories...</p>
+                                <p>{t("common.loading", "Loading...")}</p>
                             </div>
                         ) : categories.length === 0 ? (
                             <div className="p-8 text-center text-neutral-500">
                                 <Tag className="w-8 h-8 mx-auto mb-3 opacity-50" />
-                                <p>No categories found.</p>
+                                <p>{t("categories.no_categories_found", "No categories found.")}</p>
                             </div>
                         ) : (
                             categories.map((cat) => (
@@ -174,23 +177,23 @@ const AdminCategories = () => {
                     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
                         <div className="bg-white border border-neutral-200 rounded-[8px] shadow-xl w-full max-w-sm overflow-hidden">
                             <div className="flex items-center justify-between p-4 border-b border-neutral-200">
-                                <h3 className="text-lg font-medium text-neutral-900">{editingCategory ? "Edit Category" : "Add Category"}</h3>
+                                <h3 className="text-lg font-medium text-neutral-900">{editingCategory ? t("menu.edit_category", "Edit Category") : t("menu.add_category", "Add Category")}</h3>
                                 <button onClick={() => setIsModalOpen(false)} className="text-neutral-400 hover:text-neutral-900 transition-colors">
                                     <X className="w-5 h-5" />
                                 </button>
                             </div>
                             <form onSubmit={handleSave} className="p-4 space-y-4">
                                 <div>
-                                    <label className="block text-sm font-medium text-neutral-600 mb-1">Name</label>
+                                    <label className="block text-sm font-medium text-neutral-600 mb-1">{t("menu.category_name", "Name")}</label>
                                     <input required type="text" value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} className="w-full bg-white border border-neutral-200 rounded-[4px] px-3 py-2 text-neutral-900 focus:outline-none focus:border-primary" />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-neutral-600 mb-1">Display Order</label>
+                                    <label className="block text-sm font-medium text-neutral-600 mb-1">{t("menu.display_order", "Display Order")}</label>
                                     <input required type="number" value={formData.order} onChange={e => setFormData({ ...formData, order: parseInt(e.target.value) || 0 })} className="w-full bg-white border border-neutral-200 rounded-[4px] px-3 py-2 text-neutral-900 focus:outline-none focus:border-primary" />
                                 </div>
                                 <div className="pt-4 flex justify-end gap-3 border-t border-neutral-200">
-                                    <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 text-sm font-medium text-neutral-600 hover:text-neutral-900 transition-colors">Cancel</button>
-                                    <button type="submit" className="px-4 py-2 bg-primary text-primary-foreground text-sm font-medium rounded-[4px] hover:bg-primary/90 transition-colors">{editingCategory ? "Save Changes" : "Add Category"}</button>
+                                    <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 text-sm font-medium text-neutral-600 hover:text-neutral-900 transition-colors">{t("common.cancel", "Cancel")}</button>
+                                    <button type="submit" className="px-4 py-2 bg-primary text-primary-foreground text-sm font-medium rounded-[4px] hover:bg-primary/90 transition-colors">{editingCategory ? t("menu.save_changes", "Save Changes") : t("menu.add_category", "Add Category")}</button>
                                 </div>
                             </form>
                         </div>
@@ -214,13 +217,13 @@ const AdminCategories = () => {
                                     onClick={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
                                     className="flex-1 py-3 bg-neutral-100 hover:bg-neutral-200 text-neutral-700 font-bold rounded-[12px] transition-all"
                                 >
-                                    Cancel
+                                    {t("common.cancel", "Cancel")}
                                 </button>
                                 <button
                                     onClick={confirmModal.onConfirm}
                                     className="flex-1 py-3 bg-rose-500 hover:bg-rose-600 text-white font-bold rounded-[12px] transition-all shadow-lg shadow-rose-100"
                                 >
-                                    Delete
+                                    {t("common.delete", "Delete")}
                                 </button>
                             </div>
                         </div>

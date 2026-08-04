@@ -79,7 +79,7 @@ const Blog = () => {
           >
             Foodie
             <br />
-            <span className="italic" style={{ color: "hsl(43 74% 48%)" }}>Journal</span>
+            <span className="italic" style={{ color: "hsl(43 74% 48%)" }}>{t("pos.journal", "Journal")}</span>
           </motion.h1>
           <motion.p
             initial={{ opacity: 0, y: 20 }}
@@ -186,7 +186,7 @@ const Blog = () => {
                   style={{ letterSpacing: "-0.04em" }}>
                 Read Our
                 <br />
-                <span className="italic" style={{ color: "hsl(43 74% 48%)" }}>Blog</span>
+                <span className="italic" style={{ color: "hsl(43 74% 48%)" }}>{t("pos.blog", "Blog")}</span>
               </h2>
 
               <div className="space-y-6">

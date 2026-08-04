@@ -1,0 +1,5 @@
+{
+  "order_created": "Order created successfully",
+  "unauthorized": "Unauthorized",
+  "server_error": "Internal server error"
+}

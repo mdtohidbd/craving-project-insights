@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Flame, ArrowRight } from "lucide-react";
 import { useSettings } from "@/context/SettingsContext";
+import { useTranslation } from "react-i18next";
 
 const quickLinks = [
   { name: "Home", path: "/" },
@@ -13,6 +14,7 @@ const quickLinks = [
 ];
 
 const Footer = () => {
+  const { t } = useTranslation();
   const { settings } = useSettings();
   const domain = settings.websiteName.toLowerCase().replace(/\s+/g, '') + ".com";
   return (
@@ -69,7 +71,7 @@ const Footer = () => {
               </h4>
               <ul className="space-y-3 text-[13px] leading-relaxed"
                 style={{ color: "hsl(40 20% 96% / 0.6)" }}>
-                <li>2464 Royal Ln<br />Mesa, New Jersey</li>
+                <li>{t("pos.2464_royal_ln", "2464 Royal Ln")}<br />{t("pos.mesa_new_jersey", "Mesa, New Jersey")}</li>
                 <li>(629) 555-0129</li>
                 <li className="pt-1 hover:text-white transition-colors cursor-pointer break-all">
                   hello@{domain}
@@ -85,12 +87,12 @@ const Footer = () => {
               </h4>
               <ul className="space-y-4 text-[13px]">
                 <li>
-                  <span className="block mb-1 font-medium text-white">Monday — Friday</span>
-                  <span style={{ color: "hsl(40 20% 96% / 0.6)" }}>11:00 AM — 11:00 PM</span>
+                  <span className="block mb-1 font-medium text-white">{t("pos.monday_friday", "Monday — Friday")}</span>
+                  <span style={{ color: "hsl(40 20% 96% / 0.6)" }}>{t("pos.11_00_am_11_00_pm", "11:00 AM — 11:00 PM")}</span>
                 </li>
                 <li>
-                  <span className="block mb-1 font-medium text-white">Saturday — Sunday</span>
-                  <span style={{ color: "hsl(40 20% 96% / 0.6)" }}>10:00 AM — 12:00 AM</span>
+                  <span className="block mb-1 font-medium text-white">{t("pos.saturday_sunday", "Saturday — Sunday")}</span>
+                  <span style={{ color: "hsl(40 20% 96% / 0.6)" }}>{t("pos.10_00_am_12_00_am", "10:00 AM — 12:00 AM")}</span>
                 </li>
               </ul>
             </div>

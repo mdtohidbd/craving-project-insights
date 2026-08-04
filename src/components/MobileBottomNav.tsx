@@ -1,9 +1,11 @@
 import { Link, useLocation } from "react-router-dom";
-import { Home, Utensils, CalendarPlus, User, Phone } from "lucide-react";
+import { Home, Utensils, CalendarPlus, User, Phone, Globe } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 export const MobileBottomNav = () => {
   const location = useLocation();
+  const { t } = useTranslation();
 
   // Hide on admin routes, checkout, and pdf view
   if (
@@ -24,7 +26,7 @@ export const MobileBottomNav = () => {
           }`}
         >
           <Home className="w-[22px] h-[22px] mb-1" />
-          <span className="text-[10px] font-bold tracking-wide">Home</span>
+          <span className="text-[10px] font-bold tracking-wide">{t("nav.home")}</span>
         </Link>
         <Link
           to="/menu"
@@ -33,7 +35,7 @@ export const MobileBottomNav = () => {
           }`}
         >
           <Utensils className="w-[22px] h-[22px] mb-1" />
-          <span className="text-[10px] font-bold tracking-wide">Menu</span>
+          <span className="text-[10px] font-bold tracking-wide">{t("nav.menu")}</span>
         </Link>
         
         <Link
@@ -43,7 +45,7 @@ export const MobileBottomNav = () => {
           }`}
         >
           <Phone className="w-[22px] h-[22px] mb-1" />
-          <span className="text-[10px] font-bold tracking-wide">Contact</span>
+          <span className="text-[10px] font-bold tracking-wide">{t("nav.contact", "Contact")}</span>
         </Link>
 
         <Link
@@ -53,8 +55,11 @@ export const MobileBottomNav = () => {
           }`}
         >
           <CalendarPlus className="w-[22px] h-[22px] mb-1" />
-          <span className="text-[10px] font-bold tracking-wide">Booking</span>
+          <span className="text-[10px] font-bold tracking-wide">{t("nav.book_table")}</span>
         </Link>
+
+
+
         <Link
           to="/admin/login"
           className={`flex flex-col items-center justify-center w-full py-2 rounded-xl transition-all duration-300 ${
@@ -62,7 +67,7 @@ export const MobileBottomNav = () => {
           }`}
         >
           <User className="w-[22px] h-[22px] mb-1" />
-          <span className="text-[10px] font-bold tracking-wide">Account</span>
+          <span className="text-[10px] font-bold tracking-wide">{t("nav.admin")}</span>
         </Link>
       </div>
     </div>

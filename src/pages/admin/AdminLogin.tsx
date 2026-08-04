@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { useTranslation } from 'react-i18next';
 import { Eye, EyeOff, ChefHat, Loader2, AlertCircle, CheckCircle2, Shield, Briefcase, Calculator, Coffee, Truck } from 'lucide-react';
 
 type Mode = 'login' | 'register';
@@ -8,6 +9,7 @@ type Mode = 'login' | 'register';
 const AdminLogin = () => {
     const navigate = useNavigate();
     const { login, register } = useAuth();
+    const { t } = useTranslation();
 
     const [mode, setMode] = useState<Mode>('login');
     const [name, setName] = useState('');
@@ -84,7 +86,7 @@ const AdminLogin = () => {
                     className="flex items-center gap-2 px-4 py-2 bg-white/80 backdrop-blur-md border border-neutral-200/60 rounded-full shadow-sm hover:shadow-md hover:-translate-y-0.5 hover:bg-white text-neutral-600 hover:text-primary transition-all duration-300"
                 >
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-arrow-left"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
-                    <span className="text-sm font-bold tracking-wide">Back</span>
+                    <span className="text-sm font-bold tracking-wide">{t("pos.back", "Back")}</span>
                 </Link>
             </div>
 
@@ -94,8 +96,8 @@ const AdminLogin = () => {
                     <div className="inline-flex items-center justify-center w-16 h-16 rounded-[12px] bg-primary shadow-xl shadow-primary/25 mb-4 rotate-3 hover:rotate-0 transition-transform duration-300">
                         <ChefHat className="w-8 h-8 text-white" />
                     </div>
-                    <h1 className="text-2xl font-black tracking-tight text-neutral-900">Skybridge Panel</h1>
-                    <p className="text-sm text-neutral-500 mt-1">Restaurant Management System</p>
+                    <h1 className="text-2xl font-black tracking-tight text-neutral-900">{t("pos.skybridge_panel", "Skybridge Panel")}</h1>
+                    <p className="text-sm text-neutral-500 mt-1">{t("pos.restaurant_management_system", "Restaurant Management System")}</p>
                 </div>
 
                 {/* Card */}
@@ -274,7 +276,7 @@ const AdminLogin = () => {
                 </div>
 
                 <p className="text-center text-xs text-neutral-400 mt-6">
-                    <Link to="/" className="hover:text-primary transition-colors">← Back to website</Link>
+                    <Link to="/" className="hover:text-primary transition-colors">{t("pos.back_to_website", "← Back to website")}</Link>
                 </p>
             </div>
         </div>

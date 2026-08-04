@@ -3,6 +3,7 @@ import { useSettings } from "@/context/SettingsContext";
 import AdminLayout from "../../components/admin/AdminLayout";
 import { Search, Plus, Minus, Trash2, Printer, Divide, Clock, X, Utensils, ChevronDown, ChevronUp, UserPlus, Info, Banknote, CreditCard, Smartphone, BadgePercent, Scissors, DollarSign, Sparkles, Split, ShoppingCart } from "lucide-react";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 
 interface MenuItem {
     _id: string;
@@ -70,6 +71,7 @@ interface CustomerType {
 }
 
 const AdminPOS = () => {
+    const { t } = useTranslation();
     const { settings } = useSettings();
     const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
@@ -241,7 +243,7 @@ const AdminPOS = () => {
                                         setSelectedCustomer(order.customerInfo.name || "Walk-in");
                                         setDiscount(order.discount || 0);
                                         setOrderType(order.orderType === 'dine-in' ? 'dine-in' : 'takeaway');
-                                        toast.info(`Loaded existing order for Table ${table.tableNumber}`);
+                                        toast.info(t("pos.loaded_existing_order_for_table", `Loaded existing order for Table {var0}`, { var0: table.tableNumber }));
 
                                         // Auto-open payment modal if requested
                                         if (params.get('checkout') === 'true') {
@@ -262,7 +264,7 @@ const AdminPOS = () => {
                 }
             } catch (err) {
                 console.error("Failed to fetch POS data:", err);
-                toast.error("Failed to load data: " + (err instanceof Error ? err.message : "Unknown error"));
+                toast.error(t("pos.failed_to_load_data_err_instanceof_error", "Failed to load data: " + (err instanceof Error ? err.message : "Unknown error")));
             } finally {
                 setIsLoading(false);
             }
@@ -391,7 +393,7 @@ const AdminPOS = () => {
                 setDiscount(0);
                 setCurrentOrderId("");
                 setConfirmModal(prev => ({ ...prev, isOpen: false }));
-                toast.success("Order cleared");
+                toast.success(t("pos.order_cleared", "Order cleared"));
             }
         });
     };
@@ -423,16 +425,16 @@ const AdminPOS = () => {
             const basePrice = getPrice(c.menuItem) || 0;
             const addOnsPrice = c.addOns?.reduce((sum, a) => sum + a.price, 0) || 0;
             const p = basePrice + addOnsPrice;
-            const addonText = c.addOns?.length ? `<div style="font-size:11px;color:#555;margin-left:10px;">+ ${c.addOns.map(a=>a.name).join(', ')}</div>` : '';
-            return `<div style="display:flex;justify-content:space-between;margin-bottom:2px;"><span>${c.menuItem.title} x${c.quantity}</span><span>BDT ${(p * c.quantity).toFixed(2)}</span></div>${addonText}<div style="margin-bottom:6px;"></div>`;
+            const addonText = c.addOns?.length ? `<div style="font-size:11px;color:#555;margin-left:10px;">+ ${c.addOns.map(a => a.name).join(', ')}</div>` : '';
+            return `<div style="display:flex;justify-content:space-between;margin-bottom:2px;"><span>${c.menuItem.title} x${c.quantity}</span><span>৳${(p * c.quantity).toFixed(2)}</span></div>${addonText}<div style="margin-bottom:6px;"></div>`;
         }).join('');
         const paymentMethodsHtml = details.paymentMethods.map(pm =>
-            `<div style="display:flex;justify-content:space-between;"><span>${pm.method.toUpperCase()}</span><span>BDT ${pm.amount.toFixed(2)}</span></div>`
+            `<div style="display:flex;justify-content:space-between;"><span>${pm.method.toUpperCase()}</span><span>৳${pm.amount.toFixed(2)}</span></div>`
         ).join('');
         const paymentLabel = details.paymentMethods.length > 1 ? 'SPLIT' : details.paymentMethods[0].method.toUpperCase();
         const orderNum = `${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${details.orderId.slice(-4).toUpperCase()}`;
 
-        const html = `<!DOCTYPE html><html><head><title>Bill Receipt</title><style>
+        const html = `<!DOCTYPE html><html><head><title>{t("pos.bill_receipt", "Bill Receipt")}</title><style>
             * { margin:0; padding:0; box-sizing:border-box; }
             body { font-family: 'Courier New', monospace; width: 80mm; padding: 10px; color: #000; font-size: 14px; }
             .center { text-align: center; }
@@ -446,24 +448,24 @@ const AdminPOS = () => {
         </style></head><body>
             <div class="center bold" style="font-size:20px;margin-bottom:15px;">${settings.websiteName.toUpperCase()}</div>
             <div class="dashed"></div>
-            <div class="row"><span>Order #</span><span>${orderNum}</span></div>
-            <div class="row"><span>Date</span><span>${details.date}</span></div>
-            <div class="row"><span>Payment</span><span>${paymentLabel}</span></div>
+            <div class="row"><span>{t("pos.order", "Order #")}</span><span>${orderNum}</span></div>
+            <div class="row"><span>{t("pos.date", "Date")}</span><span>${details.date}</span></div>
+            <div class="row"><span>{t("pos.payment", "Payment")}</span><span>${paymentLabel}</span></div>
             <div class="dashed"></div>
-            <div class="row bold" style="margin-bottom:8px;"><span>Item</span><span>Amount</span></div>
+            <div class="row bold" style="margin-bottom:8px;"><span>{t("pos.item", "Item")}</span><span>{t("pos.amount", "Amount")}</span></div>
             <div class="solid"></div>
             ${itemsHtml}
             <div class="solid"></div>
-            <div class="row"><span>Subtotal</span><span>BDT ${details.subtotal.toFixed(2)}</span></div>
-            <div class="row"><span>VAT</span><span>BDT ${details.vatAmount.toFixed(2)}</span></div>
+            <div class="row"><span>{t("pos.subtotal", "Subtotal")}</span><span>৳{details.subtotal.toFixed(2)}</span></div>
+            <div class="row"><span>{t("pos.vat", "VAT")}</span><span>৳{details.vatAmount.toFixed(2)}</span></div>
             ${paymentMethodsHtml}
             <div class="solid"></div>
-            <div class="total-row"><span>TOTAL</span><span>BDT ${details.total.toFixed(2)}</span></div>
+            <div class="total-row"><span>{t("pos.total", "TOTAL")}</span><span>৳{details.total.toFixed(2)}</span></div>
             <div class="dashed"></div>
             <div class="center" style="margin-top:10px;">
-                <p style="margin-bottom:10px;">Thank you for your visit!</p>
+                <p style="margin-bottom:10px;">{t("pos.thank_you_for_your_visit", "Thank you for your visit!")}</p>
                 <img src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${details.orderId}" alt="QR" width="100" height="100" />
-                <p style="font-size:12px;margin-top:10px;"><strong>${settings.websiteName}</strong> | ${settings.websiteName.toLowerCase().replace(/\s+/g, '')}.com</p>
+                <p style="font-size:12px;margin-top:10px;"><strong>${settings.websiteName}</strong> | ${settings.websiteName.toLowerCase().replace(/\s+/g, '')}{t("pos.com", ".com")}</p>
             </div>
         </body></html>`;
 
@@ -482,19 +484,19 @@ const AdminPOS = () => {
                 }
             }, 500);
         } else {
-            toast.error("Please allow pop-ups to print the receipt");
+            toast.error(t("pos.please_allow_pop_ups_to_print_the_receip", "Please allow pop-ups to print the receipt"));
         }
     };
 
     const printKOTReceipt = (details: typeof lastOrderDetails) => {
         if (!details) return;
         const itemsHtml = details.items.map(c => {
-            const addonText = c.addOns?.length ? `<div style="font-size:12px;margin-left:15px;margin-bottom:10px;">+ ${c.addOns.map(a=>a.name).join(', ')}</div>` : '';
+            const addonText = c.addOns?.length ? `<div style="font-size:12px;margin-left:15px;margin-bottom:10px;">+ ${c.addOns.map(a => a.name).join(', ')}</div>` : '';
             return `<div style="font-weight:bold;font-size:16px;margin-bottom:${c.addOns?.length?'2px':'10px'};">${c.quantity}x ${c.menuItem.title}</div>${addonText}`;
         }).join('');
         const orderNum = `${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${details.orderId.slice(-4).toUpperCase()}`;
 
-        const html = `<!DOCTYPE html><html><head><title>KOT</title><style>
+        const html = `<!DOCTYPE html><html><head><title>{t("pos.kot", "KOT")}</title><style>
             * { margin:0; padding:0; box-sizing:border-box; }
             body { font-family: 'Courier New', monospace; width: 80mm; padding: 10px; color: #000; font-size: 14px; }
             .center { text-align: center; }
@@ -503,16 +505,16 @@ const AdminPOS = () => {
             .solid { border-bottom: 3px solid #000; margin: 10px 0; }
             @media print { @page { margin: 0; size: 80mm auto; } }
         </style></head><body>
-            <div class="center bold" style="font-size:18px;margin-bottom:15px;">KITCHEN ORDER</div>
+            <div class="center bold" style="font-size:18px;margin-bottom:15px;">{t("pos.kitchen_order", "KITCHEN ORDER")}</div>
             <div class="dashed"></div>
-            <div style="margin-bottom:4px;"><strong>Order #:</strong> ${orderNum}</div>
-            <div><strong>Time:</strong> ${details.date}</div>
-            <div><strong>Table:</strong> ${details.table}</div>
+            <div style="margin-bottom:4px;"><strong>{t("pos.order", "Order #:")}</strong> ${orderNum}</div>
+            <div><strong>{t("pos.time", "Time:")}</strong> ${details.date}</div>
+            <div><strong>{t("pos.table", "Table:")}</strong> ${details.table}</div>
             <div class="solid" style="margin-top:10px;"></div>
             ${itemsHtml}
             <div class="solid"></div>
             <div class="dashed"></div>
-            <div class="center bold" style="font-size:14px;">*** END OF ORDER ***</div>
+            <div class="center bold" style="font-size:14px;">{t("pos.end_of_order", "*** END OF ORDER ***")}</div>
         </body></html>`;
 
         const printWindow = window.open('', '_blank', 'width=400,height=600');
@@ -526,13 +528,13 @@ const AdminPOS = () => {
                 }
             }, 500);
         } else {
-            toast.error("Please allow pop-ups to print the KOT");
+            toast.error(t("pos.please_allow_pop_ups_to_print_the_kot", "Please allow pop-ups to print the KOT"));
         }
     };
 
     const handlePayment = (method: 'Cash' | 'Card' | 'MFS') => {
         if (cart.length === 0) {
-            toast.error("Your cart is empty");
+            toast.error(t("pos.your_cart_is_empty", "Your cart is empty"));
             return;
         }
         setSelectedPaymentMethod(method);
@@ -544,7 +546,7 @@ const AdminPOS = () => {
 
     const handlePrintKOT = async () => {
         if (cart.length === 0) {
-            toast.error("Your cart is empty");
+            toast.error(t("pos.your_cart_is_empty", "Your cart is empty"));
             return;
         }
 
@@ -610,7 +612,7 @@ const AdminPOS = () => {
                 });
 
                 setShowKOTPreview(true);
-                toast.success("KOT saved successfully!");
+                toast.success(t("pos.kot_saved_successfully", "KOT saved successfully!"));
                 setCart([]);
                 setCurrentOrderId("");
                 setSelectedTable("Takeaway");
@@ -623,7 +625,7 @@ const AdminPOS = () => {
             }
         } catch (err) {
             console.error("KOT error:", err);
-            toast.error("An error occurred: " + (err instanceof Error ? err.message : "Network error"));
+            toast.error(t("pos.an_error_occurred_err_instanceof_error_e", "An error occurred: " + (err instanceof Error ? err.message : "Network error")));
         } finally {
             setIsProcessing(false);
         }
@@ -631,7 +633,7 @@ const AdminPOS = () => {
 
     const handlePrintBill = async () => {
         if (cart.length === 0) {
-            toast.error("Your cart is empty");
+            toast.error(t("pos.your_cart_is_empty", "Your cart is empty"));
             return;
         }
 
@@ -644,7 +646,7 @@ const AdminPOS = () => {
                 if (tableRes.ok) {
                     const tableData = await tableRes.json();
                     if (tableData.status !== 'Free') {
-                        toast.error(`Table ${selectedTable} was just booked by someone else! Please select another table.`);
+                        toast.error(t("pos.table_was_just_booked_by_someone_else_pl", `Table {var0} was just booked by someone else! Please select another table.`, { var0: selectedTable }));
                         setIsProcessing(false);
                         return;
                     }
@@ -713,7 +715,7 @@ const AdminPOS = () => {
                 });
 
                 setShowBillPreview(true);
-                toast.success("Bill saved successfully!");
+                toast.success(t("pos.bill_saved_successfully", "Bill saved successfully!"));
                 setCart([]);
                 setCurrentOrderId("");
                 setSelectedTable("Takeaway");
@@ -726,7 +728,7 @@ const AdminPOS = () => {
             }
         } catch (err) {
             console.error("Bill print error:", err);
-            toast.error("An error occurred: " + (err instanceof Error ? err.message : "Network error"));
+            toast.error(t("pos.an_error_occurred_err_instanceof_error_e", "An error occurred: " + (err instanceof Error ? err.message : "Network error")));
         } finally {
             setIsProcessing(false);
         }
@@ -734,7 +736,7 @@ const AdminPOS = () => {
 
     const handleSplit = () => {
         if (cart.length === 0) {
-            toast.error("Your cart is empty");
+            toast.error(t("pos.your_cart_is_empty", "Your cart is empty"));
             return;
         }
         setSplitPayments([
@@ -747,7 +749,7 @@ const AdminPOS = () => {
 
     const handleHold = async () => {
         if (cart.length === 0) {
-            toast.error("Your cart is empty");
+            toast.error(t("pos.your_cart_is_empty", "Your cart is empty"));
             return;
         }
 
@@ -801,7 +803,7 @@ const AdminPOS = () => {
                     }
                 }
 
-                toast.success("Order held successfully!");
+                toast.success(t("pos.order_held_successfully", "Order held successfully!"));
                 setCart([]);
                 setCurrentOrderId("");
                 setSelectedTable("Takeaway");
@@ -825,7 +827,7 @@ const AdminPOS = () => {
 
     const handleServe = async () => {
         if (cart.length === 0) {
-            toast.error("Your cart is empty");
+            toast.error(t("pos.your_cart_is_empty", "Your cart is empty"));
             return;
         }
 
@@ -876,7 +878,7 @@ const AdminPOS = () => {
                     }
                 }
 
-                toast.success("Order served successfully!");
+                toast.success(t("pos.order_served_successfully", "Order served successfully!"));
                 setCart([]);
                 setCurrentOrderId("");
                 setSelectedTable("Takeaway");
@@ -895,7 +897,7 @@ const AdminPOS = () => {
             }
         } catch (err) {
             console.error("Serve error:", err);
-            toast.error("An error occurred: " + (err instanceof Error ? err.message : "Network error"));
+            toast.error(t("pos.an_error_occurred_err_instanceof_error_e", "An error occurred: " + (err instanceof Error ? err.message : "Network error")));
         } finally {
             setIsProcessing(false);
         }
@@ -950,7 +952,7 @@ const AdminPOS = () => {
                                 server: undefined
                             })
                         });
-                        toast.info(`Table ${selectedTable} marked for Cleaning.`);
+                        toast.info(t("pos.table_marked_for_cleaning", `Table {var0} marked for Cleaning.`, { var0: selectedTable }));
                     } catch (tableErr) {
                         console.error("Failed to update table status:", tableErr);
                     }
@@ -968,7 +970,7 @@ const AdminPOS = () => {
                     customer: selectedCustomer
                 });
 
-                toast.success(`Payment completed with ${selectedPaymentMethod}!`);
+                toast.success(t("pos.payment_completed_with", `Payment completed with {var0}!`, { var0: selectedPaymentMethod }));
                 setShowPaymentModal(false);
                 setShowBillPreview(true);
 
@@ -990,7 +992,7 @@ const AdminPOS = () => {
             }
         } catch (err) {
             console.error("Payment error:", err);
-            toast.error("An error occurred: " + (err instanceof Error ? err.message : "Network error"));
+            toast.error(t("pos.an_error_occurred_err_instanceof_error_e", "An error occurred: " + (err instanceof Error ? err.message : "Network error")));
         } finally {
             setIsProcessing(false);
         }
@@ -999,13 +1001,13 @@ const AdminPOS = () => {
     const addSplitPayment = () => {
         const amount = parseFloat(currentSplitAmount);
         if (!amount || amount <= 0) {
-            toast.error("Please enter a valid amount");
+            toast.error(t("pos.please_enter_a_valid_amount", "Please enter a valid amount"));
             return;
         }
 
         const allocated = splitPayments.reduce((sum, p) => sum + p.amount, 0);
         if (allocated + amount > total) {
-            toast.error("Total exceeds order amount");
+            toast.error(t("pos.total_exceeds_order_amount", "Total exceeds order amount"));
             return;
         }
 
@@ -1021,7 +1023,7 @@ const AdminPOS = () => {
         const allocated = splitPayments.reduce((sum, p) => sum + p.amount, 0);
         const finalSplitPayments = splitPayments.filter(p => p.amount > 0);
         if (finalSplitPayments.length === 0) {
-            toast.error("Please add at least one payment amount");
+            toast.error(t("pos.please_add_at_least_one_payment_amount", "Please add at least one payment amount"));
             return;
         }
 
@@ -1074,7 +1076,7 @@ const AdminPOS = () => {
                                 server: undefined
                             })
                         });
-                        toast.info(`Table ${selectedTable} marked for Cleaning.`);
+                        toast.info(t("pos.table_marked_for_cleaning", `Table {var0} marked for Cleaning.`, { var0: selectedTable }));
                     } catch (tableErr) {
                         console.error("Failed to update table status:", tableErr);
                     }
@@ -1092,7 +1094,7 @@ const AdminPOS = () => {
                     customer: selectedCustomer
                 });
 
-                toast.success("Split payment completed successfully!");
+                toast.success(t("pos.split_payment_completed_successfully", "Split payment completed successfully!"));
                 setShowSplitModal(false);
                 setShowBillPreview(true);
 
@@ -1113,7 +1115,7 @@ const AdminPOS = () => {
             }
         } catch (err) {
             console.error("Split payment error:", err);
-            toast.error("An error occurred: " + (err instanceof Error ? err.message : "Network error"));
+            toast.error(t("pos.an_error_occurred_err_instanceof_error_e", "An error occurred: " + (err instanceof Error ? err.message : "Network error")));
         } finally {
             setIsProcessing(false);
         }
@@ -1154,7 +1156,7 @@ const AdminPOS = () => {
                 setDiscount(order.discount || 0);
                 setOrderType(order.orderType === 'dine-in' ? 'dine-in' : 'takeaway');
 
-                toast.success("Order released to cart!");
+                toast.success(t("pos.order_released_to_cart", "Order released to cart!"));
                 setShowHeldOrdersModal(false);
 
                 // Refresh held orders
@@ -1168,7 +1170,7 @@ const AdminPOS = () => {
             }
         } catch (err) {
             console.error("Release error:", err);
-            toast.error("An error occurred: " + (err instanceof Error ? err.message : "Network error"));
+            toast.error(t("pos.an_error_occurred_err_instanceof_error_e", "An error occurred: " + (err instanceof Error ? err.message : "Network error")));
         }
     };
 
@@ -1216,11 +1218,11 @@ const AdminPOS = () => {
                     setShowPaymentModal(true);
                 }, 100);
 
-                toast.info("Order loaded for checkout");
+                toast.info(t("pos.order_loaded_for_checkout", "Order loaded for checkout"));
             }
         } catch (err) {
             console.error("Load served order error:", err);
-            toast.error("Failed to load order for checkout");
+            toast.error(t("pos.failed_to_load_order_for_checkout", "Failed to load order for checkout"));
         }
     };
 
@@ -1256,14 +1258,14 @@ const AdminPOS = () => {
                                 }`}>
                                     <Sparkles className="w-3.5 h-3.5 animate-pulse" />
                                     {orderType === 'dine-in' ? (
-                                        <span className="hidden sm:inline">Premium Dine-In Service</span>
+                                        <span className="hidden sm:inline">{t("pos.premium_dine_in_service", "Premium Dine-In Service")}</span>
                                     ) : (
-                                        <span className="hidden sm:inline">Express Takeaway Point</span>
+                                        <span className="hidden sm:inline">{t("pos.express_takeaway", "Express Takeaway Point")}</span>
                                     )}
                                     <span className="sm:hidden">{orderType === 'dine-in' ? 'Dine-In' : 'Takeaway'}</span>
                                 </div>
                                 <div className="text-sm lg:text-lg font-serif font-semibold text-[#262626] text-neutral-900 flex items-center gap-2 lg:gap-3 leading-none tracking-tight">
-                                    {selectedTable === "Takeaway" ? "Standard Takeaway" : `Table: ${selectedTable}`}
+                                    {selectedTable === "Takeaway" ? t("pos.standard_takeaway", "Standard Takeaway") : `Table: ${selectedTable}`}
                                     {currentOrderId ? (
                                         <div className="flex items-center gap-1 px-2 py-0.5 lg:px-3 lg:py-1 bg-amber-50 text-amber-700 text-[8px] lg:text-[9px] font-black rounded-full uppercase tracking-[0.1em] border border-amber-100 shadow-sm">
                                             <div className="w-1 lg:w-1.5 h-1 lg:h-1.5 rounded-full bg-amber-500 animate-ping" />
@@ -1272,7 +1274,7 @@ const AdminPOS = () => {
                                     ) : (
                                         <div className="flex items-center gap-1 px-2 py-0.5 lg:px-3 lg:py-1 bg-neutral-50 text-neutral-400 text-[8px] lg:text-[9px] font-black rounded-full uppercase tracking-[0.1em] border border-neutral-100">
                                             <div className="w-1 lg:w-1.5 h-1 lg:h-1.5 rounded-full bg-neutral-300" />
-                                            Ready
+                                            {t("pos.ready", "Ready")}
                                         </div>
                                     )}
                                 </div>
@@ -1281,12 +1283,12 @@ const AdminPOS = () => {
                         <div className="flex items-center gap-4 lg:gap-8">
                             {currentOrderId && (
                                 <div className="text-right border-r border-neutral-100 pr-4 lg:pr-8 hidden sm:block">
-                                    <div className="text-[8px] lg:text-[10px] font-black text-neutral-300 uppercase tracking-widest leading-none mb-1 lg:mb-1.5">ID</div>
+                                    <div className="text-[8px] lg:text-[10px] font-black text-neutral-300 uppercase tracking-widest leading-none mb-1 lg:mb-1.5">{t("pos.id", "ID")}</div>
                                     <div className="text-[11px] lg:text-sm font-bold text-[#262626] text-neutral-800 tracking-widest">#{currentOrderId.slice(-6).toUpperCase()}</div>
                                 </div>
                             )}
                             <div className="text-right">
-                                <div className="text-[8px] lg:text-[10px] font-black text-neutral-300 uppercase tracking-widest leading-none mb-1 lg:mb-1.5">Time</div>
+                                <div className="text-[8px] lg:text-[10px] font-black text-neutral-300 uppercase tracking-widest leading-none mb-1 lg:mb-1.5">{t("pos.time", "Time")}</div>
                                 <div className="text-[11px] lg:text-sm font-bold text-[#262626] text-neutral-800 tracking-widest">
                                     {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                 </div>
@@ -1301,7 +1303,7 @@ const AdminPOS = () => {
                                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 lg:w-4 lg:h-4 text-neutral-400" />
                                 <input
                                     type="text"
-                                    placeholder="Search..."
+                                    placeholder={t("pos.search", "Search...")}
                                     value={searchTerm}
                                     onChange={(e) => setSearchTerm(e.target.value)}
                                     className="w-full bg-white border border-neutral-200 text-neutral-900 rounded-[4px] pl-9 pr-4 py-1.5 lg:py-2 text-sm focus:outline-none focus:border-primary transition-all shadow-inner"
@@ -1312,14 +1314,14 @@ const AdminPOS = () => {
                                 className="px-3 lg:px-4 py-1.5 lg:py-2 bg-yellow-500 hover:bg-yellow-600 text-white font-semibold rounded-[4px] transition-colors flex items-center gap-2 text-xs lg:text-sm shadow-sm active:scale-95"
                             >
                                 <Clock className="w-3.5 h-3.5 lg:w-4 lg:h-4" />
-                                <span className="hidden xs:inline">Held</span> ({heldOrders.length})
+                                <span className="hidden xs:inline">{t("pos.held", "Held")}</span> ({heldOrders.length})
                             </button>
                             <button
                                 onClick={() => setShowServedOrdersModal(true)}
                                 className="px-3 lg:px-4 py-1.5 lg:py-2 bg-primary hover:bg-[#a88647] text-white font-semibold rounded-[4px] transition-colors flex items-center gap-2 text-xs lg:text-sm shadow-sm active:scale-95"
                             >
                                 <Utensils className="w-3.5 h-3.5 lg:w-4 lg:h-4" />
-                                <span className="hidden xs:inline">Served</span> ({servedOrders.length})
+                                <span className="hidden xs:inline">{t("pos.served", "Served")}</span> ({servedOrders.length})
                             </button>
                         </div>
                         <div className="flex gap-2 overflow-x-auto pb-2 custom-scrollbar">
@@ -1332,7 +1334,7 @@ const AdminPOS = () => {
                                         : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200'
                                         }`}
                                 >
-                                    {cat.name}
+                                    {t(`pos.${cat.name.toLowerCase().replace(/[ &]/g, '_')}`, cat.name)}
                                 </button>
                             ))}
                         </div>
@@ -1347,7 +1349,7 @@ const AdminPOS = () => {
                         ) : filteredItems.length === 0 ? (
                             <div className="flex flex-col items-center justify-center h-full text-neutral-500">
                                 <Utensils className="w-12 h-12 mb-4 opacity-50" />
-                                <p>No items found.</p>
+                                <p>{t("pos.no_items_found", "No items found.")}</p>
                             </div>
                         ) : (
                             <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-4 xl:grid-cols-5 gap-3">
@@ -1386,11 +1388,11 @@ const AdminPOS = () => {
                                                 <div className="mt-2">
                                                     {originalPrice && originalPrice > price ? (
                                                         <div className="flex items-center gap-2">
-                                                            <span className="text-xs text-neutral-400 line-through">BDT{originalPrice.toFixed(2)}</span>
-                                                            <span className="text-sm font-semibold text-primary">BDT{price.toFixed(2)}</span>
+                                                            <span className="text-xs text-neutral-400 line-through">{t("pos.bdt", "BDT")}{originalPrice.toFixed(2)}</span>
+                                                            <span className="text-sm font-semibold text-primary">{t("pos.bdt", "BDT")}{price.toFixed(2)}</span>
                                                         </div>
                                                     ) : (
-                                                        <span className="text-sm font-semibold text-primary">BDT{price.toFixed(2)}</span>
+                                                        <span className="text-sm font-semibold text-primary">{t("pos.bdt", "BDT")}{price.toFixed(2)}</span>
                                                     )}
                                                 </div>
                                             </div>
@@ -1418,7 +1420,7 @@ const AdminPOS = () => {
                                 )}
                             </div>
                             <div>
-                                <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">Current Order</p>
+                                <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">{t("pos.current_order", "Current Order")}</p>
                                 <p className="text-sm font-bold text-[#262626] text-neutral-900">
                                     {cart.length === 0 ? 'Empty cart' : `${cart.reduce((s, c) => s + c.quantity, 0)} items`}
                                 </p>
@@ -1426,7 +1428,7 @@ const AdminPOS = () => {
                         </div>
                         <div className="flex items-center gap-3">
                             <div className="text-right">
-                                <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">Total</p>
+                                <p className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">{t("pos.total", "Total")}</p>
                                 <p className="text-lg font-serif font-semibold text-[#262626] text-primary">৳{total.toFixed(0)}</p>
                             </div>
                             <ChevronUp className="w-5 h-5 text-neutral-400" />
@@ -1440,7 +1442,7 @@ const AdminPOS = () => {
                         <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setShowAddOnModal(false)} />
                         <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-md p-6 m-4 animate-in fade-in zoom-in-95 duration-200">
                             <div className="flex justify-between items-center mb-6">
-                                <h3 className="text-xl font-bold text-primary">Customize: {selectedItemForAddOn.title}</h3>
+                                <h3 className="text-xl font-bold text-primary">{t("pos.customize", "Customize")}: {selectedItemForAddOn.title}</h3>
                                 <button onClick={() => setShowAddOnModal(false)} className="p-2 hover:bg-neutral-100 rounded-full">
                                     <X className="w-5 h-5 text-neutral-500" />
                                 </button>
@@ -1458,7 +1460,7 @@ const AdminPOS = () => {
                                                 <span className="font-semibold text-primary">{addon.name}</span>
                                             </div>
                                             <span className="font-bold text-accent">
-                                                {addon.price === 0 || Number(addon.price) === 0 ? 'Free' : `+BDT ${addon.price}`}
+                                                {addon.price === 0 || Number(addon.price) === 0 ? t("pos.free_addon", "Free") : `+BDT ${addon.price}`}
                                             </span>
                                             <input
                                                 type="checkbox"
@@ -1481,7 +1483,7 @@ const AdminPOS = () => {
                                 onClick={confirmAddToCartWithAddOns}
                                 className="w-full bg-[hsl(43_74%_48%)] text-[hsl(195_30%_8%)] font-bold py-4 rounded-xl shadow-md hover:shadow-lg hover:-translate-y-0.5 active:scale-95 transition-all uppercase tracking-widest"
                             >
-                                Add to Order
+                                {t("pos.add_to_order", "Add to Order")}
                             </button>
                         </div>
                     </div>
@@ -1509,7 +1511,7 @@ const AdminPOS = () => {
                             <div className="px-5 pb-3 border-b border-neutral-100 flex items-center justify-between shrink-0">
                                 <div className="flex items-center gap-2">
                                     <ShoppingCart className="w-5 h-5 text-neutral-700" />
-                                    <h2 className="text-lg font-serif font-semibold text-[#262626] text-neutral-900">Current Order</h2>
+                                    <h2 className="text-lg font-serif font-semibold text-[#262626] text-neutral-900">{t("pos.current_order", "Current Order")}</h2>
                                     {cart.length > 0 && (
                                         <span className="px-2 py-0.5 bg-primary/10 text-primary text-[10px] font-black rounded-full">
                                             {cart.reduce((s, c) => s + c.quantity, 0)} items
@@ -1543,7 +1545,7 @@ const AdminPOS = () => {
                                         }}
                                         className="w-full bg-neutral-50 border border-neutral-200 text-neutral-900 rounded-[4px] px-3 py-2.5 text-sm focus:outline-none focus:border-primary appearance-none cursor-pointer font-medium"
                                     >
-                                        <option value="Takeaway">Takeaway</option>
+                                        <option value="Takeaway">{t("pos.takeaway", "Takeaway")}</option>
                                         {tables.map(table => {
                                             const isOccupied = table.status !== 'Free';
                                             return (
@@ -1566,7 +1568,7 @@ const AdminPOS = () => {
                                         onChange={(e) => setSelectedCustomer(e.target.value)}
                                         className="w-full bg-neutral-50 border border-neutral-200 text-neutral-900 rounded-[4px] px-3 py-2.5 text-sm focus:outline-none focus:border-primary appearance-none cursor-pointer font-medium pr-8"
                                     >
-                                        <option value="Walk-in">Walk-in</option>
+                                        <option value="Walk-in">{t("pos.walk_in", "Walk-in")}</option>
                                         {customers.map(c => (
                                             <option key={c._id} value={c.name}>
                                                 {c.name}
@@ -1588,8 +1590,8 @@ const AdminPOS = () => {
                                 {cart.length === 0 ? (
                                     <div className="flex flex-col items-center justify-center py-12 text-neutral-400">
                                         <ShoppingCart className="w-12 h-12 mb-3 opacity-30" />
-                                        <p className="text-sm font-medium">Your cart is empty</p>
-                                        <p className="text-xs mt-1">Tap menu items to add them</p>
+                                        <p className="text-sm font-medium">{t("pos.your_cart_is_empty", "Your cart is empty")}</p>
+                                        <p className="text-xs mt-1">{t("pos.tap_menu_items_to_add_them", "Tap menu items to add them")}</p>
                                     </div>
                                 ) : (
                                     <div className="space-y-2">
@@ -1613,7 +1615,7 @@ const AdminPOS = () => {
                                                                 + {c.addOns.map(a => a.name).join(', ')}
                                                             </div>
                                                         )}
-                                                        <p className="text-[10px] text-neutral-500">৳{priceVal.toFixed(0)} each</p>
+                                                        <p className="text-[10px] text-neutral-500">৳{priceVal.toFixed(0)} {t("pos.each", "each")}</p>
                                                     </div>
                                                     <div className="flex items-center gap-1 bg-white border border-[#E5E5E5] rounded-[4px] shadow-sm p-0.5">
                                                         <button onClick={() => updateQuantity(c.id || c.menuItem._id, -1)} className="w-7 h-7 flex items-center justify-center hover:bg-neutral-100 rounded text-neutral-600">
@@ -1640,15 +1642,15 @@ const AdminPOS = () => {
                             {/* Summary */}
                             <div className="px-4 py-3 border-t border-neutral-100 bg-neutral-50/80 space-y-1 shrink-0">
                                 <div className="flex justify-between text-[10px] text-neutral-400">
-                                    <span>Subtotal</span>
-                                    <span className="text-neutral-700 font-semibold">BDT {subtotal.toFixed(2)}</span>
+                                    <span>{t("pos.subtotal", "Subtotal")}</span>
+                                    <span className="text-neutral-700 font-semibold">{t("pos.bdt", "BDT")} {subtotal.toFixed(2)}</span>
                                 </div>
                                 <div className="flex justify-between text-[10px] text-neutral-400">
-                                    <span>VAT ({vatRate}%)</span>
-                                    <span className="text-neutral-700 font-semibold">BDT {vatAmount.toFixed(2)}</span>
+                                    <span>{t("pos.vat", "VAT (")}{vatRate}%)</span>
+                                    <span className="text-neutral-700 font-semibold">{t("pos.bdt", "BDT")} {vatAmount.toFixed(2)}</span>
                                 </div>
                                 <div className="flex justify-between text-[10px] text-neutral-400 items-center">
-                                    <span>Discount</span>
+                                    <span>{t("pos.discount", "Discount")}</span>
                                     <input
                                         type="number"
                                         value={discount}
@@ -1660,8 +1662,8 @@ const AdminPOS = () => {
                                     />
                                 </div>
                                 <div className="flex justify-between items-center pt-1.5 border-t border-neutral-200">
-                                    <span className="text-sm font-bold text-[#262626] text-neutral-900">Total</span>
-                                    <span className="text-xl font-serif font-semibold text-primary text-primary">BDT {total.toFixed(2)}</span>
+                                    <span className="text-sm font-bold text-[#262626] text-neutral-900">{t("pos.total", "Total")}</span>
+                                    <span className="text-xl font-serif font-semibold text-primary text-primary">{t("pos.bdt", "BDT")} {total.toFixed(2)}</span>
                                 </div>
                             </div>
 
@@ -1674,7 +1676,7 @@ const AdminPOS = () => {
                                         className="h-12 bg-gradient-to-br from-orange-500 to-amber-600 disabled:from-neutral-100 disabled:to-neutral-100 disabled:text-neutral-300 text-white font-black rounded-[4px] active:scale-[0.97] transition-all flex items-center justify-center gap-2"
                                     >
                                         <Utensils className="w-4 h-4" />
-                                        <span className="text-[10px] uppercase tracking-widest">Kitchen</span>
+                                        <span className="text-[10px] uppercase tracking-widest">{t("pos.kitchen", "Kitchen")}</span>
                                     </button>
                                     <button 
                                         onClick={() => { setMobileDrawerOpen(false); setShowPaymentModal(true); }} 
@@ -1682,7 +1684,7 @@ const AdminPOS = () => {
                                         className="h-12 bg-gradient-to-br from-emerald-500 to-teal-600 disabled:from-neutral-100 disabled:to-neutral-100 disabled:text-neutral-300 text-white font-black rounded-[4px] active:scale-[0.97] transition-all flex items-center justify-center gap-2"
                                     >
                                         <CreditCard className="w-4 h-4" />
-                                        <span className="text-[10px] uppercase tracking-widest">Checkout</span>
+                                        <span className="text-[10px] uppercase tracking-widest">{t("pos.checkout", "Checkout")}</span>
                                     </button>
                                 </div>
                                 <div className="grid grid-cols-4 gap-1.5">
@@ -1723,7 +1725,7 @@ const AdminPOS = () => {
                 {/* Right Side: Current Order (Desktop Only) */}
                 <div className="hidden lg:flex w-[420px] flex-col bg-white border border-[#E5E5E5] rounded-[4px] shadow-sm overflow-hidden shadow-sm shrink-0 min-h-0">
                     <div className="p-4 border-b border-neutral-200 bg-neutral-50">
-                        <h2 className="text-lg font-semibold text-neutral-900">Current Order</h2>
+                        <h2 className="text-lg font-semibold text-neutral-900">{t("pos.current_order", "Current Order")}</h2>
                     </div>
 
                     {/* Dropdowns */}
@@ -1745,7 +1747,7 @@ const AdminPOS = () => {
                                 }}
                                 className="w-full bg-white border border-neutral-200 text-neutral-900 rounded-[4px] px-3 py-2.5 text-sm focus:outline-none focus:border-primary appearance-none cursor-pointer font-medium"
                             >
-                                <option value="Takeaway">Takeaway</option>
+                                <option value="Takeaway">{t("pos.takeaway", "Takeaway")}</option>
                                 {tables.map(table => {
                                     const isOccupied = table.status !== 'Free';
                                     return (
@@ -1769,10 +1771,10 @@ const AdminPOS = () => {
                                 onChange={(e) => setSelectedCustomer(e.target.value)}
                                 className="w-full bg-white border border-neutral-200 text-neutral-900 rounded-[4px] px-3 py-2.5 text-sm focus:outline-none focus:border-primary appearance-none cursor-pointer font-medium pr-8"
                             >
-                                <option value="Walk-in">Customer: Walk-in</option>
+                                <option value="Walk-in">{t("pos.customer", "Customer")}{t("pos.walk_in", ": Walk-in")}</option>
                                 {customers.map(c => (
                                     <option key={c._id} value={c.name}>
-                                        Customer: {c.name}
+                                        {t("pos.customer", "Customer")}: {c.name}
                                     </option>
                                 ))}
                             </select>
@@ -1791,7 +1793,7 @@ const AdminPOS = () => {
                     <div className="flex-1 overflow-y-auto p-4 custom-scrollbar min-h-0">
                         {cart.length === 0 ? (
                             <div className="flex flex-col items-center justify-center h-full text-neutral-500">
-                                <p className="text-sm font-medium">Your cart is empty</p>
+                                <p className="text-sm font-medium">{t("pos.empty_cart", "Your cart is empty")}</p>
                             </div>
                         ) : (
                             <div className="space-y-2.5">
@@ -1822,7 +1824,7 @@ const AdminPOS = () => {
                                             {/* Item Details */}
                                             <div className="flex-1 min-w-0">
                                                 <h4 className="text-xs font-semibold text-neutral-900 truncate">{c.menuItem.title}</h4>
-                                                <div className="text-xs text-neutral-500 mt-0.5">BDT {priceVal.toFixed(2)}</div>
+                                                <div className="text-xs text-neutral-500 mt-0.5">{t("pos.bdt", "BDT")} {priceVal.toFixed(2)}</div>
                                             </div>
 
                                             {/* Quantity Controls */}
@@ -1838,7 +1840,7 @@ const AdminPOS = () => {
 
                                             {/* Price and Remove */}
                                             <div className="flex flex-col items-end gap-0.5">
-                                                <div className="text-xs font-bold text-neutral-900">BDT {(priceVal * c.quantity).toFixed(2)}</div>
+                                                <div className="text-xs font-bold text-neutral-900">{t("pos.bdt", "BDT")} {(priceVal * c.quantity).toFixed(2)}</div>
                                                 <button onClick={() => removeFromCart(c.id || c.menuItem._id)} className="p-0.5 hover:bg-rose-100 rounded text-rose-500 transition-colors">
                                                     <X className="w-3.5 h-3.5" />
                                                 </button>
@@ -1853,15 +1855,15 @@ const AdminPOS = () => {
                     {/* Order Summary */}
                     <div className="px-3 lg:px-4 py-2 border-t border-neutral-100 bg-neutral-50/50 space-y-0.5 lg:space-y-1 shrink-0">
                         <div className="flex justify-between text-neutral-400 text-[9px] lg:text-[10px] tracking-wide">
-                            <span>Subtotal</span>
-                            <span className="text-neutral-700 font-semibold">BDT {subtotal.toFixed(2)}</span>
+                            <span>{t("pos.subtotal", "Subtotal")}</span>
+                            <span className="text-neutral-700 font-semibold">{t("pos.bdt", "BDT")} {subtotal.toFixed(2)}</span>
                         </div>
                         <div className="flex justify-between text-neutral-400 text-[9px] lg:text-[10px] tracking-wide items-center">
-                            <span>VAT ({vatRate}%)</span>
-                            <span className="text-neutral-700 font-semibold">BDT {vatAmount.toFixed(2)}</span>
+                            <span>{t("pos.vat", "VAT")} ({vatRate}%)</span>
+                            <span className="text-neutral-700 font-semibold">{t("pos.bdt", "BDT")} {vatAmount.toFixed(2)}</span>
                         </div>
                         <div className="flex justify-between text-neutral-400 text-[9px] lg:text-[10px] tracking-wide items-center">
-                            <span>Discount</span>
+                            <span>{t("pos.discount", "Discount")}</span>
                             <input
                                 type="number"
                                 value={discount}
@@ -1873,8 +1875,8 @@ const AdminPOS = () => {
                             />
                         </div>
                         <div className="flex justify-between items-center pt-1 border-t border-neutral-200 mt-0.5 lg:mt-1">
-                            <span className="text-[11px] lg:text-xs font-bold text-neutral-900">Total</span>
-                            <span className="text-primary text-sm lg:text-base font-black">BDT {total.toFixed(2)}</span>
+                            <span className="text-[11px] lg:text-xs font-bold text-neutral-900">{t("pos.total", "Total")}</span>
+                            <span className="text-primary text-sm lg:text-base font-black">{t("pos.bdt", "BDT")} {total.toFixed(2)}</span>
                         </div>
                     </div>
 
@@ -1889,9 +1891,9 @@ const AdminPOS = () => {
                                 <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity" />
                                 <div className="flex items-center gap-1.5 lg:gap-2 z-10">
                                     <Utensils className="w-3.5 h-3.5 lg:w-4 lg:h-4 group-hover:rotate-12 transition-transform" /> 
-                                    <span className="text-[9px] lg:text-[11px] uppercase tracking-[0.1em]">Kitchen (KOT)</span>
+                                    <span className="text-[9px] lg:text-[11px] uppercase tracking-[0.1em]">{t("pos.kitchen", "Kitchen (KOT)")}</span>
                                 </div>
-                                <span className="text-[8px] lg:text-[9px] font-bold opacity-70 italic z-10 uppercase tracking-tighter hidden sm:inline">Send to cooking</span>
+                                <span className="text-[8px] lg:text-[9px] font-bold opacity-70 italic z-10 uppercase tracking-tighter hidden sm:inline">{t("pos.send_to_cooking", "Send to cooking")}</span>
                             </button>
                             <button 
                                 onClick={() => setShowPaymentModal(true)} 
@@ -1901,9 +1903,9 @@ const AdminPOS = () => {
                                 <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity" />
                                 <div className="flex items-center gap-1.5 lg:gap-2 z-10">
                                     <CreditCard className="w-3.5 h-3.5 lg:w-4 lg:h-4 group-hover:scale-110 transition-transform" /> 
-                                    <span className="text-[9px] lg:text-[11px] uppercase tracking-[0.1em]">Checkout (Bill)</span>
+                                    <span className="text-[9px] lg:text-[11px] uppercase tracking-[0.1em]">{t("pos.checkout", "Checkout (Bill)")}</span>
                                 </div>
-                                <span className="text-[8px] lg:text-[9px] font-bold opacity-70 italic z-10 uppercase tracking-tighter hidden sm:inline">Process payment</span>
+                                <span className="text-[8px] lg:text-[9px] font-bold opacity-70 italic z-10 uppercase tracking-tighter hidden sm:inline">{t("pos.process_payment", "Process payment")}</span>
                             </button>
                         </div>
 
@@ -1913,28 +1915,28 @@ const AdminPOS = () => {
                                 disabled={cart.length === 0} 
                                 className="h-9 lg:h-11 bg-neutral-50 hover:bg-neutral-100 border border-neutral-200 disabled:opacity-40 text-neutral-600 font-bold rounded-[4px] lg:rounded-[4px] active:scale-[0.97] transition-all flex items-center justify-center gap-1 lg:gap-2 text-[8px] lg:text-[10px] uppercase tracking-wider"
                             >
-                                <Split className="w-3 h-3 lg:w-3.5 lg:h-3.5" /> <span className="hidden sm:inline">Split</span>
+                                <Split className="w-3 h-3 lg:w-3.5 lg:h-3.5" /> <span className="hidden sm:inline">{t("pos.split", "Split")}</span>
                             </button>
                             <button 
                                 onClick={handleHold} 
                                 disabled={cart.length === 0} 
                                 className="h-9 lg:h-11 bg-amber-50 hover:bg-amber-100 border border-amber-200 disabled:opacity-40 text-amber-700 font-bold rounded-[4px] lg:rounded-[4px] active:scale-[0.97] transition-all flex items-center justify-center gap-1 lg:gap-2 text-[8px] lg:text-[10px] uppercase tracking-wider"
                             >
-                                <Clock className="w-3 h-3 lg:w-3.5 lg:h-3.5" /> <span className="hidden sm:inline">Hold</span>
+                                <Clock className="w-3 h-3 lg:w-3.5 lg:h-3.5" /> <span className="hidden sm:inline">{t("pos.hold", "Hold")}</span>
                             </button>
                             <button 
                                 onClick={handleServe} 
                                 disabled={cart.length === 0} 
                                 className="h-9 lg:h-11 bg-[#ffdea5] hover:bg-emerald-100 border border-[#e9c176] disabled:opacity-40 text-primary font-bold rounded-[4px] lg:rounded-[4px] active:scale-[0.97] transition-all flex items-center justify-center gap-1 lg:gap-2 text-[8px] lg:text-[10px] uppercase tracking-wider"
                             >
-                                <Utensils className="w-3 h-3 lg:w-3.5 lg:h-3.5" /> <span className="hidden sm:inline">Serve</span>
+                                <Utensils className="w-3 h-3 lg:w-3.5 lg:h-3.5" /> <span className="hidden sm:inline">{t("pos.serve", "Serve")}</span>
                             </button>
                             <button 
                                 onClick={clearCart} 
                                 disabled={cart.length === 0} 
                                 className="h-9 lg:h-11 bg-rose-50 hover:bg-rose-100 border border-rose-200 disabled:opacity-40 text-rose-600 font-bold rounded-[4px] lg:rounded-[4px] active:scale-[0.97] transition-all flex items-center justify-center gap-1 lg:gap-2 text-[8px] lg:text-[10px] uppercase tracking-wider"
                             >
-                                <Trash2 className="w-3 h-3 lg:w-3.5 lg:h-3.5" /> <span className="hidden sm:inline">Clear</span>
+                                <Trash2 className="w-3 h-3 lg:w-3.5 lg:h-3.5" /> <span className="hidden sm:inline">{t("pos.clear", "Clear")}</span>
                             </button>
                         </div>
                     </div>
@@ -1956,10 +1958,10 @@ const AdminPOS = () => {
                                 <X className="w-6 h-6" />
                             </button>
                             <div className="relative z-10">
-                                <h3 className="text-xl font-serif font-semibold text-primary uppercase tracking-widest mb-4 opacity-80">Collect Payment</h3>
-                                <div className="text-sm font-bold opacity-60 uppercase tracking-tighter">Total Payable Amount</div>
+                                <h3 className="text-xl font-serif font-semibold text-primary uppercase tracking-widest mb-4 opacity-80">{t("pos.collect_payment", "Collect Payment")}</h3>
+                                <div className="text-sm font-bold opacity-60 uppercase tracking-tighter">{t("pos.total_payable", "Total Payable Amount")}</div>
                                 <div className="text-5xl font-black mt-1 flex items-baseline gap-2">
-                                    <span className="text-2xl opacity-60">BDT</span>
+                                    <span className="text-2xl opacity-60">{t("pos.bdt", "BDT")}</span>
                                     {total.toFixed(2)}
                                 </div>
                             </div>
@@ -1969,7 +1971,7 @@ const AdminPOS = () => {
                             {/* Tabs */}
                             <div className="flex bg-neutral-100 p-1 rounded-[4px] mb-4">
                                 <button className="flex-1 py-2 bg-white rounded-[4px] shadow-sm text-[#10b981] font-medium flex items-center justify-center gap-2 text-sm">
-                                    <Banknote className="w-4 h-4" /> Single Payment
+                                    <Banknote className="w-4 h-4" /> {t("pos.single_payment", "Single Payment")}
                                 </button>
                                 <button
                                     onClick={() => {
@@ -1978,7 +1980,7 @@ const AdminPOS = () => {
                                     }}
                                     className="flex-1 py-2 text-neutral-500 font-medium flex items-center justify-center gap-2 text-sm hover:text-neutral-700 transition-colors"
                                 >
-                                    <Scissors className="w-4 h-4" /> Split Payment
+                                    <Scissors className="w-4 h-4" /> {t("pos.split_payment", "Split Payment")}
                                 </button>
                             </div>
 
@@ -1989,10 +1991,10 @@ const AdminPOS = () => {
                                     className={`flex items-center justify-between border ${showDiscountInput ? 'border-orange-500 bg-orange-50/30' : 'border-neutral-200'} rounded-[4px] p-3 cursor-pointer hover:bg-neutral-50 transition-all`}
                                 >
                                     <div className={`flex items-center gap-2 ${showDiscountInput ? 'text-orange-600' : 'text-neutral-600'} font-medium text-sm`}>
-                                        <BadgePercent className="w-4 h-4" /> Add Discount
+                                        <BadgePercent className="w-4 h-4" /> {t("pos.add_discount", "Add Discount")}
                                     </div>
                                     <span className={`${showDiscountInput ? 'text-orange-500' : 'text-neutral-400'} text-sm font-medium`}>
-                                        {showDiscountInput ? 'Hide' : 'Show'}
+                                        {showDiscountInput ? t("pos.hide", "Hide") : t("pos.show", "Show")}
                                     </span>
                                 </div>
 
@@ -2003,13 +2005,13 @@ const AdminPOS = () => {
                                                 onClick={() => setDiscountType('percentage')}
                                                 className={`flex-1 py-1.5 rounded-md text-xs font-bold transition-all ${discountType === 'percentage' ? 'bg-[#fff7ed] text-[#ea580c]' : 'text-neutral-500'}`}
                                             >
-                                                Percentage (%)
+                                                {t("pos.percentage", "Percentage (%)")}
                                             </button>
                                             <button
                                                 onClick={() => setDiscountType('fixed')}
                                                 className={`flex-1 py-1.5 rounded-md text-xs font-bold transition-all ${discountType === 'fixed' ? 'bg-[#fff7ed] text-[#ea580c]' : 'text-neutral-500'}`}
                                             >
-                                                Fixed Amount
+                                                {t("pos.fixed_amount", "Fixed Amount")}
                                             </button>
                                         </div>
 
@@ -2059,7 +2061,7 @@ const AdminPOS = () => {
 
                             {/* Payment Method Selection */}
                             <div className="mb-6">
-                                <label className="block text-[11px] font-black uppercase tracking-widest text-neutral-400 mb-3">Choose Payment Method</label>
+                                <label className="block text-[11px] font-black uppercase tracking-widest text-neutral-400 mb-3">{t("pos.choose_payment_method", "Choose Payment Method")}</label>
                                 <div className="grid grid-cols-3 gap-3">
                                     <button
                                         onClick={() => {
@@ -2075,7 +2077,7 @@ const AdminPOS = () => {
                                         <div className={`p-2 rounded-[4px] ${selectedPaymentMethod === 'Cash' ? 'bg-primary text-white' : 'bg-neutral-100 text-neutral-400'}`}>
                                             <Banknote className="w-6 h-6" />
                                         </div>
-                                        <span className="font-black text-xs uppercase tracking-wider">Cash</span>
+                                        <span className="font-black text-xs uppercase tracking-wider">{t("pos.cash", "Cash")}</span>
                                     </button>
                                     <button
                                         onClick={() => {
@@ -2091,7 +2093,7 @@ const AdminPOS = () => {
                                         <div className={`p-2 rounded-[4px] ${selectedPaymentMethod === 'Card' ? 'bg-blue-500 text-white' : 'bg-neutral-100 text-neutral-400'}`}>
                                             <CreditCard className="w-6 h-6" />
                                         </div>
-                                        <span className="font-black text-xs uppercase tracking-wider">Card</span>
+                                        <span className="font-black text-xs uppercase tracking-wider">{t("pos.card", "Card")}</span>
                                     </button>
                                     <button
                                         onClick={() => {
@@ -2107,7 +2109,7 @@ const AdminPOS = () => {
                                         <div className={`p-2 rounded-[4px] ${selectedPaymentMethod === 'MFS' ? 'bg-purple-500 text-white' : 'bg-neutral-100 text-neutral-400'}`}>
                                             <Smartphone className="w-6 h-6" />
                                         </div>
-                                        <span className="font-black text-xs uppercase tracking-wider">MFS</span>
+                                        <span className="font-black text-xs uppercase tracking-wider">{t("pos.mfs", "MFS")}</span>
                                     </button>
                                 </div>
                             </div>
@@ -2116,9 +2118,9 @@ const AdminPOS = () => {
                             <div className="mb-6">
                                 {selectedPaymentMethod === 'Cash' ? (
                                     <>
-                                        <label className="block text-sm text-neutral-600 mb-2">Amount Received</label>
+                                        <label className="block text-sm text-neutral-600 mb-2">{t("pos.amount_received", "Amount Received")}</label>
                                         <div className="relative border-2 border-[#10b981] rounded-[4px] overflow-hidden flex items-center mb-4">
-                                            <div className="pl-4 pr-2 text-neutral-500 font-medium">BDT</div>
+                                            <div className="pl-4 pr-2 text-neutral-500 font-medium">{t("pos.bdt", "BDT")}</div>
                                             <input
                                                 type="number"
                                                 value={amountReceived}
@@ -2173,12 +2175,12 @@ const AdminPOS = () => {
                                             }}
                                             className="w-full py-2.5 bg-[#d1fae5] text-[#059669] font-medium rounded-[4px] mb-4 hover:bg-[#a7f3d0] transition-colors text-sm"
                                         >
-                                            Exact Amount (BDT{total.toFixed(2)})
+                                            {t("pos.exact_amount", "Exact Amount")} (BDT{total.toFixed(2)})
                                         </button>
 
                                         {/* Change to Return */}
                                         <div className="flex justify-between items-center p-4 bg-[#f0fdf4] border border-[#bbf7d0] rounded-[4px]">
-                                            <span className="text-[#047857] font-medium">Change to Return</span>
+                                            <span className="text-[#047857] font-medium">{t("pos.change_to_return", "Change to Return")}</span>
                                             <span className={`text-xl font-bold ${changeAmount >= 0 ? 'text-[#059669]' : 'text-red-500'}`}>
                                                 BDT{changeAmount.toFixed(2)}
                                             </span>
@@ -2187,7 +2189,7 @@ const AdminPOS = () => {
                                 ) : (
                                     <div className="p-6 bg-[#eff6ff] border border-blue-100 rounded-[4px] text-center py-8">
                                         <div className="text-[#3b82f6] text-[15px] font-medium mb-3">
-                                            {selectedPaymentMethod === 'Card' ? 'Process card payment for' : 'Confirm mobile payment for'}
+                                            {selectedPaymentMethod === 'Card' ? t("pos.process_card_payment", "Process card payment for") : t("pos.confirm_mobile_payment", "Confirm mobile payment for")}
                                         </div>
                                         <div className="text-4xl font-black text-[#1e40af]">
                                             BDT{total.toFixed(2)}
@@ -2229,9 +2231,9 @@ const AdminPOS = () => {
                             >
                                 <X className="w-5 h-5" />
                             </button>
-                            <h3 className="text-xl font-bold text-left mb-2">Collect Payment</h3>
-                            <div className="text-sm font-medium opacity-90 mt-4">Total Amount</div>
-                            <div className="text-3xl font-bold mt-1">BDT{total.toFixed(2)}</div>
+                            <h3 className="text-xl font-bold text-left mb-2">{t("pos.collect_payment", "Collect Payment")}</h3>
+                            <div className="text-sm font-medium opacity-90 mt-4">{t("pos.total_amount", "Total Amount")}</div>
+                            <div className="text-3xl font-bold mt-1">{t("pos.bdt", "BDT")}{total.toFixed(2)}</div>
                         </div>
 
                         <div className="p-6 overflow-y-auto custom-scrollbar">
@@ -2354,7 +2356,7 @@ const AdminPOS = () => {
                                                 <div className="text-sm font-medium text-neutral-600 mb-1">{labelMap[p.method as keyof typeof labelMap]}</div>
                                                 <div className="flex items-center gap-2">
                                                     <div className="flex-1 relative border border-neutral-200 rounded-[4px] overflow-hidden flex items-center bg-white focus-within:border-[#10b981] transition-colors">
-                                                        <div className="pl-3 pr-1 text-neutral-400 text-sm font-medium">BDT</div>
+                                                        <div className="pl-3 pr-1 text-neutral-400 text-sm font-medium">{t("pos.bdt", "BDT")}</div>
                                                         <input
                                                             type="number"
                                                             value={p.amount || ''}
@@ -2389,13 +2391,13 @@ const AdminPOS = () => {
                             {/* Summary Box */}
                             <div className="bg-yellow-50 border border-yellow-200 rounded-[4px] p-4 space-y-2 mb-6">
                                 <div className="flex justify-between items-center text-sm">
-                                    <span className="text-neutral-600 font-medium">Split Total</span>
+                                    <span className="text-neutral-600 font-medium">{t("pos.split_total", "Split Total")}</span>
                                     <span className="text-neutral-900 font-bold">
                                         BDT{splitPayments.reduce((sum, p) => sum + p.amount, 0).toFixed(2)}
                                     </span>
                                 </div>
                                 <div className="flex justify-between items-center text-sm">
-                                    <span className="text-orange-600 font-medium">Remaining</span>
+                                    <span className="text-orange-600 font-medium">{t("pos.remaining", "Remaining")}</span>
                                     <span className="text-orange-600 font-bold">
                                         BDT{Math.max(0, total - splitPayments.reduce((sum, p) => sum + p.amount, 0)).toFixed(2)}
                                     </span>
@@ -2427,7 +2429,7 @@ const AdminPOS = () => {
                     <div className="bg-white rounded-[4px] w-full max-w-2xl shadow-2xl max-h-[90vh] overflow-y-auto">
                         <div className="p-6 border-b border-neutral-200 sticky top-0 bg-white">
                             <div className="flex justify-between items-center">
-                                <h3 className="text-xl font-bold text-neutral-900">Held Orders</h3>
+                                <h3 className="text-xl font-bold text-neutral-900">{t("pos.held_orders", "Held Orders")}</h3>
                                 <button
                                     onClick={() => setShowHeldOrdersModal(false)}
                                     className="p-2 hover:bg-neutral-100 rounded-[4px] transition-colors"
@@ -2440,7 +2442,7 @@ const AdminPOS = () => {
                             {heldOrders.length === 0 ? (
                                 <div className="text-center py-8 text-neutral-500">
                                     <Clock className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                                    <p>No held orders</p>
+                                    <p>{t("pos.no_held_orders", "No held orders")}</p>
                                 </div>
                             ) : (
                                 <div className="space-y-3">
@@ -2451,7 +2453,7 @@ const AdminPOS = () => {
                                                     <h4 className="font-semibold text-neutral-900">#{order._id.slice(-6).toUpperCase()}</h4>
                                                     <p className="text-sm text-neutral-500">{new Date(order.heldAt || order.createdAt).toLocaleString()}</p>
                                                 </div>
-                                                <span className="font-bold text-primary">BDT {Math.round(order.total)}</span>
+                                                <span className="font-bold text-primary">{t("pos.bdt", "BDT")} {Math.round(order.total)}</span>
                                             </div>
                                             <div className="text-sm text-neutral-600 mb-3">
                                                 {order.items.map((item: OrderItem, idx: number) => (
@@ -2484,8 +2486,8 @@ const AdminPOS = () => {
                                         <Utensils className="w-5 h-5 text-primary" />
                                     </div>
                                     <div>
-                                        <h3 className="text-xl font-bold text-neutral-900 leading-none">Served Orders</h3>
-                                        <p className="text-xs font-bold text-primary uppercase tracking-widest mt-1">Ready for Billing</p>
+                                        <h3 className="text-xl font-bold text-neutral-900 leading-none">{t("pos.served_orders", "Served Orders")}</h3>
+                                        <p className="text-xs font-bold text-primary uppercase tracking-widest mt-1">{t("pos.ready_for_billing", "Ready for Billing")}</p>
                                     </div>
                                 </div>
                                 <button
@@ -2500,8 +2502,8 @@ const AdminPOS = () => {
                             {servedOrders.length === 0 ? (
                                 <div className="text-center py-12 text-neutral-500">
                                     <Utensils className="w-16 h-16 mx-auto mb-4 opacity-20" />
-                                    <p className="text-lg font-medium text-neutral-400">No orders marked as served</p>
-                                    <p className="text-sm mt-1">Orders you serve will appear here for final checkout.</p>
+                                    <p className="text-lg font-medium text-neutral-400">{t("pos.no_orders_marked_as_served", "No orders marked as served")}</p>
+                                    <p className="text-sm mt-1">{t("pos.orders_you_serve_will_appear_here_for_fi", "Orders you serve will appear here for final checkout.")}</p>
                                 </div>
                             ) : (
                                 <div className="space-y-4">
@@ -2518,14 +2520,14 @@ const AdminPOS = () => {
                                                     </div>
                                                 </div>
                                                 <div className="text-right">
-                                                    <div className="text-lg font-serif font-semibold text-[#262626] text-primary tracking-tighter">BDT {Math.round(order.total)}</div>
+                                                    <div className="text-lg font-serif font-semibold text-[#262626] text-primary tracking-tighter">{t("pos.bdt", "BDT")} {Math.round(order.total)}</div>
                                                     <div className="text-[10px] font-bold text-neutral-400 flex items-center gap-1 justify-end">
                                                         <Clock className="w-3 h-3" /> {new Date(order.updatedAt || order.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                                     </div>
                                                 </div>
                                             </div>
                                             <div className="bg-white/50 border border-neutral-100 rounded-[4px] p-3 mb-4">
-                                                <div className="text-[10px] font-black text-neutral-300 uppercase tracking-widest mb-2">Order Items</div>
+                                                <div className="text-[10px] font-black text-neutral-300 uppercase tracking-widest mb-2">{t("pos.order_items", "Order Items")}</div>
                                                 <div className="flex flex-wrap gap-2">
                                                     {order.items.map((item: OrderItem, idx: number) => (
                                                         <div key={idx} className="bg-neutral-100 text-neutral-700 px-2 py-1 rounded-md text-[11px] font-bold">
@@ -2556,8 +2558,8 @@ const AdminPOS = () => {
                         {/* Header */}
                         <div className="flex justify-between items-center p-6 border-b-4 border-orange-500 bg-orange-50/50">
                             <div>
-                                <h3 className="text-xl font-serif font-semibold text-primary text-neutral-900 uppercase tracking-tighter">Kitchen Ticket</h3>
-                                <p className="text-[10px] font-bold text-orange-600 uppercase tracking-widest mt-0.5">Cooking Order</p>
+                                <h3 className="text-xl font-serif font-semibold text-primary text-neutral-900 uppercase tracking-tighter">{t("pos.kitchen_ticket", "Kitchen Ticket")}</h3>
+                                <p className="text-[10px] font-bold text-orange-600 uppercase tracking-widest mt-0.5">{t("pos.cooking_order", "Cooking Order")}</p>
                             </div>
                             <div className="flex gap-2">
                                 <button onClick={() => printKOTReceipt(lastOrderDetails)} className="w-12 h-12 flex items-center justify-center bg-white text-neutral-900 rounded-[4px] shadow-sm hover:shadow-md hover:bg-neutral-50 transition-all active:scale-95 border border-neutral-100">
@@ -2571,17 +2573,17 @@ const AdminPOS = () => {
                         {/* Content */}
                         <div className="p-10 overflow-y-auto custom-scrollbar text-center bg-white">
                             <div className="mb-8">
-                                <div className="text-[11px] font-black uppercase tracking-[0.3em] text-neutral-400 mb-2">Order Reference</div>
+                                <div className="text-[11px] font-black uppercase tracking-[0.3em] text-neutral-400 mb-2">{t("pos.order_reference", "Order Reference")}</div>
                                 <h2 className="text-4xl font-black text-neutral-900 leading-none">#{lastOrderDetails.orderId.slice(-6).toUpperCase()}</h2>
                             </div>
                             
                             <div className="flex justify-between items-center py-4 border-y border-dashed border-neutral-200 mb-8 px-2">
                                 <div className="text-left">
-                                    <div className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">Table</div>
+                                    <div className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">{t("pos.table", "Table")}</div>
                                     <div className="text-lg font-serif font-semibold text-[#262626] text-neutral-900">{lastOrderDetails.table}</div>
                                 </div>
                                 <div className="text-right">
-                                    <div className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">Time</div>
+                                    <div className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest">{t("pos.time", "Time")}</div>
                                     <div className="text-sm font-bold text-neutral-900">{lastOrderDetails.date.split(' ')[1]}</div>
                                 </div>
                             </div>
@@ -2600,8 +2602,8 @@ const AdminPOS = () => {
                             </div>
 
                             <div className="py-6 bg-neutral-50 rounded-[4px] border border-neutral-100 border-dashed">
-                                <p className="text-[10px] font-black text-neutral-400 uppercase tracking-[0.2em] mb-1">Status</p>
-                                <p className="text-xs font-bold text-orange-600 uppercase italic">SENT TO KITCHEN DISPLAY</p>
+                                <p className="text-[10px] font-black text-neutral-400 uppercase tracking-[0.2em] mb-1">{t("pos.status", "Status")}</p>
+                                <p className="text-xs font-bold text-orange-600 uppercase italic">{t("pos.sent_to_kitchen_display", "SENT TO KITCHEN DISPLAY")}</p>
                             </div>
                         </div>
                     </div>
@@ -2614,7 +2616,7 @@ const AdminPOS = () => {
                     <div className="bg-white rounded-[4px] w-full max-w-md shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
                         {/* Header */}
                         <div className="flex justify-between items-center p-4 border-b border-yellow-400 border-b-4">
-                            <h3 className="text-xl font-medium text-neutral-800">Order Slip</h3>
+                            <h3 className="text-xl font-medium text-neutral-800">{t("pos.order_slip", "Order Slip")}</h3>
                             <div className="flex gap-2">
                                 <button onClick={() => printBillReceipt(lastOrderDetails)} className="w-10 h-10 flex items-center justify-center bg-blue-50 text-[#262626] rounded-full hover:bg-blue-100 transition-colors">
                                     <Printer className="w-5 h-5" />
@@ -2629,21 +2631,21 @@ const AdminPOS = () => {
                         <div className="p-8 overflow-y-auto custom-scrollbar">
                             <div className="text-center mb-8">
                                 <h2 className="text-3xl font-serif font-bold text-[#0f172a] mb-2">{settings.websiteName}...</h2>
-                                <p className="text-sm font-medium text-neutral-500 tracking-[0.2em] uppercase">Order Receipt</p>
+                                <p className="text-sm font-medium text-neutral-500 tracking-[0.2em] uppercase">{t("pos.order_receipt", "Order Receipt")}</p>
                             </div>
 
                             <div className="space-y-4 mb-6">
                                 <div className="flex justify-between text-[15px]">
-                                    <span className="text-neutral-500">Order ID</span>
+                                    <span className="text-neutral-500">{t("pos.order_id", "Order ID")}</span>
                                     <span className="font-bold text-neutral-900">#{lastOrderDetails.orderId.slice(-6).toUpperCase()}</span>
                                 </div>
                                 <div className="flex justify-between text-[15px]">
-                                    <span className="text-neutral-500">Date</span>
+                                    <span className="text-neutral-500">{t("pos.date", "Date")}</span>
                                     <span className="font-medium text-neutral-900">{lastOrderDetails.date}</span>
                                 </div>
                                 <div className="flex justify-between text-[15px]">
-                                    <span className="text-neutral-500">Payment Status</span>
-                                    <span className="font-medium text-neutral-900">Paid</span>
+                                    <span className="text-neutral-500">{t("pos.payment_status", "Payment Status")}</span>
+                                    <span className="font-medium text-neutral-900">{t("pos.paid", "Paid")}</span>
                                 </div>
                             </div>
 
@@ -2661,11 +2663,11 @@ const AdminPOS = () => {
 
                             <div className="border-t border-dashed border-neutral-300 py-6 space-y-4">
                                 <div className="flex justify-between text-[15px]">
-                                    <span className="text-neutral-500">Subtotal</span>
+                                    <span className="text-neutral-500">{t("pos.subtotal", "Subtotal")}</span>
                                     <span className="font-medium text-neutral-900">৳{lastOrderDetails.subtotal.toFixed(0)}</span>
                                 </div>
                                 <div className="flex justify-between text-[15px]">
-                                    <span className="text-neutral-500">VAT</span>
+                                    <span className="text-neutral-500">{t("pos.vat", "VAT")}</span>
                                     <span className="font-medium text-neutral-900">৳{lastOrderDetails.vatAmount.toFixed(0)}</span>
                                 </div>
                                 <div className="space-y-1">
@@ -2677,16 +2679,16 @@ const AdminPOS = () => {
                                     ))}
                                 </div>
                                 <div className="flex justify-between text-xl font-serif font-semibold text-primary mt-2">
-                                    <span className="text-neutral-900">Total</span>
+                                    <span className="text-neutral-900">{t("pos.total", "Total")}</span>
                                     <span className="text-yellow-500">৳{lastOrderDetails.total.toFixed(0)}</span>
                                 </div>
                             </div>
 
                             <div className="bg-neutral-50 rounded-[4px] p-6 mt-2">
-                                <h4 className="font-bold text-neutral-900 mb-2">Delivery Details:</h4>
+                                <h4 className="font-bold text-neutral-900 mb-2">{t("pos.delivery_details", "Delivery Details:")}</h4>
                                 <div className="text-neutral-600 text-[15px] space-y-1">
                                     <p>{lastOrderDetails.customer}</p>
-                                    <p>N/A</p>
+                                    <p>{"N/A"}</p>
                                     <p>{lastOrderDetails.table}</p>
                                 </div>
                             </div>
@@ -2706,21 +2708,21 @@ const AdminPOS = () => {
                             </div>
                         </div>
 
-                        <h3 className="text-2xl font-bold text-[#0f172a] mb-2">Confirm Payment</h3>
-                        <p className="text-neutral-500 text-center mb-8">Are you sure you want to complete this payment?</p>
+                        <h3 className="text-2xl font-bold text-[#0f172a] mb-2">{t("pos.confirm_payment", "Confirm Payment")}</h3>
+                        <p className="text-neutral-500 text-center mb-8">{t("pos.are_you_sure_you_want_to_complete_this_p", "Are you sure you want to complete this payment?")}</p>
 
                         <div className="w-full bg-neutral-50 rounded-[4px] p-6 space-y-4 mb-8">
                             <div className="flex justify-between items-center">
-                                <span className="text-neutral-500 font-medium">Subtotal</span>
-                                <span className="text-[#0f172a] font-bold">BDT{total.toFixed(2)}</span>
+                                <span className="text-neutral-500 font-medium">{t("pos.subtotal", "Subtotal")}</span>
+                                <span className="text-[#0f172a] font-bold">{t("pos.bdt", "BDT")}{total.toFixed(2)}</span>
                             </div>
                             <div className="flex justify-between items-center">
-                                <span className="text-neutral-500 font-medium">Payment Method</span>
+                                <span className="text-neutral-500 font-medium">{t("pos.payment_method", "Payment Method")}</span>
                                 <span className="text-[#0f172a] font-bold">{selectedPaymentMethod}</span>
                             </div>
                             <div className="flex justify-between items-center">
-                                <span className="text-neutral-500 font-medium">Amount Received</span>
-                                <span className="text-[#0f172a] font-bold">BDT{parseFloat(amountReceived || '0').toFixed(2)}</span>
+                                <span className="text-neutral-500 font-medium">{t("pos.amount_received", "Amount Received")}</span>
+                                <span className="text-[#0f172a] font-bold">{t("pos.bdt", "BDT")}{parseFloat(amountReceived || '0').toFixed(2)}</span>
                             </div>
                         </div>
 
@@ -2749,7 +2751,7 @@ const AdminPOS = () => {
                 <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
                     <div className="bg-white rounded-[4px] w-full max-w-sm shadow-2xl overflow-hidden p-6">
                         <div className="flex justify-between items-center mb-6">
-                            <h3 className="text-xl font-bold text-[#0f172a]">Add Customer</h3>
+                            <h3 className="text-xl font-bold text-[#0f172a]">{t("pos.add_customer", "Add Customer")}</h3>
                             <button
                                 onClick={() => setShowAddCustomerModal(false)}
                                 className="text-neutral-400 hover:text-neutral-600 transition-colors"
@@ -2760,7 +2762,7 @@ const AdminPOS = () => {
 
                         <div className="space-y-4">
                             <div>
-                                <label className="block text-sm font-semibold text-neutral-800 mb-1.5">Name *</label>
+                                <label className="block text-sm font-semibold text-neutral-800 mb-1.5">{t("pos.name", "Name *")}</label>
                                 <input
                                     type="text"
                                     value={newCustomerName}
@@ -2771,7 +2773,7 @@ const AdminPOS = () => {
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-semibold text-neutral-800 mb-1.5">Phone</label>
+                                <label className="block text-sm font-semibold text-neutral-800 mb-1.5">{t("pos.phone", "Phone")}</label>
                                 <input
                                     type="text"
                                     value={newCustomerPhone}
@@ -2792,7 +2794,7 @@ const AdminPOS = () => {
                             <button
                                 onClick={async () => {
                                     if (!newCustomerName.trim()) {
-                                        toast.error("Name is required");
+                                        toast.error(t("pos.name_is_required", "Name is required"));
                                         return;
                                     }
 
@@ -2814,14 +2816,14 @@ const AdminPOS = () => {
                                             setShowAddCustomerModal(false);
                                             setNewCustomerName("");
                                             setNewCustomerPhone("");
-                                            toast.success("Customer added successfully");
+                                            toast.success(t("pos.customer_added_successfully", "Customer added successfully"));
                                         } else {
                                             const err = await res.json().catch(() => ({}));
                                             toast.error(err.message || "Failed to add customer");
                                         }
                                     } catch (err) {
                                         console.error("Add Customer Error:", err);
-                                        toast.error("An error occurred: " + (err instanceof Error ? err.message : "Network error"));
+                                        toast.error(t("pos.an_error_occurred_err_instanceof_error_e", "An error occurred: " + (err instanceof Error ? err.message : "Network error")));
                                     }
                                 }}
                                 className="px-6 py-2.5 bg-[#262626] hover:bg-blue-700 text-white font-bold rounded-[4px] transition-colors text-sm"

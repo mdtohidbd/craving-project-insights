@@ -6,6 +6,7 @@ import {
     Package, CheckCircle2, Loader2, RefreshCw, X, Users, BarChart2,
     MessageSquare, Copy, Check, Send
 } from 'lucide-react';
+import { useTranslation } from "react-i18next";
 
 interface DeliveryManEnriched {
     _id: string;
@@ -21,6 +22,7 @@ interface DeliveryManEnriched {
 const EMPTY_FORM = { name: '', phone: '', email: '', vehicleDetails: '', username: '', password: '' };
 
 const AdminDeliverymen = () => {
+    const { t } = useTranslation();
     const [deliveryMen, setDeliveryMen] = useState<DeliveryManEnriched[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -39,7 +41,7 @@ const AdminDeliverymen = () => {
         try {
             const res = await fetch(`${apiUrl}/delivery-men`);
             if (res.ok) setDeliveryMen(await res.json());
-        } catch { toast.error('Failed to load deliverymen'); }
+        } catch { toast.error(t("deliverymen.load_failed", 'Failed to load deliverymen')); }
         finally { setIsLoading(false); }
     }, [apiUrl]);
 
@@ -50,7 +52,7 @@ const AdminDeliverymen = () => {
         
         // Validation
         if (!form.username || !form.password) {
-            toast.error('Username and password are required for the deliveryman to log in.');
+            toast.error(t("deliverymen.creds_required", 'Username and password are required for the deliveryman to log in.'));
             return;
         }
 
@@ -63,21 +65,21 @@ const AdminDeliverymen = () => {
             });
             const data = await res.json();
             if (!res.ok) throw new Error(data.message || 'Failed');
-            toast.success(`${form.name} registered as staff courier`);
+            toast.success(t("deliverymen.create_success", '{{name}} registered as staff courier', { name: form.name }));
             setIsModalOpen(false);
             setForm(EMPTY_FORM);
             fetchData();
-        } catch (err: any) { toast.error(err.message || 'Failed to create deliveryman'); }
+        } catch (err: any) { toast.error(err.message || t("deliverymen.create_failed", 'Failed to create deliveryman')); }
         finally { setIsSaving(false); }
     };
 
     const handleDelete = async (id: string, name: string) => {
-        if (!confirm(`Remove ${name} and their staff account?`)) return;
+        if (!confirm(t("deliverymen.remove_confirm", `Remove {{name}} and their staff account?`, { name }))) return;
         try {
             await fetch(`${apiUrl}/delivery-men/${id}`, { method: 'DELETE' });
-            toast.success(`${name} removed`);
+            toast.success(t("deliverymen.remove_success", `{{name}} removed`, { name }));
             fetchData();
-        } catch { toast.error('Delete failed'); }
+        } catch { toast.error(t("deliverymen.remove_failed", 'Delete failed')); }
     };
 
     const handleToggle = async (id: string) => {
@@ -87,9 +89,9 @@ const AdminDeliverymen = () => {
             if (res.ok) {
                 const updated = await res.json();
                 setDeliveryMen(prev => prev.map(dm => dm._id === id ? { ...dm, status: updated.status } : dm));
-                toast.success(`Status updated`);
+                toast.success(t("deliverymen.status_updated", `Status updated`));
             }
-        } catch { toast.error('Failed to toggle status'); }
+        } catch { toast.error(t("deliverymen.status_failed", 'Failed to toggle status')); }
         finally { setTogglingId(null); }
     };
 
@@ -106,14 +108,14 @@ const AdminDeliverymen = () => {
             });
 
             if (res.ok) {
-                toast.success("Message sent successfully!");
+                toast.success(t("deliverymen.sms_success", "Message sent successfully!"));
                 setSmsMessage("");
                 setSelectedCourier(null);
             } else {
-                toast.error("Failed to send message. Check MimSMS configuration.");
+                toast.error(t("deliverymen.sms_failed", "Failed to send message. Check MimSMS configuration."));
             }
         } catch (error) {
-            toast.error("An error occurred while sending SMS.");
+            toast.error(t("deliverymen.sms_error", "An error occurred while sending SMS."));
         } finally {
             setIsSendingSMS(false);
         }
@@ -122,7 +124,7 @@ const AdminDeliverymen = () => {
     const handleCopyPhone = (id: string, phone: string) => {
         navigator.clipboard.writeText(phone);
         setCopiedPhoneId(id);
-        toast.success("Phone number copied to clipboard!");
+        toast.success(t("deliverymen.phone_copied", "Phone number copied to clipboard!"));
         setTimeout(() => setCopiedPhoneId(null), 2000);
     };
 
@@ -130,13 +132,13 @@ const AdminDeliverymen = () => {
     const busyCount = deliveryMen.filter(d => d.activeOrders > 0).length;
 
     return (
-        <AdminLayout title="Deliveryman Management">
+        <AdminLayout title={t("dashboard.deliverymen", "Deliveryman Management")}>
             <div className="space-y-6 pb-10">
                 {/* Header */}
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <div>
-                        <h2 className="text-2xl font-black tracking-tight text-neutral-900">Deliveryman Fleet</h2>
-                        <p className="text-sm text-neutral-500 mt-1">Manage your courier team — add, activate, and track workload</p>
+                        <h2 className="text-2xl font-black tracking-tight text-neutral-900">{t("deliverymen.fleet", "Deliveryman Fleet")}</h2>
+                        <p className="text-sm text-neutral-500 mt-1">{t("deliverymen.fleet_desc", "Manage your courier team — add, activate, and track workload")}</p>
                     </div>
                     <div className="flex items-center gap-2">
                         <button onClick={fetchData} className="p-2.5 rounded-[8px] border border-neutral-200 bg-white text-neutral-600 hover:bg-neutral-50 transition-colors">
@@ -144,7 +146,7 @@ const AdminDeliverymen = () => {
                         </button>
                         <button onClick={() => setIsModalOpen(true)}
                             className="flex items-center gap-2 px-5 py-2.5 bg-primary text-white rounded-[8px] font-bold text-sm shadow-md shadow-primary/20 hover:brightness-110 transition-all active:scale-95">
-                            <UserPlus className="w-4 h-4" /> Add Courier
+                            <UserPlus className="w-4 h-4" /> {t("deliverymen.add_courier", "Add Courier")}
                         </button>
                     </div>
                 </div>
@@ -153,15 +155,15 @@ const AdminDeliverymen = () => {
                 <div className="grid grid-cols-3 gap-3">
                     <div className="bg-white border border-neutral-200 rounded-[8px] p-4 text-center shadow-sm">
                         <p className="text-3xl font-black text-neutral-900">{deliveryMen.length}</p>
-                        <p className="text-xs font-medium text-neutral-500 mt-1">Total Couriers</p>
+                        <p className="text-xs font-medium text-neutral-500 mt-1">{t("deliverymen.total_couriers", "Total Couriers")}</p>
                     </div>
                     <div className="bg-primary/10 border border-emerald-100 rounded-[8px] p-4 text-center shadow-sm">
                         <p className="text-3xl font-black text-primary">{activeCount}</p>
-                        <p className="text-xs font-medium text-primary mt-1">Active</p>
+                        <p className="text-xs font-medium text-primary mt-1">{t("deliverymen.active", "Active")}</p>
                     </div>
                     <div className="bg-amber-50 border border-amber-100 rounded-[8px] p-4 text-center shadow-sm">
                         <p className="text-3xl font-black text-amber-700">{busyCount}</p>
-                        <p className="text-xs font-medium text-amber-600 mt-1">On Delivery</p>
+                        <p className="text-xs font-medium text-amber-600 mt-1">{t("deliverymen.on_delivery", "On Delivery")}</p>
                     </div>
                 </div>
 
@@ -171,8 +173,8 @@ const AdminDeliverymen = () => {
                 ) : deliveryMen.length === 0 ? (
                     <div className="flex flex-col items-center justify-center h-48 bg-white border border-dashed border-neutral-200 rounded-[12px] text-neutral-400">
                         <Users className="w-10 h-10 mb-2" />
-                        <p className="font-medium">No couriers registered yet</p>
-                        <button onClick={() => setIsModalOpen(true)} className="mt-3 text-sm text-primary font-bold hover:underline">+ Add First Courier</button>
+                        <p className="font-medium">{t("deliverymen.no_couriers", "No couriers registered yet")}</p>
+                        <button onClick={() => setIsModalOpen(true)} className="mt-3 text-sm text-primary font-bold hover:underline">{t("deliverymen.add_first", "+ Add First Courier")}</button>
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -188,7 +190,7 @@ const AdminDeliverymen = () => {
                                         <button
                                             onClick={() => handleToggle(dm._id)}
                                             disabled={togglingId === dm._id}
-                                            title={dm.status === 'active' ? 'Deactivate' : 'Activate'}
+                                            title={dm.status === 'active' ? t("deliverymen.deactivate", 'Deactivate') : t("deliverymen.activate", 'Activate')}
                                             className="p-1.5 rounded-[4px] hover:bg-neutral-100 text-neutral-400 transition-colors disabled:opacity-50">
                                             {togglingId === dm._id ? (
                                                 <Loader2 className="w-5 h-5 animate-spin" />
@@ -212,7 +214,7 @@ const AdminDeliverymen = () => {
                                     <button 
                                         onClick={() => handleCopyPhone(dm._id, dm.phone)}
                                         className="ml-1 p-1 hover:bg-neutral-100 rounded text-neutral-400 hover:text-indigo-600 transition-colors"
-                                        title="Copy Phone Number"
+                                        title={t("deliverymen.copy_phone", "Copy Phone Number")}
                                     >
                                         {copiedPhoneId === dm._id ? <Check className="w-3 h-3 text-primary" /> : <Copy className="w-3 h-3" />}
                                     </button>
@@ -228,7 +230,7 @@ const AdminDeliverymen = () => {
                                         onClick={() => setSelectedCourier(dm)}
                                         className="flex-1 flex items-center justify-center gap-1.5 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 text-xs font-semibold rounded-[4px] transition-colors border border-indigo-100"
                                     >
-                                        <MessageSquare className="w-3.5 h-3.5" /> Send Message
+                                        <MessageSquare className="w-3.5 h-3.5" /> {t("deliverymen.send_message", "Send Message")}
                                     </button>
                                 </div>
 
@@ -236,14 +238,14 @@ const AdminDeliverymen = () => {
                                 <div className="border-t border-neutral-100 pt-3 flex items-center justify-between">
                                     <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold border ${dm.status === 'active' ? 'bg-emerald-100 text-primary border-primary/30' : 'bg-neutral-100 text-neutral-500 border-neutral-200'}`}>
                                         {dm.status === 'active' ? <CheckCircle2 className="w-3 h-3" /> : null}
-                                        {dm.status}
+                                        {t(`deliverymen.status_${dm.status}`, dm.status)}
                                     </span>
                                     <div className="flex items-center gap-3 text-xs text-neutral-500">
-                                        <span title="Active orders" className={`flex items-center gap-1 font-bold ${dm.activeOrders > 0 ? 'text-amber-600' : ''}`}>
-                                            <Package className="w-3 h-3" />{dm.activeOrders} active
+                                        <span title={t("deliverymen.active_orders_title", "Active orders")} className={`flex items-center gap-1 font-bold ${dm.activeOrders > 0 ? 'text-amber-600' : ''}`}>
+                                            <Package className="w-3 h-3" />{dm.activeOrders} {t("deliverymen.active_orders", "active")}
                                         </span>
-                                        <span title="Total orders" className="flex items-center gap-1">
-                                            <BarChart2 className="w-3 h-3" />{dm.totalOrders} total
+                                        <span title={t("deliverymen.total_orders_title", "Total orders")} className="flex items-center gap-1">
+                                            <BarChart2 className="w-3 h-3" />{dm.totalOrders} {t("deliverymen.total_orders", "total")}
                                         </span>
                                     </div>
                                 </div>
@@ -259,8 +261,8 @@ const AdminDeliverymen = () => {
                     <div className="bg-white rounded-[12px] shadow-2xl w-full max-w-md overflow-hidden" onClick={e => e.stopPropagation()}>
                         <div className="flex items-center justify-between p-6 border-b border-neutral-100">
                             <div>
-                                <p className="font-black text-neutral-900 text-lg">Add New Courier</p>
-                                <p className="text-xs text-neutral-500">Register a deliveryman to the fleet & create account</p>
+                                <p className="font-black text-neutral-900 text-lg">{t("deliverymen.add_new_courier", "Add New Courier")}</p>
+                                <p className="text-xs text-neutral-500">{t("deliverymen.add_new_desc", "Register a deliveryman to the fleet & create account")}</p>
                             </div>
                             <button onClick={() => setIsModalOpen(false)} className="p-2 rounded-[8px] hover:bg-neutral-100 text-neutral-400 transition-colors">
                                 <X className="w-5 h-5" />
@@ -269,13 +271,13 @@ const AdminDeliverymen = () => {
                         <form onSubmit={handleCreate} className="p-6 space-y-4">
                             <div className="grid grid-cols-2 gap-3">
                                 <div>
-                                    <label className="text-[10px] font-bold uppercase tracking-wider text-neutral-500 mb-1 block">Full Name *</label>
+                                    <label className="text-[10px] font-bold uppercase tracking-wider text-neutral-500 mb-1 block">{t("common.full_name", "Full Name")} *</label>
                                     <input required value={form.name} onChange={e => setForm({ ...form, name: e.target.value })}
-                                        placeholder="e.g. John Doe"
+                                        placeholder={t("deliverymen.name_placeholder", "e.g. John Doe")}
                                         className="w-full bg-neutral-50 border border-neutral-200 rounded-[8px] px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" />
                                 </div>
                                 <div>
-                                    <label className="text-[10px] font-bold uppercase tracking-wider text-neutral-500 mb-1 block">Phone *</label>
+                                    <label className="text-[10px] font-bold uppercase tracking-wider text-neutral-500 mb-1 block">{t("common.phone", "Phone")} *</label>
                                     <input required value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })}
                                         placeholder="+880..."
                                         className="w-full bg-neutral-50 border border-neutral-200 rounded-[8px] px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" />
@@ -284,13 +286,13 @@ const AdminDeliverymen = () => {
 
                             <div className="grid grid-cols-2 gap-3">
                                 <div>
-                                    <label className="text-[10px] font-bold uppercase tracking-wider text-primary mb-1 block">Username *</label>
+                                    <label className="text-[10px] font-bold uppercase tracking-wider text-primary mb-1 block">{t("common.username", "Username")} *</label>
                                     <input required value={form.username} onChange={e => setForm({ ...form, username: e.target.value })}
                                         placeholder="john_delivery"
                                         className="w-full bg-primary/5 border border-primary/20 rounded-[8px] px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" />
                                 </div>
                                 <div>
-                                    <label className="text-[10px] font-bold uppercase tracking-wider text-primary mb-1 block">Password *</label>
+                                    <label className="text-[10px] font-bold uppercase tracking-wider text-primary mb-1 block">{t("common.password", "Password")} *</label>
                                     <input required type="password" value={form.password} onChange={e => setForm({ ...form, password: e.target.value })}
                                         placeholder="••••••••"
                                         className="w-full bg-primary/5 border border-primary/20 rounded-[8px] px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" />
@@ -298,26 +300,26 @@ const AdminDeliverymen = () => {
                             </div>
 
                             <div>
-                                <label className="text-[10px] font-bold uppercase tracking-wider text-neutral-500 mb-1 block">Email (optional)</label>
+                                <label className="text-[10px] font-bold uppercase tracking-wider text-neutral-500 mb-1 block">{t("common.email_optional", "Email (optional)")}</label>
                                 <input value={form.email} onChange={e => setForm({ ...form, email: e.target.value })}
                                     placeholder="courier@example.com" type="email"
                                     className="w-full bg-neutral-50 border border-neutral-200 rounded-[8px] px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" />
                             </div>
                             <div>
-                                <label className="text-[10px] font-bold uppercase tracking-wider text-neutral-500 mb-1 block">Vehicle Details (optional)</label>
+                                <label className="text-[10px] font-bold uppercase tracking-wider text-neutral-500 mb-1 block">{t("deliverymen.vehicle_details", "Vehicle Details (optional)")}</label>
                                 <input value={form.vehicleDetails} onChange={e => setForm({ ...form, vehicleDetails: e.target.value })}
-                                    placeholder="e.g. Bike — DHA-KA-1234"
+                                    placeholder={t("deliverymen.vehicle_placeholder", "e.g. Bike — DHA-KA-1234")}
                                     className="w-full bg-neutral-50 border border-neutral-200 rounded-[8px] px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" />
                             </div>
                             <div className="flex items-center justify-end gap-2 pt-2">
                                 <button type="button" onClick={() => setIsModalOpen(false)}
                                     className="px-4 py-2.5 rounded-[8px] text-sm font-semibold text-neutral-600 border border-neutral-200 hover:bg-neutral-100 transition-colors">
-                                    Cancel
+                                    {t("common.cancel", "Cancel")}
                                 </button>
                                 <button type="submit" disabled={isSaving}
                                     className="px-5 py-2.5 rounded-[8px] text-sm font-bold bg-primary text-white shadow-md shadow-primary/20 hover:brightness-110 transition-all active:scale-95 disabled:opacity-60 flex items-center gap-2">
                                     {isSaving && <Loader2 className="w-4 h-4 animate-spin" />}
-                                    Register Courier
+                                    {t("deliverymen.register_courier", "Register Courier")}
                                 </button>
                             </div>
                         </form>
@@ -335,7 +337,7 @@ const AdminDeliverymen = () => {
                                     <MessageSquare className="w-5 h-5" />
                                 </div>
                                 <div>
-                                    <p className="font-bold text-neutral-900">Message Courier</p>
+                                    <p className="font-bold text-neutral-900">{t("deliverymen.message_courier", "Message Courier")}</p>
                                     <p className="text-xs text-neutral-500">{selectedCourier.name} • {selectedCourier.phone}</p>
                                 </div>
                             </div>
@@ -346,25 +348,25 @@ const AdminDeliverymen = () => {
                         <div className="p-6">
                             <form onSubmit={handleSendSMS} className="space-y-4">
                                 <div>
-                                    <label className="text-xs font-semibold text-neutral-600 mb-2 block">Your Message</label>
+                                    <label className="text-xs font-semibold text-neutral-600 mb-2 block">{t("deliverymen.your_message", "Your Message")}</label>
                                     <textarea
                                         required
                                         rows={4}
                                         value={smsMessage}
                                         onChange={(e) => setSmsMessage(e.target.value)}
-                                        placeholder="Type your message to the courier..."
+                                        placeholder={t("deliverymen.message_placeholder", "Type your message to the courier...")}
                                         className="w-full bg-neutral-50 border border-neutral-200 rounded-[8px] p-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 resize-none transition-all"
                                     ></textarea>
                                 </div>
                                 <div className="flex items-center justify-end gap-2 pt-2">
                                     <button type="button" onClick={() => setSelectedCourier(null)}
                                         className="px-4 py-2.5 rounded-[8px] text-sm font-semibold text-neutral-600 border border-neutral-200 hover:bg-neutral-100 transition-colors">
-                                        Cancel
+                                        {t("common.cancel", "Cancel")}
                                     </button>
                                     <button type="submit" disabled={isSendingSMS || !smsMessage.trim()}
                                         className="px-5 py-2.5 rounded-[8px] text-sm font-bold bg-indigo-500 text-white shadow-md shadow-indigo-500/20 hover:bg-indigo-600 transition-all active:scale-95 disabled:opacity-60 flex items-center gap-2">
                                         {isSendingSMS ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-                                        Send SMS
+                                        {t("deliverymen.send_sms", "Send SMS")}
                                     </button>
                                 </div>
                             </form>

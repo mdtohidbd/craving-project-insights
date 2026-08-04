@@ -195,7 +195,7 @@ const BlogDetail = () => {
               </span>
               <h2 className="text-5xl md:text-6xl font-serif font-bold text-primary"
                   style={{ letterSpacing: "-0.04em" }}>
-                More <span className="italic" style={{ color: "hsl(43 74% 48%)" }}>Stories</span>
+                More <span className="italic" style={{ color: "hsl(43 74% 48%)" }}>{t("pos.stories", "Stories")}</span>
               </h2>
             </div>
             
