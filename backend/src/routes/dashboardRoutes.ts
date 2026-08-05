@@ -4,39 +4,55 @@ import { InventoryItem } from '../models/InventoryItem';
 import { Message } from '../models/Message';
 import { User } from '../models/User';
 import { DeliveryMan } from '../models/DeliveryMan';
+import { MenuItem } from '../models/MenuItem';
 
 const router = express.Router();
 
 router.get('/', async (req, res) => {
     try {
-        // 1. Calculate Total Sales (completed or delivered orders only)
-        const completedOrders = await Order.find({ status: { $in: ['completed', 'delivered'] } });
-        const totalSales = completedOrders.reduce((sum, order) => sum + order.total, 0);
+        // Run all primary database queries in parallel for ultra-fast response
+        const [
+            completedOrders,
+            activeOrders,
+            lowStockItems,
+            inventoryData,
+            recentMessages,
+            activeStaff,
+            activeDeliveryMen,
+            menuItems,
+            latestOrders
+        ] = await Promise.all([
+            Order.find({ status: { $in: ['completed', 'delivered'] } }),
+            Order.countDocuments({ status: { $in: ['pending', 'preparing', 'ready'] } }),
+            InventoryItem.countDocuments({ stock: { $lt: 20 } }),
+            InventoryItem.find().limit(5),
+            Message.find().populate('relatedOrderId').populate('relatedCustomerId').sort({ createdAt: -1 }).limit(5),
+            User.find({ role: 'staff', status: 'approved' }),
+            DeliveryMan.find({ status: 'active' }),
+            MenuItem.find(),
+            Order.find().sort({ createdAt: -1 }).limit(8).populate('customerId', 'name')
+        ]);
+
+        // 1. Calculate Metrics
+        const totalSales = completedOrders.reduce((sum, order) => sum + (order.total || 0), 0);
         const totalOrders = completedOrders.length;
         
-        // Calculate Today's Sales
         const startOfToday = new Date();
         startOfToday.setHours(0, 0, 0, 0);
-        const todayOrders = completedOrders.filter(o => new Date(o.createdAt || new Date()) >= startOfToday);
-        const todaySales = todayOrders.reduce((sum, order) => sum + order.total, 0);
+        const todaySales = completedOrders
+            .filter(o => new Date(o.createdAt || new Date()) >= startOfToday)
+            .reduce((sum, order) => sum + (order.total || 0), 0);
 
-        // Calculate Monthly Sales
         const startOfMonth = new Date();
         startOfMonth.setDate(1);
         startOfMonth.setHours(0, 0, 0, 0);
-        const monthOrders = completedOrders.filter(o => new Date(o.createdAt || new Date()) >= startOfMonth);
-        const monthlySales = monthOrders.reduce((sum, order) => sum + order.total, 0);
-        
-        // 2. Count Active Orders
-        const activeOrders = await Order.countDocuments({ status: { $in: ['pending', 'preparing', 'ready'] } });
+        const monthlySales = completedOrders
+            .filter(o => new Date(o.createdAt || new Date()) >= startOfMonth)
+            .reduce((sum, order) => sum + (order.total || 0), 0);
 
-        // 3. Count Low Stock Items
-        const lowStockItems = await InventoryItem.countDocuments({ stock: { $lt: 20 } }); // Threshold: 20
-
-        // 4. Sales Data for the last 7 days chart
+        // 2. Compute 7 Days Sales Data in Memory (Instant, 0 DB roundtrips)
         const salesData = [];
         const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-        
         for (let i = 6; i >= 0; i--) {
             const date = new Date();
             date.setDate(date.getDate() - i);
@@ -45,21 +61,21 @@ router.get('/', async (req, res) => {
             const nextDay = new Date(date);
             nextDay.setDate(nextDay.getDate() + 1);
 
-            const dailyOrders = await Order.find({
-                status: { $in: ['completed', 'delivered'] },
-                createdAt: { $gte: date, $lt: nextDay }
-            });
-            
-            const dailySales = dailyOrders.reduce((sum, order) => sum + order.total, 0);
+            const dailySales = completedOrders
+                .filter(o => {
+                    const cDate = new Date(o.createdAt || new Date());
+                    return cDate >= date && cDate < nextDay;
+                })
+                .reduce((sum, order) => sum + (order.total || 0), 0);
             
             salesData.push({
                 name: days[date.getDay()],
+                date: String(date.getDate()).padStart(2, '0'),
                 sales: dailySales
             });
         }
 
-        // 5. Inventory Data (get a few items to show status)
-        const inventoryData = await InventoryItem.find().limit(5);
+        // 3. Format Inventory Preview
         const formattedInventory = inventoryData.map(item => ({
             id: item._id,
             name: item.name,
@@ -68,13 +84,7 @@ router.get('/', async (req, res) => {
             status: item.stock > 20 ? 'In Stock' : 'Low Stock'
         }));
 
-        // 6. Recent SMS Notifications
-        const recentMessages = await Message.find()
-            .populate('relatedOrderId')
-            .populate('relatedCustomerId')
-            .sort({ createdAt: -1 })
-            .limit(5);
-            
+        // 4. Format Recent Messages
         const formattedMessages = recentMessages.map(msg => {
             const timeDiff = Math.floor((new Date().getTime() - new Date(msg.createdAt).getTime()) / 60000);
             let timeStr = `${timeDiff} min ago`;
@@ -90,10 +100,7 @@ router.get('/', async (req, res) => {
             };
         });
 
-        // 7. Staff Analysis Data
-        const activeStaff = await User.find({ role: 'staff', status: 'approved' });
-        const activeStaffCount = activeStaff.length;
-
+        // 5. Staff Breakdown & Deliverymen
         const staffRoleCounts: Record<string, number> = {};
         activeStaff.forEach(staff => {
             const role = staff.staffRole || 'unassigned';
@@ -101,11 +108,8 @@ router.get('/', async (req, res) => {
         });
         const staffRoleBreakdown = Object.entries(staffRoleCounts).map(([role, count]) => ({ role, count }));
 
-        const activeDeliveryMen = await DeliveryMan.find({ status: 'active' });
-        const activeDeliveryManCount = activeDeliveryMen.length;
-
         const deliveryManPerformance = await Promise.all(activeDeliveryMen.map(async (dm) => {
-            const completedOrders = await Order.countDocuments({ 
+            const deliveredCount = await Order.countDocuments({ 
                 deliveryManId: dm._id, 
                 deliveryStatus: 'delivered' 
             });
@@ -113,12 +117,93 @@ router.get('/', async (req, res) => {
                 id: dm._id,
                 name: dm.name,
                 phone: dm.phone,
-                completedOrders
+                completedOrders: deliveredCount
             };
         }));
         
         deliveryManPerformance.sort((a, b) => b.completedOrders - a.completedOrders);
         const topDeliveryMen = deliveryManPerformance.slice(0, 5);
+
+        // 6. Category Sales, Top Items, and Payment Methods (Compute in Memory)
+        const menuMap = new Map();
+        menuItems.forEach(item => {
+            menuMap.set(item._id.toString(), item.category || 'Others');
+            if (item.originalId) menuMap.set(item.originalId.toString(), item.category || 'Others');
+        });
+
+        const categorySalesMap: Record<string, number> = {};
+        const topItemsMap: Record<string, { quantity: number; revenue: number }> = {};
+        const paymentMethodsMap: Record<string, number> = {};
+
+        completedOrders.forEach(order => {
+            const method = order.paymentMethod?.includes('bKash') || order.paymentMethod?.includes('Mobile') ? 'Mobile' :
+                           order.paymentMethod?.includes('Card') ? 'Card' : 'Cash';
+            paymentMethodsMap[method] = (paymentMethodsMap[method] || 0) + 1;
+
+            const items = order.items || [];
+            const totalItemsInOrder = items.reduce((sum: number, i: any) => sum + i.quantity, 0);
+            
+            items.forEach((item: any) => {
+                const category = menuMap.get(item.menuItemId?.toString()) || 'Others';
+                const itemRevShare = totalItemsInOrder > 0 
+                    ? Math.round((order.total || 0) * (item.quantity / totalItemsInOrder))
+                    : 0;
+
+                categorySalesMap[category] = (categorySalesMap[category] || 0) + itemRevShare;
+
+                const itemName = item.title || 'Unknown Item';
+                if (!topItemsMap[itemName]) topItemsMap[itemName] = { quantity: 0, revenue: 0 };
+                topItemsMap[itemName].quantity += item.quantity;
+                topItemsMap[itemName].revenue += itemRevShare;
+            });
+        });
+
+        const totalOrderCountForPayments = completedOrders.length || 1;
+        const paymentMethods = Object.entries(paymentMethodsMap).map(([method, count]) => ({
+            method,
+            count,
+            percentage: Number(((count / totalOrderCountForPayments) * 100).toFixed(1))
+        }));
+
+        let categorySales = Object.entries(categorySalesMap).map(([category, sales]) => ({
+            category,
+            sales,
+            percentage: totalSales > 0 ? Number(((sales / totalSales) * 100).toFixed(1)) : 0
+        }));
+        
+        if (categorySales.length === 0) {
+           categorySales = [
+               { category: "Appetizers", sales: 0, percentage: 0 },
+               { category: "Main Course", sales: 0, percentage: 0 },
+               { category: "Desserts", sales: 0, percentage: 0 },
+               { category: "Beverages", sales: 0, percentage: 0 },
+               { category: "Others", sales: 0, percentage: 0 }
+           ];
+        }
+
+        const topItems = Object.entries(topItemsMap)
+            .map(([name, data]) => ({ name, quantity: data.quantity, revenue: data.revenue }))
+            .sort((a, b) => b.quantity - a.quantity)
+            .slice(0, 5);
+
+        // 7. Format Recent Orders
+        const recentOrders = latestOrders.map(order => {
+            const timeDiff = Math.floor((new Date().getTime() - new Date(order.createdAt || new Date()).getTime()) / 60000);
+            let timeStr = `${timeDiff} min ago`;
+            if (timeDiff > 60) timeStr = `${Math.floor(timeDiff/60)} hr ago`;
+            if (timeDiff > 1440) timeStr = `${Math.floor(timeDiff/1440)} days ago`;
+
+            return {
+                id: order._id,
+                orderId: order._id.toString().substring(order._id.toString().length - 6).toUpperCase(),
+                customerName: order.customerId ? (order.customerId as any).name || order.customerInfo?.name : order.customerInfo?.name || 'Walk-in',
+                items: (order.items || []).map((i: any) => ({ name: i.title || 'Unknown', quantity: i.quantity })),
+                total: order.total,
+                status: order.status,
+                time: timeStr,
+                timestamp: order.createdAt
+            };
+        });
 
         res.json({
             metrics: {
@@ -133,11 +218,15 @@ router.get('/', async (req, res) => {
             inventoryData: formattedInventory,
             smsNotifications: formattedMessages,
             staffData: {
-                activeStaffCount,
-                activeDeliveryManCount,
+                activeStaffCount: activeStaff.length,
+                activeDeliveryManCount: activeDeliveryMen.length,
                 staffRoleBreakdown,
                 deliveryManPerformance: topDeliveryMen
-            }
+            },
+            categorySales,
+            topItems,
+            paymentMethods,
+            recentOrders
         });
     } catch (error) {
         console.error('Dashboard Error:', error);

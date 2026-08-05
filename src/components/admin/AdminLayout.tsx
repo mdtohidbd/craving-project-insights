@@ -25,6 +25,29 @@ const AdminLayout = ({ children, title }: AdminLayoutProps) => {
     const { user, logout, isSuperAdmin } = useAuth();
     const { isModuleActive } = useModules();
     const [pendingCount, setPendingCount] = useState(0);
+    const [isHeaderVisible, setIsHeaderVisible] = useState(true);
+    const [isFocusMode, setIsFocusMode] = useState(false);
+    const mainRef = useRef<HTMLElement>(null);
+    const lastScrollY = useRef(0);
+
+    useEffect(() => {
+        const handleScroll = () => {
+            if (!mainRef.current || isFocusMode) return;
+            const currentScroll = mainRef.current.scrollTop;
+            if (currentScroll > 80 && currentScroll > lastScrollY.current + 10) {
+                setIsHeaderVisible(false);
+            } else if (currentScroll < lastScrollY.current - 10 || currentScroll < 50) {
+                setIsHeaderVisible(true);
+            }
+            lastScrollY.current = currentScroll;
+        };
+
+        const mainEl = mainRef.current;
+        if (mainEl) {
+            mainEl.addEventListener("scroll", handleScroll, { passive: true });
+            return () => mainEl.removeEventListener("scroll", handleScroll);
+        }
+    }, [isFocusMode]);
 
     useEffect(() => {
         if (!isSuperAdmin) return;
@@ -174,163 +197,186 @@ const AdminLayout = ({ children, title }: AdminLayoutProps) => {
     });
 
     return (
-        <div className="flex h-screen bg-neutral-50 text-neutral-900 overflow-hidden font-sans flex-col">
-            {/* Slick Horizontal Header */}
-            <header className="bg-white/80 backdrop-blur-md border-b border-neutral-200/60 sticky top-0 z-50 px-4 lg:px-8 shrink-0 print:hidden shadow-sm">
-                <div className="max-w-7xl mx-auto">
-                    <div className="h-16 flex items-center justify-between">
-                        <div className="flex items-center gap-3 sm:gap-6">
-                            <Link 
-                                to="/" 
-                                title="Back to Website" 
-                                className="flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-neutral-100 text-neutral-500 hover:text-primary hover:bg-neutral-200 transition-all active:scale-95"
-                            >
-                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
-                            </Link>
-
-                            <Link to="/admin" className="flex items-center gap-3 group transition-transform active:scale-95">
-                                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-primary flex items-center justify-center text-primary-foreground font-black shadow-xl shadow-primary/30 rotate-6 group-hover:rotate-0 transition-all duration-500">
-                                    S
-                                </div>
-                                <div className="hidden sm:flex flex-col">
-                                    <span className="text-base font-black tracking-tight leading-none text-neutral-900 group-hover:text-primary transition-colors">{t("pos.skybridge", "Skybridge")}</span>
-                                    <span className="text-[10px] uppercase font-black text-primary tracking-[0.2em] mt-1.5 opacity-80">{t("pos.management", "Management")}</span>
-                                </div>
-                            </Link>
-                            <div className="h-8 w-px bg-neutral-200/60 hidden sm:block mx-2" />
-                            <h1 className="text-lg sm:text-xl font-extrabold text-black uppercase tracking-[0.15em] hidden md:block">
-                                {title}
-                            </h1>
-                        </div>
-
-                        <div className="flex items-center gap-3">
-                            <LanguageSwitcher />
-                            {/* User Info */}
-                            {user && (
-                                <div className="hidden sm:flex items-center gap-2 border-r border-neutral-200 pr-3">
-                                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary/30 to-primary/60 flex items-center justify-center text-primary font-bold text-sm">
-                                        {user.name.charAt(0).toUpperCase()}
-                                    </div>
-                                    <div className="flex flex-col">
-                                        <span className="text-xs font-bold text-neutral-800 leading-none">{user.name}</span>
-                                        <span className="text-[10px] font-semibold text-neutral-400 capitalize mt-0.5">{user.role}</span>
-                                    </div>
-                                </div>
-                            )}
-                            {/* Notification Dropdown Container */}
-                            <div className="relative" ref={dropdownRef}>
-                                <button
-                                    onClick={() => setIsNotificationOpen(!isNotificationOpen)}
-                                    className={`relative p-2.5 transition-all rounded-xl ${isNotificationOpen
-                                        ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/20'
-                                        : 'text-neutral-500 hover:text-neutral-900 hover:bg-neutral-100'
-                                        }`}
+        <div className="flex h-screen bg-neutral-50 text-neutral-900 overflow-hidden font-sans flex-col relative">
+            {/* Top Branding & Controls Row (Ultra-Smooth Luxurious Collapse on Scroll) */}
+            <div className={`grid transition-[grid-template-rows,opacity] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] z-50 px-4 lg:px-8 shrink-0 print:hidden bg-white/90 backdrop-blur-md border-b border-neutral-100 shadow-sm ${
+                isHeaderVisible && !isFocusMode 
+                    ? "grid-rows-[1fr] opacity-100" 
+                    : "grid-rows-[0fr] opacity-0 border-b-0"
+            }`}>
+                <header className="overflow-hidden">
+                    <div className="max-w-7xl mx-auto">
+                        <div className="h-16 flex items-center justify-between">
+                            <div className="flex items-center gap-3 sm:gap-6">
+                                <Link 
+                                    to="/" 
+                                    title="Back to Website" 
+                                    className="flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-neutral-100 text-neutral-500 hover:text-primary hover:bg-neutral-200 transition-all active:scale-95"
                                 >
-                                    <Bell className="w-5 h-5" />
-                                    {unreadCount > 0 && (
-                                        <span className={`absolute top-2 right-2 w-2.5 h-2.5 rounded-full border-2 border-white bg-rose-500 animate-pulse ${isNotificationOpen ? 'hidden' : ''}`} />
-                                    )}
-                                </button>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
+                                </Link>
 
-                                {/* Dropdown Menu */}
-                                {isNotificationOpen && (
-                                    <div className="absolute right-0 mt-3 w-80 bg-white border border-neutral-200 rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200 origin-top-right z-50">
-                                        <div className="p-4 border-b border-neutral-100 flex items-center justify-between bg-neutral-50/50">
-                                            <h3 className="font-bold text-neutral-900 text-sm">{t("pos.notifications", "Notifications")}</h3>
-                                            <Link to="/admin/notifications" onClick={() => setIsNotificationOpen(false)} className="text-[11px] font-bold text-primary hover:underline">{t("pos.view_all", "View All")}</Link>
-                                        </div>
-                                        <div className="max-h-[350px] overflow-y-auto custom-scrollbar">
-                                            {notifications.length > 0 ? (
-                                                notifications.map((n) => (
-                                                    <div key={n._id} onClick={() => handleNotificationClick(n)} className="p-4 hover:bg-neutral-50 border-b border-neutral-50 transition-colors cursor-pointer group">
-                                                        <div className="flex gap-3">
-                                                            <div className={`mt-1.5 w-2 h-2 rounded-full shrink-0 ${!n.isRead ? 'bg-primary' : 'bg-transparent'}`} />
-                                                            <div className="space-y-1">
-                                                                <p className="text-[13px] font-bold text-neutral-900 group-hover:text-primary transition-colors">{n.title}</p>
-                                                                <p className="text-[12px] text-neutral-500 line-clamp-2 leading-relaxed">{n.message}</p>
-                                                                <p className="text-[10px] font-medium text-neutral-400 mt-2 lowercase">{formatTime(n.createdAt)}</p>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                ))
-                                            ) : (
-                                                <div className="p-8 text-center">
-                                                    <Bell className="w-8 h-8 text-neutral-200 mx-auto mb-2" />
-                                                    <p className="text-sm text-neutral-400">{t("pos.all_caught_up", "All caught up!")}</p>
-                                                </div>
-                                            )}
-                                        </div>
-                                        <button
-                                            onClick={markAllAsRead}
-                                            className="w-full py-3 text-[11px] font-bold text-neutral-500 hover:text-neutral-900 hover:bg-neutral-50 transition-colors border-t border-neutral-100 uppercase tracking-wider"
-                                        >
-                                            {t("notifications.mark_all_read", "Mark all as read")}
-                                        </button>
+                                <Link to="/admin" className="flex items-center gap-3 group transition-transform active:scale-95">
+                                    <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-primary flex items-center justify-center text-primary-foreground font-black shadow-xl shadow-primary/30 rotate-6 group-hover:rotate-0 transition-all duration-500">
+                                        S
                                     </div>
-                                )}
+                                    <div className="hidden sm:flex flex-col">
+                                        <span className="text-base font-black tracking-tight leading-none text-neutral-900 group-hover:text-primary transition-colors">{t("pos.skybridge", "Skybridge")}</span>
+                                        <span className="text-[10px] uppercase font-black text-primary tracking-[0.2em] mt-1.5 opacity-80">{t("pos.management", "Management")}</span>
+                                    </div>
+                                </Link>
+                                <div className="h-8 w-px bg-neutral-200/60 hidden sm:block mx-2" />
+                                <h1 className="text-lg sm:text-xl font-extrabold text-black uppercase tracking-[0.15em] hidden md:block">
+                                    {title}
+                                </h1>
                             </div>
 
-                            {/* Logout */}
-                            <button
-                                onClick={handleLogout}
-                                title="Logout"
-                                className="p-2.5 text-neutral-500 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-all"
-                            >
-                                <LogOut className="w-4 h-4" />
-                            </button>
-                        </div>
-                    </div>
-
-                    {/* Nav Items - Premium Mushy Design */}
-                    <nav className="border-t border-neutral-100/50 bg-neutral-50/30">
-                        <div className="flex items-center gap-2 py-2.5 px-2 overflow-x-auto no-scrollbar scroll-smooth">
-                            {navItems.map((item) => {
-                                const cleanPath = item.path.replace(/\/$/, '');
-                                const cleanCurrent = location.pathname.replace(/\/$/, '') || '/';
-                                const isActive = cleanCurrent === cleanPath || (cleanPath !== '/admin' && cleanCurrent.startsWith(cleanPath));
-                                
-                                const showBadge = item.module === 'staff' && pendingCount > 0;
-
-                                return (
-                                    <Link
-                                        key={item.path}
-                                        to={item.path}
-                                        {...(isActive ? { "data-active": "true" } : {})}
-                                        ref={(el) => {
-                                            if (isActive && el) {
-                                                el.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-                                            }
-                                        }}
-                                        className={`relative flex items-center gap-2.5 px-4 py-2.5 rounded-2xl transition-all duration-300 whitespace-nowrap active:scale-[0.97] group ${isActive
-                                            ? 'bg-white text-primary font-black shadow-[0_4px_12px_rgba(0,0,0,0.08),inset_0_-2px_0_rgba(0,0,0,0.02)] scale-105 z-10'
-                                            : 'text-neutral-500 hover:text-neutral-900 hover:bg-white/60 font-bold hover:shadow-sm'
+                            <div className="flex items-center gap-3">
+                                <LanguageSwitcher />
+                                {/* User Info */}
+                                {user && (
+                                    <div className="hidden sm:flex items-center gap-2 border-r border-neutral-200 pr-3">
+                                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary/30 to-primary/60 flex items-center justify-center text-primary font-bold text-sm">
+                                            {user.name.charAt(0).toUpperCase()}
+                                        </div>
+                                        <div className="flex flex-col">
+                                            <span className="text-xs font-bold text-neutral-800 leading-none">{user.name}</span>
+                                            <span className="text-[10px] font-semibold text-neutral-400 capitalize mt-0.5">{user.role}</span>
+                                        </div>
+                                    </div>
+                                )}
+                                {/* Notification Dropdown Container */}
+                                <div className="relative" ref={dropdownRef}>
+                                    <button
+                                        onClick={() => setIsNotificationOpen(!isNotificationOpen)}
+                                        className={`relative p-2.5 transition-all rounded-xl ${isNotificationOpen
+                                            ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/20'
+                                            : 'text-neutral-500 hover:text-neutral-900 hover:bg-neutral-100'
                                             }`}
                                     >
-                                        <div className={`transition-all duration-500 ${isActive ? 'scale-110 rotate-0 text-primary' : 'group-hover:scale-110 group-hover:rotate-3 opacity-70 group-hover:opacity-100'}`}>
-                                            {item.icon}
-                                        </div>
-                                        <span className={`text-[13px] tracking-tight transition-colors ${isActive ? 'text-neutral-900' : ''}`}>{item.label}</span>
-                                        
-                                        {/* Active Indicator Line */}
-                                        {isActive && (
-                                            <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-6 h-1 bg-primary rounded-full shadow-[0_0_8px_rgba(var(--primary-rgb),0.4)]" />
+                                        <Bell className="w-5 h-5" />
+                                        {unreadCount > 0 && (
+                                            <span className={`absolute top-2 right-2 w-2.5 h-2.5 rounded-full border-2 border-white bg-rose-500 animate-pulse ${isNotificationOpen ? 'hidden' : ''}`} />
                                         )}
+                                    </button>
 
-                                        {showBadge && (
-                                            <span className="absolute -top-1 -right-1 min-w-[20px] h-[20px] px-1 rounded-full bg-rose-500 text-white text-[10px] font-black flex items-center justify-center shadow-lg border-2 border-white animate-bounce">
-                                                {pendingCount}
-                                            </span>
-                                        )}
-                                    </Link>
-                                )
-                            })}
+                                    {/* Dropdown Menu */}
+                                    {isNotificationOpen && (
+                                        <div className="absolute right-0 mt-3 w-80 bg-white border border-neutral-200 rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200 origin-top-right z-50">
+                                            <div className="p-4 border-b border-neutral-100 flex items-center justify-between bg-neutral-50/50">
+                                                <h3 className="font-bold text-neutral-900 text-sm">{t("pos.notifications", "Notifications")}</h3>
+                                                <Link to="/admin/notifications" onClick={() => setIsNotificationOpen(false)} className="text-[11px] font-bold text-primary hover:underline">{t("pos.view_all", "View All")}</Link>
+                                            </div>
+                                            <div className="max-h-[350px] overflow-y-auto custom-scrollbar">
+                                                {notifications.length > 0 ? (
+                                                    notifications.map((n) => (
+                                                        <div key={n._id} onClick={() => handleNotificationClick(n)} className="p-4 hover:bg-neutral-50 border-b border-neutral-50 transition-colors cursor-pointer group">
+                                                            <div className="flex gap-3">
+                                                                <div className={`mt-1.5 w-2 h-2 rounded-full shrink-0 ${!n.isRead ? 'bg-primary' : 'bg-transparent'}`} />
+                                                                <div className="space-y-1">
+                                                                    <p className="text-[13px] font-bold text-neutral-900 group-hover:text-primary transition-colors">{n.title}</p>
+                                                                    <p className="text-[12px] text-neutral-500 line-clamp-2 leading-relaxed">{n.message}</p>
+                                                                    <p className="text-[10px] font-medium text-neutral-400 mt-2 lowercase">{formatTime(n.createdAt)}</p>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    ))
+                                                ) : (
+                                                    <div className="p-8 text-center">
+                                                        <Bell className="w-8 h-8 text-neutral-200 mx-auto mb-2" />
+                                                        <p className="text-sm text-neutral-400">{t("pos.all_caught_up", "All caught up!")}</p>
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <button
+                                                onClick={markAllAsRead}
+                                                className="w-full py-3 text-[11px] font-bold text-neutral-500 hover:text-neutral-900 hover:bg-neutral-50 transition-colors border-t border-neutral-100 uppercase tracking-wider"
+                                            >
+                                                {t("notifications.mark_all_read", "Mark all as read")}
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Focus Mode / Hide Header Toggle */}
+                                <button
+                                    onClick={() => {
+                                        setIsFocusMode(!isFocusMode);
+                                        if (!isFocusMode) setIsHeaderVisible(false);
+                                        else setIsHeaderVisible(true);
+                                    }}
+                                    title={isFocusMode ? "Show Top Header" : "Hide Top Header"}
+                                    className="p-2.5 text-neutral-500 hover:text-neutral-900 hover:bg-neutral-100 rounded-xl transition-all hidden sm:flex items-center gap-1 text-xs font-bold"
+                                >
+                                    <Menu className="w-4 h-4" />
+                                </button>
+
+                                {/* Logout */}
+                                <button
+                                    onClick={handleLogout}
+                                    title="Logout"
+                                    className="p-2.5 text-neutral-500 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-all"
+                                >
+                                    <LogOut className="w-4 h-4" />
+                                </button>
+                            </div>
                         </div>
-                    </nav>
+                    </div>
+                </header>
+            </div>
+
+            {/* Sticky Module Navigation Items Row (ALWAYS FIXED & VISIBLE) */}
+            <nav className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-neutral-200/60 shadow-sm px-4 lg:px-8 shrink-0">
+                <div className="max-w-7xl mx-auto">
+                    <div className="flex items-center gap-2 py-2.5 px-2 overflow-x-auto no-scrollbar scroll-smooth">
+                        {navItems.map((item) => {
+                            const cleanPath = item.path.replace(/\/$/, '');
+                            const cleanCurrent = location.pathname.replace(/\/$/, '') || '/';
+                            const isActive = cleanCurrent === cleanPath || (cleanPath !== '/admin' && cleanCurrent.startsWith(cleanPath));
+                            
+                            const showBadge = item.module === 'staff' && pendingCount > 0;
+
+                            return (
+                                <Link
+                                    key={item.path}
+                                    to={item.path}
+                                    {...(isActive ? { "data-active": "true" } : {})}
+                                    ref={(el) => {
+                                        if (isActive && el) {
+                                            el.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+                                        }
+                                    }}
+                                    className={`relative flex items-center gap-2.5 px-4 py-2.5 rounded-2xl transition-all duration-300 whitespace-nowrap active:scale-[0.97] group ${isActive
+                                        ? 'bg-white text-primary font-black shadow-[0_4px_12px_rgba(0,0,0,0.08),inset_0_-2px_0_rgba(0,0,0,0.02)] scale-105 z-10 border border-neutral-200/50'
+                                        : 'text-neutral-500 hover:text-neutral-900 hover:bg-neutral-100/60 font-bold'
+                                        }`}
+                                >
+                                    <div className={`transition-all duration-500 ${isActive ? 'scale-110 rotate-0 text-primary' : 'group-hover:scale-110 group-hover:rotate-3 opacity-70 group-hover:opacity-100'}`}>
+                                        {item.icon}
+                                    </div>
+                                    <span className={`text-[13px] tracking-tight transition-colors ${isActive ? 'text-neutral-900' : ''}`}>{item.label}</span>
+                                    
+                                    {/* Active Indicator Line */}
+                                    {isActive && (
+                                        <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-6 h-1 bg-primary rounded-full shadow-[0_0_8px_rgba(var(--primary-rgb),0.4)]" />
+                                    )}
+
+                                    {showBadge && (
+                                        <span className="absolute -top-1 -right-1 min-w-[20px] h-[20px] px-1 rounded-full bg-rose-500 text-white text-[10px] font-black flex items-center justify-center shadow-lg border-2 border-white animate-bounce">
+                                            {pendingCount}
+                                        </span>
+                                    )}
+                                </Link>
+                            )
+                        })}
+                    </div>
                 </div>
-            </header>
+            </nav>
+
+
 
             {/* Main Content */}
-            <main className="flex-1 overflow-y-auto overflow-x-hidden p-4 lg:p-8 custom-scrollbar print:overflow-visible print:p-0 print:block bg-neutral-50" data-lenis-prevent="true">
+            <main ref={mainRef} className="flex-1 overflow-y-auto overflow-x-hidden p-4 lg:p-8 custom-scrollbar print:overflow-visible print:p-0 print:block bg-neutral-50" data-lenis-prevent="true">
                 <div className="max-w-7xl mx-auto print:max-w-none print:m-0">
                     {children}
                 </div>

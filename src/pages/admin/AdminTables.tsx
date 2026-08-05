@@ -190,22 +190,22 @@ const AdminTables = () => {
         const orderNum = `#${order._id.slice(-6).toUpperCase()}`;
         const date = new Date(order.createdAt || Date.now()).toLocaleString("en-GB");
 
-        const html = `<!DOCTYPE html><html><head><title>{t("pos.kot", "KOT")}</title><style>
+        const html = `<!DOCTYPE html><html><head><title>${t("pos.kot", "KOT")}</title><style>
             * { margin:0; padding:0; box-sizing:border-box; }
             body { font-family: 'Courier New', monospace; width: 80mm; padding: 10px; color: #000; font-size: 14px; }
             .center { text-align: center; }
             .row { display: flex; justify-content: space-between; margin-bottom: 4px; }
             .dashed { border-bottom: 2px dashed #000; margin: 10px 0; }
         </style></head><body>
-            <div class="center" style="font-size:18px;font-weight:bold;margin-bottom:10px;">{t("pos.kitchen_order", "KITCHEN ORDER")}</div>
+            <div class="center" style="font-size:18px;font-weight:bold;margin-bottom:10px;">${t("pos.kitchen_order", "KITCHEN ORDER")}</div>
             <div class="dashed"></div>
-            <div class="row"><span>{t("pos.table", "Table")}</span><span>${table.tableNumber}</span></div>
-            <div class="row"><span>{t("pos.order", "Order")}</span><span>${orderNum}</span></div>
-            <div class="row"><span>{t("pos.time", "Time")}</span><span>${date}</span></div>
+            <div class="row"><span>${t("pos.table", "Table")}</span><span>${table.tableNumber}</span></div>
+            <div class="row"><span>${t("pos.order", "Order")}</span><span>${orderNum}</span></div>
+            <div class="row"><span>${t("pos.time", "Time")}</span><span>${date}</span></div>
             <div class="dashed"></div>
             ${itemsHtml}
             <div class="dashed"></div>
-            <div class="center" style="margin-top:8px;">{t("pos.kot", "*** KOT ***")}</div>
+            <div class="center" style="margin-top:8px;">${t("pos.kot", "*** KOT ***")}</div>
         </body></html>`;
 
         return openPrintWindow(html, t("tables.allow_popups_kot", "Please allow pop-ups to print the KOT"));
@@ -215,13 +215,13 @@ const AdminTables = () => {
         const itemsHtml = order.items
             .map(
                 (item) =>
-                    `<div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span>${item.title} x${item.quantity}</span><span>{t("pos.bdt", "BDT $")}{(item.price * item.quantity).toFixed(2)}</span></div>`
+                    `<div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span>${item.title} x${item.quantity}</span><span>${t("pos.bdt", "BDT $")}{(item.price * item.quantity).toFixed(2)}</span></div>`
             )
             .join("");
         const orderNum = `#${order._id.slice(-6).toUpperCase()}`;
         const date = new Date(order.createdAt || Date.now()).toLocaleString("en-GB");
 
-        const html = `<!DOCTYPE html><html><head><title>{t("pos.bill_receipt", "Bill Receipt")}</title><style>
+        const html = `<!DOCTYPE html><html><head><title>${t("pos.bill_receipt", "Bill Receipt")}</title><style>
             * { margin:0; padding:0; box-sizing:border-box; }
             body { font-family: 'Courier New', monospace; width: 80mm; padding: 10px; color: #000; font-size: 14px; }
             .center { text-align: center; }
@@ -231,15 +231,15 @@ const AdminTables = () => {
         </style></head><body>
             <div class="center" style="font-size:20px;font-weight:bold;margin-bottom:10px;">${settings.websiteName.toUpperCase()}</div>
             <div class="dashed"></div>
-            <div class="row"><span>{t("pos.table", "Table")}</span><span>${table.tableNumber}</span></div>
-            <div class="row"><span>{t("pos.order", "Order")}</span><span>${orderNum}</span></div>
-            <div class="row"><span>{t("pos.date", "Date")}</span><span>${date}</span></div>
+            <div class="row"><span>${t("pos.table", "Table")}</span><span>${table.tableNumber}</span></div>
+            <div class="row"><span>${t("pos.order", "Order")}</span><span>${orderNum}</span></div>
+            <div class="row"><span>${t("pos.date", "Date")}</span><span>${date}</span></div>
             <div class="dashed"></div>
             ${itemsHtml}
             <div class="dashed"></div>
-            <div class="row"><span>{t("pos.subtotal", "Subtotal")}</span><span>{t("pos.bdt", "BDT $")}{(order.subtotal || 0).toFixed(2)}</span></div>
-            <div class="row"><span>{t("pos.tax", "Tax")}</span><span>{t("pos.bdt", "BDT $")}{(order.tax || 0).toFixed(2)}</span></div>
-            <div class="total-row"><span>{t("pos.total", "TOTAL")}</span><span>{t("pos.bdt", "BDT $")}{(order.total || 0).toFixed(2)}</span></div>
+            <div class="row"><span>${t("pos.subtotal", "Subtotal")}</span><span>${t("pos.bdt", "BDT $")}{(order.subtotal || 0).toFixed(2)}</span></div>
+            <div class="row"><span>${t("pos.tax", "Tax")}</span><span>${t("pos.bdt", "BDT $")}{(order.tax || 0).toFixed(2)}</span></div>
+            <div class="total-row"><span>${t("pos.total", "TOTAL")}</span><span>${t("pos.bdt", "BDT $")}{(order.total || 0).toFixed(2)}</span></div>
         </body></html>`;
 
         return openPrintWindow(html, t("tables.allow_popups_bill", "Please allow pop-ups to print the bill"));
