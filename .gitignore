@@ -38,3 +38,11 @@ dist-ssr
 AGENT.md
 CLAUDE.md
 .agent-mem/
+
+# Additional AI agent/IDE states
+.mcp.json
+.mcp.json.bak
+.vscode/mcp.json
+.agents/
+.brainsync/
+.cursor/
