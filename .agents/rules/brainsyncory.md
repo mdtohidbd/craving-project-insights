@@ -1,7 +1,7 @@
 
 
 # Project Memory — craving-project-insights
-> 40 notes | Score threshold: >40
+> 39 notes | Score threshold: >40
 
 ## Safety — Never Run Destructive Commands
 
@@ -18,20 +18,23 @@
 
 **Stack:** TypeScript · Express + React + Tailwind · DB: MongoDB
 
-## 📝 NOTE: 1 uncommitted file(s) in working tree.\n\n## Active: `src/components`
+## 📝 NOTE: 1 uncommitted file(s) in working tree.\n\n## Active: `.`
 
-- **🟢 Edited src/components/MobileBottomNav.tsx (55 changes, 186min)**
+- **convention in auth.js**
+- **convention in emiController.js**
+- **problem-fix in .gitignore**
+- **🟢 Edited .gitignore (6 changes, 3min)**
 
 ## Project Standards
 
+- convention in auth.js
+- convention in emiController.js
+- Extract repeated class patterns into components
+- Use responsive prefixes consistently (sm:, md:, lg:, xl:)
+- Don't use arbitrary values when a utility class exists
 - Use Suspense and Error Boundaries for async operations
 - Don't prop-drill more than 2 levels — use Context or state management
 - Use useMemo for expensive computations, useCallback for stable references
-- Enable strict mode in tsconfig.json
-- Prefer Array methods (map, filter, reduce) over manual loops
-- Use template literals for string interpolation, not concatenation
-- Use optional chaining (?.) and nullish coalescing (??) for safe access
-- Use const by default, let when reassignment needed, never var
 
 ## Verified Best Practices
 
