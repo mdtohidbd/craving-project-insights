@@ -1,7 +1,7 @@
 
 
 # Project Memory — craving-project-insights
-> 44 notes | Score threshold: >40
+> 46 notes | Score threshold: >40
 
 ## Safety — Never Run Destructive Commands
 
@@ -20,6 +20,7 @@
 
 ## 📝 NOTE: 1 uncommitted file(s) in working tree.\n\n## Project Standards
 
+- convention in .gitignore
 - Rate limit API endpoints to prevent abuse
 - Validate request body with a schema validator (Joi, Zod)
 - Use helmet for security headers
@@ -27,7 +28,6 @@
 - Don't prop-drill more than 2 levels — use Context or state management
 - Use useMemo for expensive computations, useCallback for stable references
 - Enable strict mode in tsconfig.json
-- Prefer Array methods (map, filter, reduce) over manual loops
 
 ## Verified Best Practices
 
