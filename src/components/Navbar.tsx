@@ -5,6 +5,18 @@ import { Menu, X } from "lucide-react";
 import { Cart } from "./Cart";
 import { useSettings } from "@/context/SettingsContext";
 import { useTranslation } from "react-i18next";
+import { useAuth } from "@/context/AuthContext";
+import { CustomerAuthModal } from "./home/CustomerAuthModal";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { UserCircle, LogOut, ShoppingBag, Settings } from "lucide-react";
 
 const navLinks = [
   { name: "Home", path: "/" },
@@ -19,6 +31,8 @@ const Navbar = ({ theme = "dark" }: { theme?: "light" | "dark" }) => {
   const location = useLocation();
   const { settings } = useSettings();
   const { t } = useTranslation();
+  const { user, logout } = useAuth();
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
@@ -77,6 +91,44 @@ const Navbar = ({ theme = "dark" }: { theme?: "light" | "dark" }) => {
             {/* CTA Button and Cart */}
             <div className="hidden md:flex items-center gap-4 lg:gap-6">
               <Cart className={scrolled || theme === "dark" ? "text-primary-foreground" : "text-primary"} />
+
+              {/* User Profile / Login */}
+              {user && user.role === 'user' ? (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button className={`flex items-center justify-center w-10 h-10 rounded-full border border-white/10 transition-colors ${scrolled || theme === "dark" ? "bg-white/5 hover:bg-white/10 text-primary-foreground" : "bg-primary/5 hover:bg-primary/10 text-primary"}`}>
+                      <UserCircle className="w-5 h-5" />
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-56 bg-white/95 backdrop-blur-xl border-neutral-100 rounded-xl shadow-xl">
+                    <DropdownMenuLabel className="font-serif">
+                      <div className="flex flex-col space-y-1">
+                        <p className="text-sm font-medium leading-none">{user.name}</p>
+                        <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
+                      </div>
+                    </DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem className="cursor-pointer" asChild>
+                      <Link to="/profile"><UserCircle className="w-4 h-4 mr-2" /> My Profile</Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem className="cursor-pointer" asChild>
+                      <Link to="/orders"><ShoppingBag className="w-4 h-4 mr-2" /> My Orders</Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem className="cursor-pointer text-red-600 focus:text-red-600" onClick={logout}>
+                      <LogOut className="w-4 h-4 mr-2" /> Logout
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              ) : (
+                <button
+                  onClick={() => setIsAuthModalOpen(true)}
+                  className={`flex items-center justify-center w-10 h-10 rounded-full border border-white/10 transition-colors ${scrolled || theme === "dark" ? "bg-white/5 hover:bg-white/10 text-primary-foreground" : "bg-primary/5 hover:bg-primary/10 text-primary"}`}
+                >
+                  <UserCircle className="w-5 h-5" />
+                </button>
+              )}
+
               <Link
                 to="/book-table"
                 className="inline-flex items-center px-7 py-3 text-[11px] uppercase tracking-[0.15em] font-bold rounded-full transition-all duration-500 hover:-translate-y-0.5"
@@ -92,7 +144,22 @@ const Navbar = ({ theme = "dark" }: { theme?: "light" | "dark" }) => {
 
             {/* Mobile Menu Button */}
             <div className="md:hidden flex items-center gap-4">
+              {user && user.role === 'user' ? (
+                <Link to="/profile" className={`flex items-center justify-center w-9 h-9 rounded-full border border-white/10 ${scrolled || theme === "dark" ? "bg-white/5 text-primary-foreground" : "bg-primary/5 text-primary"}`}>
+                  <UserCircle className="w-4 h-4" />
+                </Link>
+              ) : (
+                <button onClick={() => setIsAuthModalOpen(true)} className={`flex items-center justify-center w-9 h-9 rounded-full border border-white/10 ${scrolled || theme === "dark" ? "bg-white/5 text-primary-foreground" : "bg-primary/5 text-primary"}`}>
+                  <UserCircle className="w-4 h-4" />
+                </button>
+              )}
               <Cart className={scrolled || theme === "dark" ? "text-primary-foreground" : "text-primary"} />
+              <button
+                className={`p-2 rounded-full border border-white/10 ${scrolled || theme === "dark" ? "text-primary-foreground bg-white/5" : "text-primary bg-primary/5"}`}
+                onClick={() => setIsOpen(!isOpen)}
+              >
+                {isOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+              </button>
             </div>
           </div>
         </div>
@@ -155,6 +222,12 @@ const Navbar = ({ theme = "dark" }: { theme?: "light" | "dark" }) => {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Customer Auth Modal */}
+      <CustomerAuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+      />
     </header>
   );
 };

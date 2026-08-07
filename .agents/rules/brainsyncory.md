@@ -1,7 +1,11 @@
 
 
 # Project Memory — craving-project-insights
+<<<<<<< HEAD
 > 39 notes | Score threshold: >40
+=======
+> 44 notes | Score threshold: >40
+>>>>>>> 29704ac15c191148be20bbd90f4427c78b5c48ab
 
 ## Safety — Never Run Destructive Commands
 
@@ -18,6 +22,7 @@
 
 **Stack:** TypeScript · Express + React + Tailwind · DB: MongoDB
 
+<<<<<<< HEAD
 ## 📝 NOTE: 1 uncommitted file(s) in working tree.\n\n## Active: `.`
 
 - **convention in auth.js**
@@ -35,6 +40,18 @@
 - Use Suspense and Error Boundaries for async operations
 - Don't prop-drill more than 2 levels — use Context or state management
 - Use useMemo for expensive computations, useCallback for stable references
+=======
+## 📝 NOTE: 1 uncommitted file(s) in working tree.\n\n## Project Standards
+
+- Rate limit API endpoints to prevent abuse
+- Validate request body with a schema validator (Joi, Zod)
+- Use helmet for security headers
+- Use Suspense and Error Boundaries for async operations
+- Don't prop-drill more than 2 levels — use Context or state management
+- Use useMemo for expensive computations, useCallback for stable references
+- Enable strict mode in tsconfig.json
+- Prefer Array methods (map, filter, reduce) over manual loops
+>>>>>>> 29704ac15c191148be20bbd90f4427c78b5c48ab
 
 ## Verified Best Practices
 

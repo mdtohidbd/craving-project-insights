@@ -434,7 +434,7 @@ const AdminPOS = () => {
         const paymentLabel = details.paymentMethods.length > 1 ? 'SPLIT' : details.paymentMethods[0].method.toUpperCase();
         const orderNum = `${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${details.orderId.slice(-4).toUpperCase()}`;
 
-        const html = `<!DOCTYPE html><html><head><title>{t("pos.bill_receipt", "Bill Receipt")}</title><style>
+        const html = `<!DOCTYPE html><html><head><title>${t("pos.bill_receipt", "Bill Receipt")}</title><style>
             * { margin:0; padding:0; box-sizing:border-box; }
             body { font-family: 'Courier New', monospace; width: 80mm; padding: 10px; color: #000; font-size: 14px; }
             .center { text-align: center; }
@@ -448,24 +448,24 @@ const AdminPOS = () => {
         </style></head><body>
             <div class="center bold" style="font-size:20px;margin-bottom:15px;">${settings.websiteName.toUpperCase()}</div>
             <div class="dashed"></div>
-            <div class="row"><span>{t("pos.order", "Order #")}</span><span>${orderNum}</span></div>
-            <div class="row"><span>{t("pos.date", "Date")}</span><span>${details.date}</span></div>
-            <div class="row"><span>{t("pos.payment", "Payment")}</span><span>${paymentLabel}</span></div>
+            <div class="row"><span>${t("pos.order", "Order #")}</span><span>${orderNum}</span></div>
+            <div class="row"><span>${t("pos.date", "Date")}</span><span>${details.date}</span></div>
+            <div class="row"><span>${t("pos.payment", "Payment")}</span><span>${paymentLabel}</span></div>
             <div class="dashed"></div>
-            <div class="row bold" style="margin-bottom:8px;"><span>{t("pos.item", "Item")}</span><span>{t("pos.amount", "Amount")}</span></div>
+            <div class="row bold" style="margin-bottom:8px;"><span>${t("pos.item", "Item")}</span><span>${t("pos.amount", "Amount")}</span></div>
             <div class="solid"></div>
             ${itemsHtml}
             <div class="solid"></div>
-            <div class="row"><span>{t("pos.subtotal", "Subtotal")}</span><span>৳{details.subtotal.toFixed(2)}</span></div>
-            <div class="row"><span>{t("pos.vat", "VAT")}</span><span>৳{details.vatAmount.toFixed(2)}</span></div>
+            <div class="row"><span>${t("pos.subtotal", "Subtotal")}</span><span>৳${details.subtotal.toFixed(2)}</span></div>
+            <div class="row"><span>${t("pos.vat", "VAT")}</span><span>৳${details.vatAmount.toFixed(2)}</span></div>
             ${paymentMethodsHtml}
             <div class="solid"></div>
-            <div class="total-row"><span>{t("pos.total", "TOTAL")}</span><span>৳{details.total.toFixed(2)}</span></div>
+            <div class="total-row"><span>${t("pos.total", "TOTAL")}</span><span>৳${details.total.toFixed(2)}</span></div>
             <div class="dashed"></div>
             <div class="center" style="margin-top:10px;">
-                <p style="margin-bottom:10px;">{t("pos.thank_you_for_your_visit", "Thank you for your visit!")}</p>
+                <p style="margin-bottom:10px;">${t("pos.thank_you_for_your_visit", "Thank you for your visit!")}</p>
                 <img src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${details.orderId}" alt="QR" width="100" height="100" />
-                <p style="font-size:12px;margin-top:10px;"><strong>${settings.websiteName}</strong> | ${settings.websiteName.toLowerCase().replace(/\s+/g, '')}{t("pos.com", ".com")}</p>
+                <p style="font-size:12px;margin-top:10px;"><strong>${settings.websiteName}</strong> | ${settings.websiteName.toLowerCase().replace(/\s+/g, '')}${t("pos.com", ".com")}</p>
             </div>
         </body></html>`;
 
@@ -496,7 +496,7 @@ const AdminPOS = () => {
         }).join('');
         const orderNum = `${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${details.orderId.slice(-4).toUpperCase()}`;
 
-        const html = `<!DOCTYPE html><html><head><title>{t("pos.kot", "KOT")}</title><style>
+        const html = `<!DOCTYPE html><html><head><title>${t("pos.kot", "KOT")}</title><style>
             * { margin:0; padding:0; box-sizing:border-box; }
             body { font-family: 'Courier New', monospace; width: 80mm; padding: 10px; color: #000; font-size: 14px; }
             .center { text-align: center; }
@@ -505,16 +505,16 @@ const AdminPOS = () => {
             .solid { border-bottom: 3px solid #000; margin: 10px 0; }
             @media print { @page { margin: 0; size: 80mm auto; } }
         </style></head><body>
-            <div class="center bold" style="font-size:18px;margin-bottom:15px;">{t("pos.kitchen_order", "KITCHEN ORDER")}</div>
+            <div class="center bold" style="font-size:18px;margin-bottom:15px;">${t("pos.kitchen_order", "KITCHEN ORDER")}</div>
             <div class="dashed"></div>
-            <div style="margin-bottom:4px;"><strong>{t("pos.order", "Order #:")}</strong> ${orderNum}</div>
-            <div><strong>{t("pos.time", "Time:")}</strong> ${details.date}</div>
-            <div><strong>{t("pos.table", "Table:")}</strong> ${details.table}</div>
+            <div style="margin-bottom:4px;"><strong>${t("pos.order", "Order #:")}</strong> ${orderNum}</div>
+            <div><strong>${t("pos.time", "Time:")}</strong> ${details.date}</div>
+            <div><strong>${t("pos.table", "Table:")}</strong> ${details.table}</div>
             <div class="solid" style="margin-top:10px;"></div>
             ${itemsHtml}
             <div class="solid"></div>
             <div class="dashed"></div>
-            <div class="center bold" style="font-size:14px;">{t("pos.end_of_order", "*** END OF ORDER ***")}</div>
+            <div class="center bold" style="font-size:14px;">${t("pos.end_of_order", "*** END OF ORDER ***")}</div>
         </body></html>`;
 
         const printWindow = window.open('', '_blank', 'width=400,height=600');
