@@ -18,16 +18,16 @@
 
 **Stack:** TypeScript · Express + React + Tailwind · DB: MongoDB
 
-## 📝 NOTE: 1 uncommitted file(s) in working tree.\n\n## Project Standards
+## Project Standards
 
 - convention in .gitignore
+- Extract repeated class patterns into components
+- Use responsive prefixes consistently (sm:, md:, lg:, xl:)
+- Don't use arbitrary values when a utility class exists
 - Rate limit API endpoints to prevent abuse
 - Validate request body with a schema validator (Joi, Zod)
 - Use helmet for security headers
-- Use Suspense and Error Boundaries for async operations
-- Don't prop-drill more than 2 levels — use Context or state management
-- Use useMemo for expensive computations, useCallback for stable references
-- Enable strict mode in tsconfig.json
+- Use middleware.ts for authentication guards, not client-side checks
 
 ## Verified Best Practices
 
