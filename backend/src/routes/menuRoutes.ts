@@ -32,6 +32,7 @@ router.get('/', async (req, res) => {
             discountPrice: item.discountPrice,
             taxIncluded: item.taxIncluded,
             available: item.available,
+            lowAvailability: item.lowAvailability,
             addOns: item.addOns
         }));
         res.json(mappedItems);
@@ -43,7 +44,7 @@ router.get('/', async (req, res) => {
 
 router.post('/', upload.array('images', 3), async (req, res) => {
     try {
-        const { title, price, category, description, tags, originalId, sku, discountPrice, taxIncluded, available, addOns } = req.body;
+        const { title, price, category, description, tags, originalId, sku, discountPrice, taxIncluded, available, lowAvailability, addOns } = req.body;
 
         // Expect up to 3 images
         const files = req.files as Express.Multer.File[] || [];
@@ -83,26 +84,28 @@ router.post('/', upload.array('images', 3), async (req, res) => {
             sku,
             discountPrice,
             taxIncluded: taxIncluded === 'true' || taxIncluded === true,
-            available: available !== 'false' && available !== false,
+            available: available === 'true' || available === true,
+            lowAvailability: lowAvailability === 'true' || lowAvailability === true,
             addOns: addOnsArray
         });
 
         const savedItem = await newMenuItem.save();
         res.status(201).json(savedItem);
-    } catch (error) {
+    } catch (error: any) {
         console.error('Failed to create menu item:', error);
-        res.status(500).json({ message: 'Failed to create menu item', error });
+        res.status(500).json({ message: 'Failed to create menu item', error: error.message, stack: error.stack });
     }
 });
 
 router.put('/:id', upload.array('images', 3), async (req, res) => {
     try {
-        const { title, price, category, description, tags, sku, discountPrice, taxIncluded, available, addOns, existingImages } = req.body;
+        const { title, price, category, description, tags, sku, discountPrice, taxIncluded, available, lowAvailability, addOns, existingImages } = req.body;
         
         let updateData: any = { 
             title, price, category, description, sku, discountPrice,
             taxIncluded: taxIncluded === 'true' || taxIncluded === true,
-            available: available !== 'false' && available !== false
+            available: available === 'true' || available === true,
+            lowAvailability: lowAvailability === 'true' || lowAvailability === true
         };
         if (tags) {
             updateData.tags = typeof tags === 'string' ? JSON.parse(tags) : tags;

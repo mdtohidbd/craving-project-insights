@@ -5,6 +5,7 @@ import { Message } from '../models/Message';
 import { User } from '../models/User';
 import { DeliveryMan } from '../models/DeliveryMan';
 import { MenuItem } from '../models/MenuItem';
+import { Reservation } from '../models/Reservation';
 
 const router = express.Router();
 
@@ -20,7 +21,9 @@ router.get('/', async (req, res) => {
             activeStaff,
             activeDeliveryMen,
             menuItems,
-            latestOrders
+            latestOrders,
+            pendingDeliveriesCount,
+            pendingReservationsCount
         ] = await Promise.all([
             Order.find({ status: { $in: ['completed', 'delivered'] } }),
             Order.countDocuments({ status: { $in: ['pending', 'preparing', 'ready'] } }),
@@ -30,7 +33,15 @@ router.get('/', async (req, res) => {
             User.find({ role: 'staff', status: 'approved' }),
             DeliveryMan.find({ status: 'active' }),
             MenuItem.find(),
-            Order.find().sort({ createdAt: -1 }).limit(8).populate('customerId', 'name')
+            Order.find().sort({ createdAt: -1 }).limit(8).populate('customerId', 'name'),
+            Order.countDocuments({ 
+                $or: [
+                    { orderType: 'online' },
+                    { deliveryStatus: { $in: ['pending', 'assigned', 'out_for_delivery'] } }
+                ],
+                status: { $nin: ['completed', 'delivered', 'cancelled'] }
+            }),
+            Reservation.countDocuments({ status: 'pending' })
         ]);
 
         // 1. Calculate Metrics
@@ -213,6 +224,8 @@ router.get('/', async (req, res) => {
                 totalOrders,
                 activeOrders,
                 lowStockItems,
+                pendingDeliveries: pendingDeliveriesCount,
+                pendingReservations: pendingReservationsCount
             },
             salesData,
             inventoryData: formattedInventory,

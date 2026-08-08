@@ -17,6 +17,7 @@ interface MenuItem {
     discountPrice?: string;
     taxIncluded?: boolean;
     available?: boolean;
+    lowAvailability?: boolean;
     addOns?: { name: string, price: number }[];
 }
 
@@ -27,11 +28,12 @@ const AdminMenu = () => {
     const [categories, setCategories] = useState<{ _id?: string, name: string, order: number }[]>([]);
     const [selectedCategory, setSelectedCategory] = useState("All");
     const [loading, setLoading] = useState(true);
+    const [isSaving, setIsSaving] = useState(false);
 
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingItem, setEditingItem] = useState<MenuItem | null>(null);
     const [formData, setFormData] = useState({
-        title: "", price: "", category: "", description: "", sku: "", discountPrice: "", taxIncluded: false, available: true, addOns: [] as { name: string, price: number }[], images: [] as string[]
+        title: "", price: "", category: "", description: "", sku: "", discountPrice: "", taxIncluded: false, available: true, lowAvailability: false, addOns: [] as { name: string, price: number }[], images: [] as string[]
     });
     const [imageFiles, setImageFiles] = useState<File[]>([]);
 
@@ -176,12 +178,13 @@ const AdminMenu = () => {
                 category: item.category, description: item.description || "",
                 sku: item.sku || "", discountPrice: item.discountPrice || "",
                 taxIncluded: item.taxIncluded || false, available: item.available ?? true,
+                lowAvailability: item.lowAvailability || false,
                 addOns: item.addOns || [],
                 images: item.images || (item.image ? [item.image] : [])
             });
         } else {
             setEditingItem(null);
-            setFormData({ title: "", price: "", category: "", description: "", sku: "", discountPrice: "", taxIncluded: false, available: true, addOns: [], images: [] });
+            setFormData({ title: "", price: "", category: "", description: "", sku: "", discountPrice: "", taxIncluded: false, available: true, lowAvailability: false, addOns: [], images: [] });
         }
         setImageFiles([]);
         setIsModalOpen(true);
@@ -190,6 +193,7 @@ const AdminMenu = () => {
     const handleSave = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
+            setIsSaving(true);
             const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
             const data = new FormData();
@@ -201,6 +205,7 @@ const AdminMenu = () => {
             data.append("discountPrice", formData.discountPrice);
             data.append("taxIncluded", String(formData.taxIncluded));
             data.append("available", String(formData.available));
+            data.append("lowAvailability", String(formData.lowAvailability));
             data.append("addOns", JSON.stringify(formData.addOns));
             
             if (editingItem) {
@@ -227,6 +232,8 @@ const AdminMenu = () => {
         } catch (err: any) {
             console.error("Failed to save menu item:", err);
             toast.error(err.message || "Failed to save menu item");
+        } finally {
+            setIsSaving(false);
         }
     };
 
@@ -356,9 +363,15 @@ const AdminMenu = () => {
                                             <span className="text-primary">{item.price}</span>
                                         </td>
                                         <td className="px-4 py-4">
-                                            <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-primary/90 text-white">
-                                                {t("menu.yes", "Yes")}
-                                            </span>
+                                            {item.available !== false ? (
+                                                <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-primary/90 text-white">
+                                                    {t("menu.yes", "Yes")}
+                                                </span>
+                                            ) : (
+                                                <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-rose-500 text-white">
+                                                    {t("menu.no", "No")}
+                                                </span>
+                                            )}
                                         </td>
                                         <td className="px-2 py-4 text-right">
                                             <div className="flex items-center justify-end gap-3">
@@ -392,89 +405,99 @@ const AdminMenu = () => {
             {/* Menu Item Modal */}
             {isModalOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm overflow-y-auto">
-                    <div className="bg-white rounded-[2rem] shadow-2xl w-full max-w-2xl overflow-hidden my-auto border-none">
-                        <div className="flex items-center justify-between px-8 py-6">
-                            <h3 className="text-[1.35rem] font-medium text-neutral-900 tracking-tight">{editingItem ? t("menu.edit_item", "Edit Menu Item") : t("menu.add_new_item", "Add New Item")}</h3>
-                            <button type="button" onClick={() => setIsModalOpen(false)} className="p-2 text-neutral-500 hover:text-neutral-900 transition-colors rounded-full hover:bg-neutral-100">
+                    <div className="bg-white rounded-[1.5rem] shadow-2xl w-full max-w-2xl overflow-hidden my-auto border-none">
+                        <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-100">
+                            <h3 className="text-lg font-bold text-neutral-900 tracking-tight">{editingItem ? t("menu.edit_item", "Edit Menu Item") : t("menu.add_new_item", "Add New Item")}</h3>
+                            <button type="button" onClick={() => setIsModalOpen(false)} className="p-1.5 text-neutral-500 hover:text-neutral-900 transition-colors rounded-full hover:bg-neutral-100">
                                 <X className="w-5 h-5" />
                             </button>
                         </div>
-                        <form onSubmit={handleSave} className="px-8 pb-8 space-y-6">
-                            <div>
-                                <input required type="text" placeholder={t("menu.name_placeholder", "Name *")} value={formData.title} onChange={e => setFormData({ ...formData, title: e.target.value })} className="w-full bg-white border border-neutral-400 rounded-[16px] px-5 py-3.5 text-neutral-900 focus:outline-none focus:border-blue-500 placeholder:text-neutral-800 font-medium" />
+                        <form onSubmit={handleSave} className="px-6 py-5 space-y-4">
+                            <div className="flex items-center gap-6 bg-neutral-50 p-3 rounded-xl border border-neutral-200">
+                                <label className="flex items-center gap-2 cursor-pointer">
+                                    <input type="checkbox" checked={formData.available} onChange={e => setFormData({ ...formData, available: e.target.checked })} className="w-4 h-4 border-neutral-400 rounded text-[#0e8388] focus:ring-[#0e8388] bg-white accent-[#0e8388]" />
+                                    <span className="text-sm font-semibold text-neutral-800">{t("menu.available_status", "Available")}</span>
+                                </label>
+                                <label className="flex items-center gap-2 cursor-pointer">
+                                    <input type="checkbox" checked={formData.lowAvailability} onChange={e => setFormData({ ...formData, lowAvailability: e.target.checked })} className="w-4 h-4 border-neutral-400 rounded text-amber-500 focus:ring-amber-500 bg-white accent-amber-500" />
+                                    <span className="text-sm font-semibold text-neutral-800">{t("menu.low_availability", "Low Availability")}</span>
+                                </label>
                             </div>
-                            <div className="grid grid-cols-2 gap-6">
+                            <div>
+                                <input required type="text" placeholder={t("menu.name_placeholder", "Name *")} value={formData.title} onChange={e => setFormData({ ...formData, title: e.target.value })} className="w-full bg-white border border-neutral-300 rounded-xl px-4 py-2.5 text-neutral-900 focus:outline-none focus:border-blue-500 placeholder:text-neutral-500 font-medium text-sm" />
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <input type="text" placeholder={t("menu.sku", "SKU")} value={formData.sku} onChange={e => setFormData({ ...formData, sku: e.target.value })} className="w-full bg-white border border-neutral-400 rounded-[16px] px-5 py-3.5 text-neutral-900 focus:outline-none focus:border-blue-500 placeholder:text-neutral-800 font-medium" />
+                                    <input type="text" placeholder={t("menu.sku", "SKU")} value={formData.sku} onChange={e => setFormData({ ...formData, sku: e.target.value })} className="w-full bg-white border border-neutral-300 rounded-xl px-4 py-2.5 text-neutral-900 focus:outline-none focus:border-blue-500 placeholder:text-neutral-500 font-medium text-sm" />
                                 </div>
                                 <div className="relative">
-                                    <label className="absolute -top-2 left-4 bg-white px-1.5 text-xs font-semibold text-neutral-700 tracking-wide">{t("menu.category", "Category")}</label>
-                                    <select required value={formData.category} onChange={e => setFormData({ ...formData, category: e.target.value })} className="w-full bg-white border border-neutral-400 rounded-[16px] px-5 py-3.5 text-neutral-900 focus:outline-none focus:border-blue-500 appearance-none font-medium">
+                                    <label className="absolute -top-2 left-3 bg-white px-1 text-[11px] font-bold text-neutral-500 tracking-wide">{t("menu.category", "Category")}</label>
+                                    <select required value={formData.category} onChange={e => setFormData({ ...formData, category: e.target.value })} className="w-full bg-white border border-neutral-300 rounded-xl px-4 py-2.5 text-neutral-900 focus:outline-none focus:border-blue-500 appearance-none font-medium text-sm">
                                         <option value="" disabled>{t("common.none", "None")}</option>
                                         {categories.filter(c => c.name !== "All").map(c => (
                                             <option key={c.name} value={c.name}>{c.name}</option>
                                         ))}
                                     </select>
-                                    <div className="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none text-neutral-500">
+                                    <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-neutral-500">
                                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
                                     </div>
                                 </div>
                             </div>
-                            <div className="grid grid-cols-2 gap-6">
+                            <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <input required type="text" placeholder={t("menu.price_placeholder", "Price *")} value={formData.price} onChange={e => setFormData({ ...formData, price: e.target.value })} className="w-full bg-white border border-neutral-400 rounded-[16px] px-5 py-3.5 text-neutral-900 focus:outline-none focus:border-blue-500 placeholder:text-neutral-800 font-medium" />
+                                    <input required type="text" placeholder={t("menu.price_placeholder", "Price *")} value={formData.price} onChange={e => setFormData({ ...formData, price: e.target.value })} className="w-full bg-white border border-neutral-300 rounded-xl px-4 py-2.5 text-neutral-900 focus:outline-none focus:border-blue-500 placeholder:text-neutral-500 font-medium text-sm" />
                                 </div>
                                 <div>
-                                    <input type="text" placeholder={t("menu.discount_price", "Discount Price")} value={formData.discountPrice} onChange={e => setFormData({ ...formData, discountPrice: e.target.value })} className="w-full bg-white border border-neutral-400 rounded-[16px] px-5 py-3.5 text-neutral-900 focus:outline-none focus:border-blue-500 placeholder:text-neutral-800 font-medium" />
+                                    <input type="text" placeholder={t("menu.discount_price", "Discount Price")} value={formData.discountPrice} onChange={e => setFormData({ ...formData, discountPrice: e.target.value })} className="w-full bg-white border border-neutral-300 rounded-xl px-4 py-2.5 text-neutral-900 focus:outline-none focus:border-blue-500 placeholder:text-neutral-500 font-medium text-sm" />
                                 </div>
                             </div>
                             <div>
-                                <label className="block text-sm font-semibold text-neutral-700 tracking-wide mb-2">{t("menu.description", "Description")}</label>
-                                <textarea rows={4} value={formData.description} onChange={e => setFormData({ ...formData, description: e.target.value })} className="w-full bg-[#f8f9fa] border border-neutral-200 rounded-[16px] px-5 py-4 text-neutral-900 focus:outline-none focus:border-blue-500 resize-none font-medium" />
+                                <label className="block text-xs font-bold text-neutral-500 tracking-wide mb-1.5">{t("menu.description", "Description")}</label>
+                                <textarea rows={2} value={formData.description} onChange={e => setFormData({ ...formData, description: e.target.value })} className="w-full bg-[#f8f9fa] border border-neutral-200 rounded-xl px-4 py-3 text-neutral-900 focus:outline-none focus:border-blue-500 resize-none font-medium text-sm" />
                             </div>
                             <div>
-                                <div className="flex items-center justify-between mb-2">
-                                    <label className="block text-sm font-semibold text-neutral-700 tracking-wide">{t("menu.addons", "Add-ons (Optional)")}</label>
-                                    <button type="button" onClick={() => setFormData({ ...formData, addOns: [...formData.addOns, { name: "", price: 0 }] })} className="text-sm text-blue-600 font-medium hover:text-blue-700 flex items-center gap-1">
-                                        <Plus className="w-4 h-4" /> {t("menu.add_option", "Add Option")}
+                                <div className="flex items-center justify-between mb-1.5">
+                                    <label className="block text-xs font-bold text-neutral-500 tracking-wide">{t("menu.addons", "Add-ons (Optional)")}</label>
+                                    <button type="button" onClick={() => setFormData({ ...formData, addOns: [...formData.addOns, { name: "", price: 0 }] })} className="text-[13px] text-blue-600 font-semibold hover:text-blue-700 flex items-center gap-1">
+                                        <Plus className="w-3.5 h-3.5" /> {t("menu.add_option", "Add Option")}
                                     </button>
                                 </div>
-                                <div className="space-y-3">
+                                <div className="space-y-2">
                                     {formData.addOns.map((addon, index) => (
-                                        <div key={index} className="flex gap-3 items-center">
+                                        <div key={index} className="flex gap-2 items-center">
                                             <input type="text" placeholder={t("menu.addon_name_placeholder", "Name (e.g. Extra Cheese)")} value={addon.name} onChange={e => {
                                                 const newAddons = [...formData.addOns];
                                                 newAddons[index].name = e.target.value;
                                                 setFormData({ ...formData, addOns: newAddons });
-                                            }} className="flex-1 bg-white border border-neutral-400 rounded-[12px] px-4 py-2.5 text-neutral-900 focus:outline-none focus:border-blue-500 font-medium text-sm" />
+                                            }} className="flex-1 bg-white border border-neutral-300 rounded-lg px-3 py-2 text-neutral-900 focus:outline-none focus:border-blue-500 font-medium text-[13px]" />
                                             <input type="number" placeholder="Price" value={addon.price === 0 ? '' : addon.price} onChange={e => {
                                                 const newAddons = [...formData.addOns];
                                                 newAddons[index].price = parseFloat(e.target.value) || 0;
                                                 setFormData({ ...formData, addOns: newAddons });
-                                            }} className="w-28 bg-white border border-neutral-400 rounded-[12px] px-4 py-2.5 text-neutral-900 focus:outline-none focus:border-blue-500 font-medium text-sm" />
+                                            }} className="w-24 bg-white border border-neutral-300 rounded-lg px-3 py-2 text-neutral-900 focus:outline-none focus:border-blue-500 font-medium text-[13px]" />
                                             <button type="button" onClick={() => {
                                                 const newAddons = [...formData.addOns];
                                                 newAddons.splice(index, 1);
                                                 setFormData({ ...formData, addOns: newAddons });
-                                            }} className="p-2 text-rose-500 hover:bg-rose-50 rounded-full transition-colors">
+                                            }} className="p-1.5 text-rose-500 hover:bg-rose-50 rounded-full transition-colors">
                                                 <Trash2 className="w-4 h-4" />
                                             </button>
                                         </div>
                                     ))}
                                     {formData.addOns.length === 0 && (
-                                        <p className="text-sm text-neutral-500 italic">{t("menu.no_addons", "No add-ons configured.")}</p>
+                                        <p className="text-xs text-neutral-400 italic">{t("menu.no_addons", "No add-ons configured.")}</p>
                                     )}
                                 </div>
                             </div>
                             <div>
-                                <label className="block text-sm font-semibold text-neutral-700 tracking-wide mb-3">
+                                <label className="block text-xs font-bold text-neutral-500 tracking-wide mb-2">
                                     {t("menu.images_max_3", "Images (Max 3)")}
                                 </label>
                                 
-                                <div className="grid grid-cols-3 gap-4">
+                                <div className="grid grid-cols-4 gap-3">
                                     {/* Existing Images */}
                                     {formData.images.map((img, idx) => (
-                                        <div key={`existing-${idx}`} className="relative group aspect-square rounded-2xl overflow-hidden border border-neutral-200 bg-neutral-50">
+                                        <div key={`existing-${idx}`} className="relative group aspect-square rounded-xl overflow-hidden border border-neutral-200 bg-neutral-50">
                                             <img src={img} alt="Preview" className="w-full h-full object-cover" />
                                             <button 
                                                 type="button"
@@ -483,7 +506,7 @@ const AdminMenu = () => {
                                                     newImages.splice(idx, 1);
                                                     setFormData({ ...formData, images: newImages });
                                                 }}
-                                                className="absolute top-2 right-2 p-1.5 bg-rose-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
+                                                className="absolute top-1 right-1 p-1 bg-rose-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
                                             >
                                                 <X className="w-3 h-3" />
                                             </button>
@@ -492,7 +515,7 @@ const AdminMenu = () => {
 
                                     {/* New Image Previews */}
                                     {imageFiles.map((file, idx) => (
-                                        <div key={`new-${idx}`} className="relative group aspect-square rounded-2xl overflow-hidden border border-blue-200 bg-blue-50">
+                                        <div key={`new-${idx}`} className="relative group aspect-square rounded-xl overflow-hidden border border-blue-200 bg-blue-50">
                                             <img src={URL.createObjectURL(file)} alt="New Preview" className="w-full h-full object-cover" />
                                             <button 
                                                 type="button"
@@ -501,7 +524,7 @@ const AdminMenu = () => {
                                                     newFiles.splice(idx, 1);
                                                     setImageFiles(newFiles);
                                                 }}
-                                                className="absolute top-2 right-2 p-1.5 bg-rose-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
+                                                className="absolute top-1 right-1 p-1 bg-rose-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
                                             >
                                                 <X className="w-3 h-3" />
                                             </button>
@@ -513,10 +536,10 @@ const AdminMenu = () => {
                                         <button 
                                             type="button"
                                             onClick={() => document.getElementById('imagesUpload')?.click()}
-                                            className="aspect-square rounded-2xl border-2 border-dashed border-neutral-300 flex flex-col items-center justify-center gap-2 hover:border-blue-500 hover:bg-blue-50 transition-all text-neutral-500 hover:text-blue-600 group"
+                                            className="aspect-square rounded-xl border-2 border-dashed border-neutral-300 flex flex-col items-center justify-center gap-1 hover:border-blue-500 hover:bg-blue-50 transition-all text-neutral-500 hover:text-blue-600 group"
                                         >
-                                            <Upload className="w-6 h-6 group-hover:scale-110 transition-transform" />
-                                            <span className="text-[10px] font-bold uppercase tracking-wider">{t("menu.upload", "Upload")}</span>
+                                            <Upload className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                                            <span className="text-[9px] font-bold uppercase tracking-wider">{t("menu.upload", "Upload")}</span>
                                             <input
                                                 id="imagesUpload"
                                                 type="file"
@@ -535,19 +558,16 @@ const AdminMenu = () => {
                                     )}
                                 </div>
                             </div>
-                            <div className="flex items-center gap-8 pt-2">
-                                <label className="flex items-center gap-3 cursor-pointer">
-                                    <input type="checkbox" checked={formData.taxIncluded} onChange={e => setFormData({ ...formData, taxIncluded: e.target.checked })} className="w-5 h-5 border-neutral-400 rounded text-blue-600 focus:ring-blue-500 bg-white" />
-                                    <span className="text-sm font-medium text-neutral-800">{t("menu.tax_included", "Tax Included")}</span>
-                                </label>
-                                <label className="flex items-center gap-3 cursor-pointer">
-                                    <input type="checkbox" checked={formData.available} onChange={e => setFormData({ ...formData, available: e.target.checked })} className="w-5 h-5 border-neutral-400 rounded text-[#0e8388] focus:ring-[#0e8388] bg-white accent-[#0e8388]" />
-                                    <span className="text-sm font-medium text-neutral-800">{t("menu.available_status", "Available")}</span>
+                            <div className="flex items-center gap-8 pt-1">
+                                <label className="flex items-center gap-2 cursor-pointer">
+                                    <input type="checkbox" checked={formData.taxIncluded} onChange={e => setFormData({ ...formData, taxIncluded: e.target.checked })} className="w-4 h-4 border-neutral-400 rounded text-blue-600 focus:ring-blue-500 bg-white" />
+                                    <span className="text-sm font-semibold text-neutral-800">{t("menu.tax_included", "Tax Included")}</span>
                                 </label>
                             </div>
-                            <div className="pt-8 flex justify-end gap-4 mt-2 border-t border-transparent">
-                                <button type="button" onClick={() => setIsModalOpen(false)} className="px-8 py-3 bg-white border border-[#1a73e8] text-[#1a73e8] font-semibold rounded-full hover:bg-blue-50 transition-colors shadow-sm">{t("common.cancel", "Cancel")}</button>
-                                <button type="submit" className="px-8 py-3 bg-[#1a73e8] text-white font-semibold rounded-full hover:bg-blue-700 transition-colors shadow-sm">
+                            <div className="pt-4 flex justify-end gap-3 mt-1 border-t border-neutral-100">
+                                <button type="button" onClick={() => setIsModalOpen(false)} className="px-6 py-2.5 bg-white border border-[#1a73e8] text-[#1a73e8] font-bold text-sm rounded-full hover:bg-blue-50 transition-colors shadow-sm" disabled={isSaving}>{t("common.cancel", "Cancel")}</button>
+                                <button type="submit" disabled={isSaving} className="px-6 py-2.5 bg-[#1a73e8] text-white font-bold text-sm rounded-full hover:bg-blue-700 transition-colors shadow-sm disabled:opacity-70 disabled:cursor-not-allowed flex items-center gap-2">
+                                    {isSaving && <div className="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin"></div>}
                                     {editingItem ? t("menu.update_item", "Update Item") : t("menu.save_item", "Save Item")}
                                 </button>
                             </div>

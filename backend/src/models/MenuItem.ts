@@ -13,6 +13,7 @@ const menuItemSchema = new mongoose.Schema({
     discountPrice: { type: String, required: false },
     taxIncluded: { type: Boolean, default: false },
     available: { type: Boolean, default: true },
+    lowAvailability: { type: Boolean, default: false },
     addOns: [{
         name: { type: String, required: true },
         price: { type: Number, required: true }

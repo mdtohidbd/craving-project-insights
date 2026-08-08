@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
     LayoutDashboard, Package, MessageSquare,
-    Settings, Bell, Menu, ArrowUpRight, Tag, List, ShoppingCart, Users, Calendar,
+    Settings, Bell, ChevronUp, ChevronDown, Store, Tag, List, ShoppingCart, Users, Calendar,
     Table, CreditCard, BarChart3, Truck, LogOut, ShieldCheck, Layers, UserCog
 } from "lucide-react"; // Updated to clear Vite cache
 import { toast } from "sonner";
@@ -25,18 +25,31 @@ const AdminLayout = ({ children, title }: AdminLayoutProps) => {
     const { user, logout, isSuperAdmin } = useAuth();
     const { isModuleActive } = useModules();
     const [pendingCount, setPendingCount] = useState(0);
-    const [isHeaderVisible, setIsHeaderVisible] = useState(true);
-    const [isFocusMode, setIsFocusMode] = useState(false);
+    const [isHeaderVisible, setIsHeaderVisible] = useState(() => {
+        const saved = localStorage.getItem("skybridge_topbar_hidden");
+        return saved === "true" ? false : true;
+    });
     const mainRef = useRef<HTMLElement>(null);
     const lastScrollY = useRef(0);
 
+    const toggleHeaderVisibility = () => {
+        setIsHeaderVisible((prev) => {
+            const next = !prev;
+            localStorage.setItem("skybridge_topbar_hidden", next ? "false" : "true");
+            return next;
+        });
+    };
+
     useEffect(() => {
         const handleScroll = () => {
-            if (!mainRef.current || isFocusMode) return;
+            if (!mainRef.current) return;
+            const isUserHidden = localStorage.getItem("skybridge_topbar_hidden") === "true";
+            if (isUserHidden) return; // Keep topbar hidden if user explicitly collapsed it
+
             const currentScroll = mainRef.current.scrollTop;
-            if (currentScroll > 80 && currentScroll > lastScrollY.current + 10) {
+            if (currentScroll > 100 && currentScroll > lastScrollY.current + 15) {
                 setIsHeaderVisible(false);
-            } else if (currentScroll < lastScrollY.current - 10 || currentScroll < 50) {
+            } else if (currentScroll < lastScrollY.current - 15 || currentScroll < 50) {
                 setIsHeaderVisible(true);
             }
             lastScrollY.current = currentScroll;
@@ -47,7 +60,7 @@ const AdminLayout = ({ children, title }: AdminLayoutProps) => {
             mainEl.addEventListener("scroll", handleScroll, { passive: true });
             return () => mainEl.removeEventListener("scroll", handleScroll);
         }
-    }, [isFocusMode]);
+    }, []);
 
     useEffect(() => {
         if (!isSuperAdmin) return;
@@ -198,24 +211,16 @@ const AdminLayout = ({ children, title }: AdminLayoutProps) => {
 
     return (
         <div className="flex h-screen bg-neutral-50 text-neutral-900 overflow-hidden font-sans flex-col relative">
-            {/* Top Branding & Controls Row (Ultra-Smooth Luxurious Collapse on Scroll) */}
+            {/* Top Branding & Controls Row (Ultra-Smooth Luxurious Collapse) */}
             <div className={`grid transition-[grid-template-rows,opacity] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] z-50 px-4 lg:px-8 shrink-0 print:hidden bg-white/90 backdrop-blur-md border-b border-neutral-100 shadow-sm ${
-                isHeaderVisible && !isFocusMode 
+                isHeaderVisible 
                     ? "grid-rows-[1fr] opacity-100" 
-                    : "grid-rows-[0fr] opacity-0 border-b-0"
+                    : "grid-rows-[0fr] opacity-0 border-b-0 pointer-events-none"
             }`}>
                 <header className="overflow-hidden">
                     <div className="max-w-7xl mx-auto">
                         <div className="h-16 flex items-center justify-between">
                             <div className="flex items-center gap-3 sm:gap-6">
-                                <Link 
-                                    to="/" 
-                                    title="Back to Website" 
-                                    className="flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-neutral-100 text-neutral-500 hover:text-primary hover:bg-neutral-200 transition-all active:scale-95"
-                                >
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
-                                </Link>
-
                                 <Link to="/admin" className="flex items-center gap-3 group transition-transform active:scale-95">
                                     <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-primary flex items-center justify-center text-primary-foreground font-black shadow-xl shadow-primary/30 rotate-6 group-hover:rotate-0 transition-all duration-500">
                                         S
@@ -231,7 +236,7 @@ const AdminLayout = ({ children, title }: AdminLayoutProps) => {
                                 </h1>
                             </div>
 
-                            <div className="flex items-center gap-3">
+                            <div className="flex items-center gap-2 sm:gap-3">
                                 <LanguageSwitcher />
                                 {/* User Info */}
                                 {user && (
@@ -298,24 +303,30 @@ const AdminLayout = ({ children, title }: AdminLayoutProps) => {
                                     )}
                                 </div>
 
-                                {/* Focus Mode / Hide Header Toggle */}
-                                <button
-                                    onClick={() => {
-                                        setIsFocusMode(!isFocusMode);
-                                        if (!isFocusMode) setIsHeaderVisible(false);
-                                        else setIsHeaderVisible(true);
-                                    }}
-                                    title={isFocusMode ? "Show Top Header" : "Hide Top Header"}
-                                    className="p-2.5 text-neutral-500 hover:text-neutral-900 hover:bg-neutral-100 rounded-xl transition-all hidden sm:flex items-center gap-1 text-xs font-bold"
+                                {/* Back to Ecommerce Site Button (Beside Logout) */}
+                                <Link
+                                    to="/"
+                                    title={t("pos.back_to_website", "Back to Ecommerce Site")}
+                                    className="flex items-center gap-1.5 px-3 py-2 text-xs font-extrabold text-neutral-700 bg-neutral-100/90 hover:bg-primary/10 hover:text-primary rounded-xl transition-all border border-neutral-200/80 active:scale-95 shadow-sm group"
                                 >
-                                    <Menu className="w-4 h-4" />
+                                    <Store className="w-4 h-4 text-primary shrink-0 transition-transform group-hover:scale-110" />
+                                    <span className="hidden md:inline tracking-tight">{t("pos.storefront", "Storefront")}</span>
+                                </Link>
+
+                                {/* Cool Hide Top Bar Button (Up Arrow) */}
+                                <button
+                                    onClick={toggleHeaderVisibility}
+                                    title={t("pos.hide_topbar", "Collapse Top Bar")}
+                                    className="p-2.5 text-neutral-500 hover:text-primary hover:bg-primary/10 rounded-xl transition-all border border-neutral-200/60 active:scale-95 shadow-sm group flex items-center justify-center bg-neutral-50"
+                                >
+                                    <ChevronUp className="w-4 h-4 text-neutral-600 group-hover:text-primary transition-transform group-hover:-translate-y-0.5" />
                                 </button>
 
                                 {/* Logout */}
                                 <button
                                     onClick={handleLogout}
                                     title="Logout"
-                                    className="p-2.5 text-neutral-500 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-all"
+                                    className="p-2.5 text-neutral-500 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-all active:scale-95 border border-transparent hover:border-rose-200/60"
                                 >
                                     <LogOut className="w-4 h-4" />
                                 </button>
@@ -326,7 +337,22 @@ const AdminLayout = ({ children, title }: AdminLayoutProps) => {
             </div>
 
             {/* Sticky Module Navigation Items Row (ALWAYS FIXED & VISIBLE) */}
-            <nav className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-neutral-200/60 shadow-sm px-4 lg:px-8 shrink-0">
+            <nav className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-neutral-200/60 shadow-sm px-4 lg:px-8 shrink-0 relative">
+                {/* Minimal Small Down-Arrow Tab when top header is hidden (Expands text on hover) */}
+                {!isHeaderVisible && (
+                    <div className="absolute top-0 left-1/2 -translate-x-1/2 z-50 animate-in fade-in slide-in-from-top-1 duration-300">
+                        <button
+                            onClick={toggleHeaderVisibility}
+                            title={t("pos.show_topbar", "Expand Top Bar")}
+                            className="flex items-center gap-1.5 px-2.5 py-0.5 bg-neutral-900/80 hover:bg-neutral-900 text-white/70 hover:text-white shadow-sm hover:shadow-md border border-neutral-700/40 rounded-b-md rounded-t-none transition-all duration-300 hover:translate-y-0.5 active:scale-95 group cursor-pointer backdrop-blur-sm"
+                        >
+                            <ChevronDown className="w-3.5 h-3.5 text-white opacity-80 group-hover:opacity-100 transition-all shrink-0" />
+                            <span className="max-w-0 overflow-hidden whitespace-nowrap group-hover:max-w-xs transition-all duration-300 ease-in-out text-[10px] uppercase font-bold tracking-wider opacity-0 group-hover:opacity-100 text-neutral-200">
+                                {t("pos.show_topbar", "Expand Top Bar")}
+                            </span>
+                        </button>
+                    </div>
+                )}
                 <div className="max-w-7xl mx-auto">
                     <div className="flex items-center gap-2 py-2.5 px-2 overflow-x-auto no-scrollbar scroll-smooth">
                         {navItems.map((item) => {
@@ -376,8 +402,8 @@ const AdminLayout = ({ children, title }: AdminLayoutProps) => {
 
 
             {/* Main Content */}
-            <main ref={mainRef} className="flex-1 overflow-y-auto overflow-x-hidden p-4 lg:p-8 custom-scrollbar print:overflow-visible print:p-0 print:block bg-neutral-50" data-lenis-prevent="true">
-                <div className="max-w-7xl mx-auto print:max-w-none print:m-0">
+            <main ref={mainRef} className="flex-1 flex flex-col min-h-0 overflow-y-auto overflow-x-hidden p-4 lg:p-8 custom-scrollbar print:overflow-visible print:p-0 print:block bg-neutral-50" data-lenis-prevent="true">
+                <div className="max-w-7xl mx-auto w-full flex-1 flex flex-col min-h-0 print:max-w-none print:m-0">
                     {children}
                 </div>
             </main>

@@ -174,7 +174,7 @@ const AdminPOS = () => {
                     fetch(`${apiUrl}/tables`),
                     fetch(`${apiUrl}/customers`)
                 ]);
-                let parsedMenuData: any[] = [];
+                let parsedMenuData: MenuItem[] = [];
                 if (menuRes.ok) {
                     parsedMenuData = await menuRes.json();
                     setMenuItems(parsedMenuData);
@@ -184,8 +184,8 @@ const AdminPOS = () => {
                     const menuData = parsedMenuData;
 
                     // Extract categories from menu items
-                    const itemCats = Array.from(new Set(menuData.map((m: any) => m.category))).filter(Boolean) as string[];
-                    const existingNames = fetchedCats.map((c: any) => c.name);
+                    const itemCats = Array.from(new Set(menuData.map((m: MenuItem) => m.category))).filter(Boolean) as string[];
+                    const existingNames = fetchedCats.map((c: {name: string}) => c.name);
 
                     const mergedCats = [...fetchedCats];
                     itemCats.forEach(catName => {
@@ -194,7 +194,7 @@ const AdminPOS = () => {
                         }
                     });
 
-                    if (!mergedCats.some((c: any) => c.name === "All")) {
+                    if (!mergedCats.some((c: {name: string}) => c.name === "All")) {
                         mergedCats.unshift({ name: "All", order: 0 });
                     }
                     setCategories(mergedCats);
@@ -207,7 +207,7 @@ const AdminPOS = () => {
                     const params = new URLSearchParams(window.location.search);
                     const tableId = params.get('table');
                     if (tableId) {
-                        const table = fetchedTables.find((t: any) => t._id === tableId || t.tableNumber === tableId);
+                        const table = fetchedTables.find((t: Table) => t._id === tableId || t.tableNumber === tableId);
                         if (table) {
                             setSelectedTable(table.tableNumber);
                             setSelectedTableId(table._id);
@@ -217,7 +217,7 @@ const AdminPOS = () => {
                                     const orderRes = await fetch(`${apiUrl}/orders/${table.currentOrder}`);
                                     if (orderRes.ok) {
                                         const order = await orderRes.json();
-                                        const existingCart: CartItem[] = order.items.map((item: any) => {
+                                        const existingCart: CartItem[] = order.items.map((item: OrderItem) => {
                                             const menuItem = parsedMenuData.find(m => m._id === item.menuItemId);
                                             // Fallback to item data if menuItem not found in current list
                                             const finalMenuItem = menuItem || {
@@ -1234,7 +1234,7 @@ const AdminPOS = () => {
 
     return (
         <AdminLayout title="POS System">
-            <div className="flex flex-col lg:flex-row gap-0 lg:gap-6 h-[calc(100vh-6rem)] relative">
+            <div className="flex-1 flex flex-col lg:flex-row gap-0 lg:gap-6 min-h-0 relative">
 
                 {/* Left Side: Menu Grid */}
                 <div className="flex-1 flex flex-col bg-white border border-[#E5E5E5] rounded-[4px] shadow-sm overflow-hidden shadow-sm min-h-0 pb-[72px] lg:pb-0">
@@ -1359,9 +1359,27 @@ const AdminPOS = () => {
                                     return (
                                         <div
                                             key={item._id}
-                                            onClick={() => addToCart(item)}
-                                            className="bg-white border border-[#E5E5E5] rounded-[4px] shadow-sm overflow-hidden cursor-pointer hover:border-primary transition-all group flex flex-col h-full"
+                                            onClick={() => {
+                                                if (item.available !== false) {
+                                                    addToCart(item);
+                                                }
+                                            }}
+                                            className={`bg-white border ${item.available === false ? 'border-rose-300 opacity-60 cursor-not-allowed' : 'border-[#E5E5E5] hover:border-primary cursor-pointer'} rounded-[4px] shadow-sm overflow-hidden transition-all group flex flex-col h-full relative`}
                                         >
+                                            {item.available === false && (
+                                                <div className="absolute inset-0 bg-white/40 z-10 flex items-center justify-center">
+                                                    <div className="bg-rose-500 text-white text-[10px] font-bold px-3 py-1.5 rounded-full uppercase tracking-wider shadow-lg transform -rotate-12">
+                                                        {t("pos.out_of_stock", "Out of Stock")}
+                                                    </div>
+                                                </div>
+                                            )}
+                                            {item.available !== false && item.lowAvailability && (
+                                                <div className="absolute top-2 left-2 z-10">
+                                                    <div className="bg-amber-500 text-white text-[10px] font-bold px-2 py-0.5 rounded shadow-sm uppercase tracking-wider">
+                                                        {t("pos.low_stock", "Low Stock")}
+                                                    </div>
+                                                </div>
+                                            )}
                                             <div className="h-24 bg-neutral-100 overflow-hidden">
                                                 {item.image ? (
                                                     <img

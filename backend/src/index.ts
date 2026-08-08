@@ -1,6 +1,10 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+
+// Load environment variables before any other imports that might use them
+dotenv.config();
+
 import connectDB from './config/db';
 import menuRoutes from './routes/menuRoutes';
 import inventoryRoutes from './routes/inventoryRoutes';
@@ -15,8 +19,6 @@ import tableRoutes from './routes/tables';
 import notificationRoutes from './routes/notificationRoutes';
 import deliveryManRoutes from './routes/deliveryManRoutes';
 import authRoutes from './routes/authRoutes';
-
-dotenv.config();
 
 const app = express();
 

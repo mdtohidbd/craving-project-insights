@@ -799,49 +799,121 @@ const AdminReports = () => {
             ws["!cols"] = colWidths;
         };
 
-        // 1. Detailed Orders Log Sheet
-        const orderLogs = transactionsList.map(t => ({
-            "Order ID": t.orderId,
-            "Date & Time": t.dateTime,
-            "Customer Name": t.customer,
-            "Phone Number": t.phone,
-            "Items Ordered": t.items,
-            "Order Type": t.type,
-            "Payment Method": t.payment,
-            "Amount (৳)": t.amount,
-            "Order Status": t.status
-        }));
-        const wsOrders = XLSX.utils.json_to_sheet(orderLogs);
-        autoSize(orderLogs, wsOrders);
-        XLSX.utils.book_append_sheet(wb, wsOrders, "Detailed Orders Log");
-
-        // 2. Sales Summary Sheet
-        if (reportData) {
-            const summaryMetrics = [
-                { Metric: "Total Revenue", Value: `৳${reportData.summary.totalRevenue.toLocaleString()}` },
-                { Metric: "Total Orders Count", Value: reportData.summary.totalOrders },
-                { Metric: "Average Order Value (AOV)", Value: `৳${reportData.summary.averageOrderValue}` },
-                { Metric: "Unique Customers", Value: reportData.summary.customerCount }
-            ];
-            const wsSummary = XLSX.utils.json_to_sheet(summaryMetrics);
-            autoSize(summaryMetrics, wsSummary);
-            XLSX.utils.book_append_sheet(wb, wsSummary, "Sales Summary");
-
-            // 3. Payment Methods Sheet
-            const paymentLogs = reportData.paymentMethods.map(p => ({
-                "Payment Method": p.method,
-                "Transaction Count": p.count,
-                "Percentage Share": `${p.percentage}%`
-            }));
-            const wsPayment = XLSX.utils.json_to_sheet(paymentLogs);
-            autoSize(paymentLogs, wsPayment);
-            XLSX.utils.book_append_sheet(wb, wsPayment, "Payment Methods");
-        }
-
         const dateFromStr = date?.from ? format(date.from, "yyyy-MM-dd") : "all";
         const dateToStr = date?.to ? format(date.to, "yyyy-MM-dd") : "all";
-        XLSX.writeFile(wb, `Sales_Report_${dateFromStr}_to_${dateToStr}.xlsx`);
-        toast.success("Sales report exported to Excel successfully! 📊");
+
+        if (reportType === "sales" || reportType === "overview") {
+            // 1. Detailed Orders Log Sheet
+            const orderLogs = transactionsList.map(t => ({
+                "Order ID": t.orderId,
+                "Date & Time": t.dateTime,
+                "Customer Name": t.customer,
+                "Phone Number": t.phone,
+                "Items Ordered": t.items,
+                "Order Type": t.type,
+                "Payment Method": t.payment,
+                "Amount (৳)": t.amount,
+                "Order Status": t.status
+            }));
+            const wsOrders = XLSX.utils.json_to_sheet(orderLogs);
+            autoSize(orderLogs, wsOrders);
+            XLSX.utils.book_append_sheet(wb, wsOrders, "Detailed Orders Log");
+
+            // 2. Sales Summary Sheet
+            if (reportData) {
+                const summaryMetrics = [
+                    { Metric: "Total Revenue", Value: `৳${reportData.summary.totalRevenue.toLocaleString()}` },
+                    { Metric: "Total Orders Count", Value: reportData.summary.totalOrders },
+                    { Metric: "Average Order Value (AOV)", Value: `৳${reportData.summary.averageOrderValue}` },
+                    { Metric: "Unique Customers", Value: reportData.summary.customerCount }
+                ];
+                const wsSummary = XLSX.utils.json_to_sheet(summaryMetrics);
+                autoSize(summaryMetrics, wsSummary);
+                XLSX.utils.book_append_sheet(wb, wsSummary, "Sales Summary");
+
+                // 3. Payment Methods Sheet
+                const paymentLogs = reportData.paymentMethods.map(p => ({
+                    "Payment Method": p.method,
+                    "Transaction Count": p.count,
+                    "Percentage Share": `${p.percentage}%`
+                }));
+                const wsPayment = XLSX.utils.json_to_sheet(paymentLogs);
+                autoSize(paymentLogs, wsPayment);
+                XLSX.utils.book_append_sheet(wb, wsPayment, "Payment Methods");
+            }
+
+            XLSX.writeFile(wb, `Sales_Report_${dateFromStr}_to_${dateToStr}.xlsx`);
+            toast.success("Sales report exported successfully! 📊");
+        }
+        else if (reportType === "items") {
+            if (reportData) {
+                const itemLogs = reportData.topItems.map((item: any) => ({
+                    "Item Name": item.name,
+                    "Quantity Sold": item.quantity,
+                    "Revenue (৳)": item.revenue
+                }));
+                const wsItems = XLSX.utils.json_to_sheet(itemLogs);
+                autoSize(itemLogs, wsItems);
+                XLSX.utils.book_append_sheet(wb, wsItems, "Top Items");
+                
+                XLSX.writeFile(wb, `Items_Report_${dateFromStr}_to_${dateToStr}.xlsx`);
+                toast.success("Items report exported successfully! 📊");
+            }
+        }
+        else if (reportType === "products") {
+            const sortedProducts = getSortedProducts();
+            const productLogs = sortedProducts.map(p => ({
+                "Product Name": p.name,
+                "Category": p.category,
+                "Units Sold": p.qtySold || 0,
+                "Revenue (৳)": p.revenue || 0,
+                "BOM Configured": p.bom ? "Yes" : "No"
+            }));
+            const wsProducts = XLSX.utils.json_to_sheet(productLogs);
+            autoSize(productLogs, wsProducts);
+            XLSX.utils.book_append_sheet(wb, wsProducts, "Product Sales");
+            
+            XLSX.writeFile(wb, `Products_Report_${dateFromStr}_to_${dateToStr}.xlsx`);
+            toast.success("Products report exported successfully! 📊");
+        }
+        else if (reportType === "online") {
+            const sampleAddresses = ["Dhanmondi 27", "Gulshan 2", "Uttara Sector 11", "Banani Road 11", "Mirpur 10"];
+            const onlineOrdersList = transactionsList.map((t, idx) => ({
+                id: t.id,
+                orderId: t.orderId,
+                date: t.date,
+                dateTime: t.dateTime,
+                customer: t.customer,
+                phone: t.phone || "01933445566",
+                address: (t as any).address || sampleAddresses[idx % sampleAddresses.length],
+                product: t.items,
+                qty: 1,
+                amount: t.amount,
+                payment: t.payment,
+                status: t.status,
+                type: t.type
+            })).filter(t => t.type === "Online Delivery");
+            
+            const displayOnlineList = onlineOrdersList;
+
+            const onlineLogs = displayOnlineList.map(o => ({
+                "Order ID": o.orderId,
+                "Date & Time": o.dateTime,
+                "Customer Name": o.customer,
+                "Phone Number": o.phone,
+                "Delivery Address": o.address,
+                "Items Ordered": o.product,
+                "Payment Method": o.payment,
+                "Amount (৳)": o.amount,
+                "Status": o.status
+            }));
+            const wsOnline = XLSX.utils.json_to_sheet(onlineLogs);
+            autoSize(onlineLogs, wsOnline);
+            XLSX.utils.book_append_sheet(wb, wsOnline, "Online Orders");
+            
+            XLSX.writeFile(wb, `Online_Orders_Report_${dateFromStr}_to_${dateToStr}.xlsx`);
+            toast.success("Online orders report exported successfully! 📊");
+        }
     };
 
     const getSortedProducts = () => {
@@ -987,118 +1059,106 @@ const AdminReports = () => {
                         </button>
                     </div>
                     
-                    <div className="flex gap-3 w-full md:w-auto justify-end print:hidden items-center">
-                        <div className="flex items-center bg-white border border-neutral-200/90 rounded-[14px] px-3.5 py-1.5 shadow-sm text-xs font-bold text-neutral-800">
-                            <Popover>
-                                <PopoverTrigger asChild>
-                                    <button
-                                        className={cn(
-                                            "justify-start text-left font-bold px-2 py-1 focus:outline-none flex items-center gap-2 transition-colors hover:text-primary rounded-[8px]",
-                                            !date?.from && "text-muted-foreground"
-                                        )}
-                                    >
-                                        <Calendar className="h-4 w-4 text-neutral-700" />
-                                        <span>{date?.from ? format(date.from, "MMM dd, yyyy") : "Start Date"}</span>
-                                    </button>
-                                </PopoverTrigger>
-                                <PopoverContent className="w-auto p-0 rounded-[16px] border-neutral-200 shadow-2xl" align="start">
-                                    <CalendarWidget
-                                        initialFocus
-                                        mode="single"
-                                        defaultMonth={date?.from}
-                                        selected={date?.from}
-                                        onSelect={(newDate) => setDate(prev => ({ from: newDate, to: prev?.to }))}
-                                    />
-                                </PopoverContent>
-                            </Popover>
-                            
-                            <span className="text-neutral-300 font-bold px-2.5 text-sm">-</span>
-                            
-                            <Popover>
-                                <PopoverTrigger asChild>
-                                    <button
-                                        className={cn(
-                                            "justify-start text-left font-bold px-2 py-1 focus:outline-none flex items-center gap-2 transition-colors hover:text-primary rounded-[8px]",
-                                            !date?.to && "text-muted-foreground"
-                                        )}
-                                    >
-                                        <Calendar className="h-4 w-4 text-neutral-700" />
-                                        <span>{date?.to ? format(date.to, "MMM dd, yyyy") : "End Date"}</span>
-                                    </button>
-                                </PopoverTrigger>
-                                <PopoverContent className="w-auto p-0 rounded-[16px] border-neutral-200 shadow-2xl" align="end">
-                                    <CalendarWidget
-                                        initialFocus
-                                        mode="single"
-                                        defaultMonth={date?.to || date?.from}
-                                        selected={date?.to}
-                                        onSelect={(newDate) => setDate(prev => ({ from: prev?.from, to: newDate }))}
-                                    />
-                                </PopoverContent>
-                            </Popover>
-                        </div>
+                    {reportType !== 'overview' && (
+                        <div className="flex flex-col items-end gap-1.5 w-full md:w-auto print:hidden">
+                            <div className="text-[11px] font-bold text-neutral-400 uppercase tracking-widest px-1">
+                                Today: {format(new Date(), "MMMM d, yyyy")}
+                            </div>
+                            <div className="flex gap-2.5 w-full md:w-auto justify-end items-center">
+                                <button
+                                    onClick={() => setDate({ from: new Date(), to: new Date() })}
+                                    className="px-3.5 py-2 bg-white border border-neutral-200/90 hover:bg-neutral-50 text-neutral-700 rounded-[12px] text-xs font-bold transition-all shadow-sm active:scale-95 flex items-center h-[36px]"
+                                >
+                                    Today
+                                </button>
+                                
+                                <button
+                                    onClick={() => {
+                                        const now = new Date();
+                                        setDate({ 
+                                            from: new Date(now.getFullYear(), now.getMonth(), 1), 
+                                            to: new Date(now.getFullYear(), now.getMonth() + 1, 0) 
+                                        });
+                                    }}
+                                    className="px-3.5 py-2 bg-white border border-neutral-200/90 hover:bg-neutral-50 text-neutral-700 rounded-[12px] text-xs font-bold transition-all shadow-sm active:scale-95 flex items-center h-[36px] whitespace-nowrap"
+                                >
+                                    This Month
+                                </button>
 
-                        <button
-                            onClick={handleExportExcel}
-                            title="Export to Excel"
-                            className="px-4 py-2.5 bg-white border border-emerald-300 hover:bg-emerald-50 text-emerald-600 rounded-[14px] transition-all flex items-center gap-2 shadow-xs font-bold text-xs active:scale-95"
-                        >
-                            <Download className="w-4 h-4 text-emerald-600" />
-                            <span className="font-bold text-emerald-600">Excel</span>
-                        </button>
-                    </div>
+                                <div className="flex items-center bg-white border border-neutral-200/90 rounded-[12px] px-3.5 py-1.5 shadow-sm text-xs font-bold text-neutral-800 h-[36px]">
+                                    <Popover>
+                                        <PopoverTrigger asChild>
+                                            <button
+                                                className={cn(
+                                                    "justify-start text-left font-bold px-2 py-1 focus:outline-none flex items-center gap-2 transition-colors hover:text-primary rounded-[8px]",
+                                                    !date?.from && "text-muted-foreground"
+                                                )}
+                                            >
+                                                <Calendar className="h-4 w-4 text-neutral-700" />
+                                                <span>{date?.from ? `From: ${format(date.from, "MMM dd, yyyy")}` : "Start Date"}</span>
+                                            </button>
+                                        </PopoverTrigger>
+                                        <PopoverContent className="w-auto p-0 rounded-[16px] border-neutral-200 shadow-2xl" align="start">
+                                            <CalendarWidget
+                                                initialFocus
+                                                mode="single"
+                                                defaultMonth={date?.from}
+                                                selected={date?.from}
+                                                onSelect={(newDate) => setDate(prev => ({ from: newDate, to: prev?.to }))}
+                                            />
+                                        </PopoverContent>
+                                    </Popover>
+                                    
+                                    <span className="text-neutral-300 font-bold px-2.5 text-sm">-</span>
+                                    
+                                    <Popover>
+                                        <PopoverTrigger asChild>
+                                            <button
+                                                className={cn(
+                                                    "justify-start text-left font-bold px-2 py-1 focus:outline-none flex items-center gap-2 transition-colors hover:text-primary rounded-[8px]",
+                                                    !date?.to && "text-muted-foreground"
+                                                )}
+                                            >
+                                                <Calendar className="h-4 w-4 text-neutral-700" />
+                                                <span>{date?.to ? `To: ${format(date.to, "MMM dd, yyyy")}` : "End Date"}</span>
+                                            </button>
+                                        </PopoverTrigger>
+                                        <PopoverContent className="w-auto p-0 rounded-[16px] border-neutral-200 shadow-2xl" align="end">
+                                            <CalendarWidget
+                                                initialFocus
+                                                mode="single"
+                                                defaultMonth={date?.to || date?.from}
+                                                selected={date?.to}
+                                                onSelect={(newDate) => setDate(prev => ({ from: prev?.from, to: newDate }))}
+                                            />
+                                        </PopoverContent>
+                                    </Popover>
+                                </div>
+
+                                <button
+                                    onClick={handleExportExcel}
+                                    title="Export to Excel"
+                                    className="px-4 py-2 bg-white border border-emerald-300 hover:bg-emerald-50 text-emerald-600 rounded-[12px] transition-all flex items-center gap-2 shadow-sm font-bold text-xs active:scale-95 h-[36px]"
+                                >
+                                    <Download className="w-4 h-4 text-emerald-600" />
+                                    <span className="font-bold text-emerald-600">Excel</span>
+                                </button>
+                            </div>
+                        </div>
+                    )}
                 </div>
 
                 {/* Summary Cards */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <MetricCard
-                        title={t("reports.total_revenue", "Total Revenue")}
-                        value={`৳${reportData.summary.totalRevenue.toLocaleString()}`}
-                        change={reportData.summary.revenueChange}
-                        isPositive={reportData.summary.revenueChange > 0}
-                        icon={<DollarSign className="w-4 h-4 text-emerald-400" />}
-                    />
-                    {reportType === "sales" ? (
-                        (() => {
-                            const cashData = reportData.paymentMethods.find(m => m.method === "Cash") || { method: "Cash", count: 234, percentage: 42.3 };
-                            const cardData = reportData.paymentMethods.find(m => m.method === "Card") || { method: "Card", count: 268, percentage: 48.5 };
-                            const mobileData = reportData.paymentMethods.find(m => m.method === "Mobile") || { method: "Mobile", count: 50, percentage: 9.2 };
-                            
-                            const cashRevenue = Math.round((reportData.summary.totalRevenue * cashData.percentage) / 100);
-                            const cardRevenue = Math.round((reportData.summary.totalRevenue * cardData.percentage) / 100);
-                            const mobileRevenue = Math.round((reportData.summary.totalRevenue * mobileData.percentage) / 100);
-
-                            return (
-                                <>
-                                    <MetricCard
-                                        title={t("reports.cash", "Cash")}
-                                        value={`৳${cashRevenue.toLocaleString()}`}
-                                        change={cashData.percentage}
-                                        isPositive={true}
-                                        icon={<Wallet className="w-4 h-4 text-emerald-500" />}
-                                        subtitle={`${cashData.count} transactions`}
-                                    />
-                                    <MetricCard
-                                        title={t("reports.card", "Card")}
-                                        value={`৳${cardRevenue.toLocaleString()}`}
-                                        change={cardData.percentage}
-                                        isPositive={true}
-                                        icon={<CreditCard className="w-4 h-4 text-blue-500" />}
-                                        subtitle={`${cardData.count} transactions`}
-                                    />
-                                    <MetricCard
-                                        title={t("reports.mobile", "Mobile")}
-                                        value={`৳${mobileRevenue.toLocaleString()}`}
-                                        change={mobileData.percentage}
-                                        isPositive={true}
-                                        icon={<Smartphone className="w-4 h-4 text-purple-500" />}
-                                        subtitle={`${mobileData.count} transactions`}
-                                    />
-                                </>
-                            );
-                        })()
-                    ) : (
+                    {reportType === "overview" && (
                         <>
+                            <MetricCard
+                                title={t("reports.total_revenue", "Total Revenue")}
+                                value={`৳${reportData.summary.totalRevenue.toLocaleString()}`}
+                                change={reportData.summary.revenueChange}
+                                isPositive={reportData.summary.revenueChange > 0}
+                                icon={<DollarSign className="w-4 h-4 text-emerald-400" />}
+                            />
                             <MetricCard
                                 title={t("reports.total_orders", "Total Orders")}
                                 value={reportData.summary.totalOrders.toLocaleString()}
@@ -1114,14 +1174,145 @@ const AdminReports = () => {
                                 icon={<TrendingUp className="w-4 h-4 text-amber-400" />}
                             />
                             <MetricCard
-                                title={t("reports.customers", "Customers")}
-                                value={reportData.summary.customerCount.toLocaleString()}
-                                change={reportData.summary.customerCountChange || 0}
-                                isPositive={(reportData.summary.customerCountChange || 0) >= 0}
-                                icon={<Users className="w-4 h-4 text-purple-400" />}
+                                title={t("reports.net_profit", "Est. Net Profit")}
+                                value={`৳${Math.round(reportData.summary.totalRevenue * 0.65).toLocaleString()}`}
+                                subtitle="Based on 65% margin"
+                                change={reportData.summary.revenueChange || 0}
+                                isPositive={(reportData.summary.revenueChange || 0) >= 0}
+                                icon={<TrendingUp className="w-4 h-4 text-indigo-400" />}
                             />
                         </>
                     )}
+                    {reportType === "sales" && (() => {
+                        const cashData = reportData.paymentMethods.find(m => m.method === "Cash") || { method: "Cash", count: 234, percentage: 42.3 };
+                        const cardData = reportData.paymentMethods.find(m => m.method === "Card") || { method: "Card", count: 268, percentage: 48.5 };
+                        const mobileData = reportData.paymentMethods.find(m => m.method === "Mobile") || { method: "Mobile", count: 50, percentage: 9.2 };
+                        
+                        const cashRevenue = Math.round((reportData.summary.totalRevenue * cashData.percentage) / 100);
+                        const cardRevenue = Math.round((reportData.summary.totalRevenue * cardData.percentage) / 100);
+                        const mobileRevenue = Math.round((reportData.summary.totalRevenue * mobileData.percentage) / 100);
+
+                        return (
+                            <>
+                                <MetricCard
+                                    title={t("reports.total_revenue", "Total Revenue")}
+                                    value={`৳${reportData.summary.totalRevenue.toLocaleString()}`}
+                                    change={reportData.summary.revenueChange}
+                                    isPositive={reportData.summary.revenueChange > 0}
+                                    icon={<DollarSign className="w-4 h-4 text-emerald-400" />}
+                                />
+                                <MetricCard
+                                    title={t("reports.cash", "Cash")}
+                                    value={`৳${cashRevenue.toLocaleString()}`}
+                                    change={cashData.percentage}
+                                    isPositive={true}
+                                    icon={<Wallet className="w-4 h-4 text-emerald-500" />}
+                                    subtitle={`${cashData.count} transactions`}
+                                />
+                                <MetricCard
+                                    title={t("reports.card", "Card")}
+                                    value={`৳${cardRevenue.toLocaleString()}`}
+                                    change={cardData.percentage}
+                                    isPositive={true}
+                                    icon={<CreditCard className="w-4 h-4 text-blue-500" />}
+                                    subtitle={`${cardData.count} transactions`}
+                                />
+                                <MetricCard
+                                    title={t("reports.mobile", "Mobile")}
+                                    value={`৳${mobileRevenue.toLocaleString()}`}
+                                    change={mobileData.percentage}
+                                    isPositive={true}
+                                    icon={<Smartphone className="w-4 h-4 text-purple-500" />}
+                                    subtitle={`${mobileData.count} transactions`}
+                                />
+                            </>
+                        );
+                    })()}
+                    {reportType === "items" && (() => {
+                        const totalItemsSold = reportData.topItems.reduce((sum, item) => sum + item.quantity, 0);
+                        const topItem = reportData.topItems[0];
+                        const totalCategories = reportData.categorySales.length;
+                        const avgItemRev = totalItemsSold ? Math.round(reportData.summary.totalRevenue / totalItemsSold) : 0;
+                        return (
+                            <>
+                                <MetricCard
+                                    title={t("reports.total_items_sold", "Total Items Sold")}
+                                    value={totalItemsSold.toLocaleString()}
+                                    change={0}
+                                    isPositive={true}
+                                    icon={<ShoppingBag className="w-4 h-4 text-emerald-500" />}
+                                />
+                                <MetricCard
+                                    title={t("reports.most_popular", "Most Popular")}
+                                    value={topItem ? topItem.name : "N/A"}
+                                    change={0}
+                                    isPositive={true}
+                                    icon={<Activity className="w-4 h-4 text-amber-500" />}
+                                    subtitle={topItem ? `${topItem.quantity} units sold` : ""}
+                                />
+                                <MetricCard
+                                    title={t("reports.categories_active", "Active Categories")}
+                                    value={totalCategories.toString()}
+                                    change={0}
+                                    isPositive={true}
+                                    icon={<PieChart className="w-4 h-4 text-purple-500" />}
+                                />
+                                <MetricCard
+                                    title={t("reports.avg_item_rev", "Avg Item Revenue")}
+                                    value={`৳${avgItemRev.toLocaleString()}`}
+                                    change={0}
+                                    isPositive={true}
+                                    icon={<TrendingUp className="w-4 h-4 text-blue-500" />}
+                                />
+                            </>
+                        );
+                    })()}
+                    {reportType === "products" && (() => {
+                        const products = getSortedProducts();
+                        const totalProducts = products.length;
+                        const totalUnits = products.reduce((sum, p) => sum + ((p as any).qtySold || 0), 0);
+                        const totalProductRev = products.reduce((sum, p) => sum + ((p as any).revenue || 0), 0);
+                        const bomConfigured = products.filter(p => p.bom).length;
+                        return (
+                            <>
+                                <MetricCard title={t("reports.total_products", "Total Products")} value={totalProducts.toString()} change={0} isPositive={true} icon={<ShoppingBag className="w-4 h-4 text-emerald-400" />} />
+                                <MetricCard title={t("reports.total_units_sold", "Total Units Sold")} value={totalUnits.toLocaleString()} change={0} isPositive={true} icon={<Activity className="w-4 h-4 text-blue-400" />} />
+                                <MetricCard title={t("reports.product_revenue", "Product Revenue")} value={`৳${totalProductRev.toLocaleString()}`} change={0} isPositive={true} icon={<DollarSign className="w-4 h-4 text-amber-400" />} />
+                                <MetricCard title={t("reports.bom_configured", "BOM Configured")} value={bomConfigured.toString()} subtitle={`${totalProducts ? Math.round((bomConfigured/totalProducts)*100) : 0}% coverage`} change={0} isPositive={true} icon={<Layers className="w-4 h-4 text-purple-400" />} />
+                            </>
+                        );
+                    })()}
+                    {reportType === "online" && (() => {
+                        const sampleAddresses = ["Dhanmondi 27", "Gulshan 2", "Uttara Sector 11", "Banani Road 11", "Mirpur 10"];
+                        const onlineOrdersList = transactionsList.map((t, idx) => ({
+                            id: t.id,
+                            orderId: t.orderId,
+                            date: t.date,
+                            dateTime: t.dateTime,
+                            customer: t.customer,
+                            phone: t.phone || "01933445566",
+                            address: (t as any).address || sampleAddresses[idx % sampleAddresses.length],
+                            product: t.items,
+                            qty: 1,
+                            amount: t.amount,
+                            payment: t.payment,
+                            status: t.status,
+                            type: t.type
+                        })).filter(t => t.type === "Online Delivery");
+                        
+                        const totalOnlineOrders = onlineOrdersList.length;
+                        const totalOnlineRev = onlineOrdersList.reduce((sum, order) => sum + order.amount, 0);
+                        const totalOnlineProfit = Math.round(totalOnlineRev * 0.65);
+                        
+                        return (
+                            <>
+                                <MetricCard title={t("reports.total_online_orders", "Online Orders")} value={totalOnlineOrders.toString()} change={0} isPositive={true} icon={<ShoppingCart className="w-4 h-4 text-blue-500" />} />
+                                <MetricCard title={t("reports.online_revenue", "Online Revenue")} value={`৳${totalOnlineRev.toLocaleString()}`} change={0} isPositive={true} icon={<DollarSign className="w-4 h-4 text-emerald-500" />} />
+                                <MetricCard title={t("reports.online_profit", "Est. Profit")} value={`৳${totalOnlineProfit.toLocaleString()}`} subtitle="Based on 65% margin" change={0} isPositive={true} icon={<TrendingUp className="w-4 h-4 text-indigo-500" />} />
+                                <MetricCard title={t("reports.avg_online_order", "Avg Online Order")} value={`৳${totalOnlineOrders ? Math.round(totalOnlineRev / totalOnlineOrders) : 0}`} change={0} isPositive={true} icon={<Activity className="w-4 h-4 text-amber-500" />} />
+                            </>
+                        );
+                    })()}
                 </div>
 
                 {/* Tab content 1: Overview */}
@@ -1842,30 +2033,16 @@ const AdminReports = () => {
                         dateTime: t.dateTime,
                         customer: t.customer,
                         phone: t.phone || "01933445566",
-                        address: t.address || sampleAddresses[idx % sampleAddresses.length],
+                        address: (t as any).address || sampleAddresses[idx % sampleAddresses.length],
                         product: t.items,
                         qty: 1,
                         amount: t.amount,
                         payment: t.payment,
                         status: t.status,
                         type: t.type
-                    })).filter(t => t.type === "Online Delivery" || t.address);
+                    })).filter(t => t.type === "Online Delivery");
                     
-                    const displayOnlineList = onlineOrdersList.length > 0 ? onlineOrdersList : transactionsList.slice(0, 4).map((t, idx) => ({
-                        id: t.id,
-                        orderId: t.orderId,
-                        date: t.date,
-                        dateTime: t.dateTime,
-                        customer: t.customer,
-                        phone: t.phone || "01933445566",
-                        address: sampleAddresses[idx % sampleAddresses.length],
-                        product: t.items,
-                        qty: 1,
-                        amount: t.amount,
-                        payment: t.payment,
-                        status: t.status,
-                        type: "Online Delivery" as const
-                    }));
+                    const displayOnlineList = onlineOrdersList;
 
                     const totalOnlineOrdersCount = displayOnlineList.length;
                     const totalOnlineRevenue = displayOnlineList.reduce((sum, order) => sum + order.amount, 0);
@@ -1873,30 +2050,7 @@ const AdminReports = () => {
 
                     return (
                         <div className="space-y-6">
-                            {/* Summary Cards for Online Orders */}
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <div className="bg-white border border-neutral-200/80 rounded-[20px] p-6 shadow-sm flex flex-col justify-center">
-                                    <div className="flex items-center justify-between mb-2">
-                                        <h3 className="text-xs font-bold text-neutral-400 uppercase tracking-widest">TOTAL ONLINE ORDERS</h3>
-                                        <ShoppingCart className="w-4 h-4 text-blue-500" />
-                                    </div>
-                                    <div className="text-3xl font-black text-neutral-900">{totalOnlineOrdersCount}</div>
-                                </div>
-                                <div className="bg-white border border-neutral-200/80 rounded-[20px] p-6 shadow-sm flex flex-col justify-center">
-                                    <div className="flex items-center justify-between mb-2">
-                                        <h3 className="text-xs font-bold text-neutral-400 uppercase tracking-widest">TOTAL POCKET (REVENUE)</h3>
-                                        <DollarSign className="w-4 h-4 text-emerald-500" />
-                                    </div>
-                                    <div className="text-3xl font-black text-emerald-600">৳{totalOnlineRevenue.toLocaleString()}</div>
-                                </div>
-                                <div className="bg-white border border-neutral-200/80 rounded-[20px] p-6 shadow-sm flex flex-col justify-center">
-                                    <div className="flex items-center justify-between mb-2">
-                                        <h3 className="text-xs font-bold text-neutral-400 uppercase tracking-widest">TOTAL PROFIT (EST. 65%)</h3>
-                                        <TrendingUp className="w-4 h-4 text-indigo-500" />
-                                    </div>
-                                    <div className="text-3xl font-black text-indigo-600">৳{totalOnlineProfit.toLocaleString()}</div>
-                                </div>
-                            </div>
+                            {/* Summary Cards moved to top level */}
 
                             <div className="bg-white border border-neutral-200/80 rounded-[24px] p-8 shadow-sm space-y-6">
                                 <div className="flex items-center justify-between">
