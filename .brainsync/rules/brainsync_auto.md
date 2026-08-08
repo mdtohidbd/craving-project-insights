@@ -2,10 +2,14 @@
 
 # Project Memory — craving-project-insights
 <<<<<<< HEAD
+> 46 notes | Score threshold: >40
+=======
+<<<<<<< HEAD
 > 39 notes | Score threshold: >40
 =======
 > 44 notes | Score threshold: >40
 >>>>>>> 29704ac15c191148be20bbd90f4427c78b5c48ab
+>>>>>>> fa900f9a4d9fe104e7e00702a8da8f2525fa16a7
 
 ## Safety — Never Run Destructive Commands
 
@@ -43,15 +47,23 @@
 =======
 ## 📝 NOTE: 1 uncommitted file(s) in working tree.\n\n## Project Standards
 
+- convention in .gitignore
+- Extract repeated class patterns into components
+- Use responsive prefixes consistently (sm:, md:, lg:, xl:)
+- Don't use arbitrary values when a utility class exists
 - Rate limit API endpoints to prevent abuse
 - Validate request body with a schema validator (Joi, Zod)
 - Use helmet for security headers
+<<<<<<< HEAD
+- Use middleware.ts for authentication guards, not client-side checks
+=======
 - Use Suspense and Error Boundaries for async operations
 - Don't prop-drill more than 2 levels — use Context or state management
 - Use useMemo for expensive computations, useCallback for stable references
 - Enable strict mode in tsconfig.json
 - Prefer Array methods (map, filter, reduce) over manual loops
 >>>>>>> 29704ac15c191148be20bbd90f4427c78b5c48ab
+>>>>>>> fa900f9a4d9fe104e7e00702a8da8f2525fa16a7
 
 ## Verified Best Practices
 
